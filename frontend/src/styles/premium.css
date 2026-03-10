@@ -1,0 +1,212 @@
+.premium-section {
+  background-color: var(--bg-primary);
+  min-height: 100vh;
+  padding: 40px 0;
+}
+
+.plan-card {
+  background: var(--card-bg);
+  border-radius: 20px;
+  padding: 0;
+  box-shadow: 0 10px 30px var(--shadow);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  border: 2px solid var(--border-color);
+}
+
+.plan-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 50px var(--shadow);
+}
+
+.premium-plan {
+  border: 2px solid #198754;
+  position: relative;
+}
+
+.premium-plan::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, #198754, #20c997, #198754);
+  background-size: 200% 100%;
+  animation: gradient-flow 3s ease infinite;
+}
+
+.premium-badge {
+  position: absolute;
+  top: 20px;
+  right: -35px;
+  background: linear-gradient(135deg, #ffc107, #ff9800);
+  color: #000;
+  padding: 5px 40px;
+  transform: rotate(45deg);
+  font-weight: bold;
+  font-size: 12px;
+  box-shadow: 0 4px 10px rgba(255, 193, 7, 0.4);
+}
+
+.plan-header {
+  padding: 30px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.plan-header h3 {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: var(--text-primary);
+}
+
+.plan-price {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 5px;
+}
+
+.plan-price .price {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #198754;
+}
+
+[data-theme="dark"] .plan-price .price {
+  color: #20c997;
+}
+
+.plan-price .period {
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
+.plan-body {
+  padding: 30px;
+}
+
+.benefits-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.benefits-list li {
+  padding: 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.benefits-list li i {
+  font-size: 1.2rem;
+  color: #198754;
+}
+
+[data-theme="dark"] .benefits-list li i {
+  color: #20c997;
+}
+
+.benefits-list li.disabled {
+  opacity: 0.5;
+}
+
+.benefits-list li.disabled i {
+  color: #dc3545;
+}
+
+.plan-footer {
+  padding: 30px;
+  border-top: 1px solid var(--border-color);
+}
+
+.btn-premium {
+  background: linear-gradient(135deg, #198754, #20c997);
+  border: none;
+  color: white;
+  font-weight: bold;
+  padding: 15px;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(25, 135, 84, 0.3);
+}
+
+.btn-premium:hover {
+  background: linear-gradient(135deg, #157347, #1aa179);
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(25, 135, 84, 0.5);
+  color: white;
+}
+
+.premium-features {
+  margin-top: 60px;
+}
+
+.premium-features h3 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+.feature-card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+  height: 100%;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px var(--shadow);
+}
+
+.feature-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #198754, #20c997);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  font-size: 2rem;
+  color: white;
+}
+
+[data-theme="dark"] .feature-icon {
+  background: linear-gradient(135deg, #0a3d1f, #198754);
+  box-shadow: 0 8px 25px rgba(25, 135, 84, 0.4);
+}
+
+.feature-card h5 {
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: var(--text-primary);
+}
+
+.feature-card p {
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .plan-price .price {
+    font-size: 2.5rem;
+  }
+  
+  .premium-badge {
+    font-size: 10px;
+    padding: 4px 35px;
+  }
+}

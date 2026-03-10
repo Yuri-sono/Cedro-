@@ -1,0 +1,77 @@
+.ad-banner {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 320px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 25px var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 9999;
+  animation: slideInRight 0.4s ease;
+  border: 1px solid var(--border-color);
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.ad-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.ad-close:hover {
+  color: var(--text-primary);
+}
+
+.ad-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.ad-content {
+  flex: 1;
+}
+
+.ad-content h6 {
+  margin: 0 0 4px 0;
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+.ad-content p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+  .ad-banner {
+    width: calc(100% - 40px);
+    bottom: 10px;
+    right: 10px;
+    left: 10px;
+  }
+}

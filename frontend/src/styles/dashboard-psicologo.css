@@ -1,0 +1,133 @@
+/* Dashboard Psicólogo Styles */
+.dashboard-psicologo {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+[data-theme="dark"] .dashboard-psicologo {
+  background-color: #0a0a0a;
+  color: #ffffff;
+}
+
+.sidebar {
+  position: sticky;
+  top: 20px;
+  height: fit-content;
+}
+
+.sidebar .nav-link {
+  color: #495057;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.sidebar .nav-link:hover {
+  background-color: #e9ecef;
+  color: #2e7d32;
+}
+
+.sidebar .nav-link.active {
+  background-color: #2e7d32;
+  color: white;
+}
+
+[data-theme="dark"] .sidebar .nav-link {
+  color: #cccccc;
+}
+
+[data-theme="dark"] .sidebar .nav-link:hover {
+  background-color: #2a2a2a;
+  color: #20c997;
+}
+
+[data-theme="dark"] .sidebar .nav-link.active {
+  background-color: #198754;
+  color: white;
+}
+
+.sidebar .nav-link i {
+  width: 20px;
+}
+
+/* Timeline Styles */
+.timeline {
+  position: relative;
+  padding-left: 30px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: #dee2e6;
+}
+
+[data-theme="dark"] .timeline::before {
+  background-color: #2a2a2a;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.timeline-marker {
+  position: absolute;
+  left: -37px;
+  top: 5px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px #dee2e6;
+}
+
+[data-theme="dark"] .timeline-marker {
+  border-color: #141414;
+  box-shadow: 0 0 0 2px #2a2a2a;
+  background-color: #198754;
+}
+
+.timeline-content h6 {
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.timeline-content p {
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+}
+
+/* Cards hover effect */
+.card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Stats cards */
+.bg-opacity-10 {
+  background-opacity: 0.1 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sidebar {
+    position: static;
+    margin-bottom: 20px;
+  }
+  
+  .timeline {
+    padding-left: 20px;
+  }
+  
+  .timeline-marker {
+    left: -27px;
+  }
+}
