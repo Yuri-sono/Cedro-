@@ -1,0 +1,135 @@
+package com.cedro.controller;
+
+import com.cedro.model.TipoUsuario;
+import com.cedro.model.entity.Sessao;
+import com.cedro.model.entity.Usuario;
+import com.cedro.repository.SessaoRepository;
+import com.cedro.repository.UsuarioRepository;
+import com.cedro.security.JwtUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/api/psicologos")
+public class PsicologoController {
+
+    @Autowired private JwtUtil jwtUtil;
+    @Autowired private UsuarioRepository usuarioRepository;
+    @Autowired private SessaoRepository sessaoRepository;
+
+    @GetMapping
+    public ResponseEntity<?> listarPsicologos() {
+        return ResponseEntity.ok(usuarioRepository.findByTipoUsuarioAndAtivo(TipoUsuario.psicologo, true));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> buscarPorId(@PathVariable Integer id) {
+        Usuario p = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Não encontrado"));
+        if (p.getTipoUsuario() != TipoUsuario.psicologo)
+            return ResponseEntity.badRequest().body(Map.of("error", "Não é psicólogo"));
+        return ResponseEntity.ok(p);
+    }
+
+    @PostMapping
+    public ResponseEntity<?> criar(
+            @RequestBody Usuario psicologo,
+            @RequestHeader("Authorization") String authHeader) {
+        if (!"admin".equals(jwtUtil.extractTipoUsuario(authHeader.replace("Bearer ", ""))))
+            return ResponseEntity.status(403).body(Map.of("error", "Acesso negado"));
+        if (usuarioRepository.existsByEmail(psicologo.getEmail()))
+            return ResponseEntity.badRequest().body(Map.of("error", "Email já existe"));
+        psicologo.setTipoUsuario(TipoUsuario.psicologo);
+        psicologo.setAtivo(true);
+        return ResponseEntity.status(201).body(usuarioRepository.save(psicologo));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> atualizar(
+            @PathVariable Integer id,
+            @RequestBody Usuario dados,
+            @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        Integer requesterId = jwtUtil.extractUserId(token);
+        String tipo = jwtUtil.extractTipoUsuario(token);
+        if (!"admin".equals(tipo) && !requesterId.equals(id))
+            return ResponseEntity.status(403).body(Map.of("error", "Acesso negado"));
+        Usuario p = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Não encontrado"));
+        if (p.getTipoUsuario() != TipoUsuario.psicologo)
+            return ResponseEntity.badRequest().body(Map.of("error", "Não é psicólogo"));
+        if (dados.getNome() != null) p.setNome(dados.getNome());
+        if (dados.getEmail() != null) p.setEmail(dados.getEmail());
+        if (dados.getTelefone() != null) p.setTelefone(dados.getTelefone());
+        if (dados.getEspecialidade() != null) p.setEspecialidade(dados.getEspecialidade());
+        if (dados.getPrecoSessao() != null) p.setPrecoSessao(dados.getPrecoSessao());
+        if (dados.getBio() != null) p.setBio(dados.getBio());
+        if (dados.getFotoUrl() != null) p.setFotoUrl(dados.getFotoUrl());
+        return ResponseEntity.ok(usuarioRepository.save(p));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deletar(
+            @PathVariable Integer id,
+            @RequestHeader("Authorization") String authHeader) {
+        if (!"admin".equals(jwtUtil.extractTipoUsuario(authHeader.replace("Bearer ", ""))))
+            return ResponseEntity.status(403).body(Map.of("error", "Acesso negado"));
+        Usuario p = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Não encontrado"));
+        if (p.getTipoUsuario() != TipoUsuario.psicologo)
+            return ResponseEntity.badRequest().body(Map.of("error", "Não é psicólogo"));
+        p.setAtivo(false);
+        usuarioRepository.save(p);
+        return ResponseEntity.ok(Map.of("message", "Desativado"));
+    }
+
+    @GetMapping("/estatisticas")
+    public ResponseEntity<?> getEstatisticas(@RequestHeader("Authorization") String authHeader) {
+        Integer psicologoId = jwtUtil.extractUserId(authHeader.replace("Bearer ", ""));
+        LocalDateTime hoje = LocalDate.now().atStartOfDay();
+        LocalDateTime fimHoje = hoje.plusDays(1);
+        LocalDateTime inicioSemana = hoje.minusDays(hoje.getDayOfWeek().getValue() - 1);
+        LocalDateTime inicioMes = LocalDate.now().withDayOfMonth(1).atStartOfDay();
+        LocalDateTime fimMes = inicioMes.plusMonths(1);
+
+        long consultasHoje = sessaoRepository.findByPsicologoIdAndDataSessaoBetween(psicologoId, hoje, fimHoje).size();
+        long consultasSemana = sessaoRepository.findByPsicologoIdAndDataSessaoBetween(psicologoId, inicioSemana, fimHoje).size();
+        long pacientesAtivos = sessaoRepository.countPacientesAtivosByPsicologoId(psicologoId);
+        java.math.BigDecimal faturamentoMes = sessaoRepository.sumValorByPsicologoIdAndPeriodo(psicologoId, inicioMes, fimMes);
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("consultasHoje", consultasHoje);
+        stats.put("consultasSemana", consultasSemana);
+        stats.put("pacientesAtivos", pacientesAtivos);
+        stats.put("faturamentoMes", faturamentoMes != null ? faturamentoMes : java.math.BigDecimal.ZERO);
+        return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/consultas/proximas")
+    public ResponseEntity<?> getProximasConsultas(@RequestHeader("Authorization") String authHeader) {
+        Integer psicologoId = jwtUtil.extractUserId(authHeader.replace("Bearer ", ""));
+        List<Sessao> proximas = sessaoRepository
+                .findByPsicologoIdAndDataSessaoAfterOrderByDataSessaoAsc(psicologoId, LocalDateTime.now());
+        List<Map<String, Object>> resultado = proximas.stream().limit(10).map(s -> {
+            Map<String, Object> item = new HashMap<>();
+            item.put("id", s.getId());
+            item.put("pacienteId", s.getPacienteId());
+            item.put("data", s.getDataSessao());
+            item.put("horario", s.getDataSessao().toLocalTime().toString().substring(0, 5));
+            item.put("status", s.getStatusSessao());
+            item.put("tipo", "Terapia Individual");
+            usuarioRepository.findById(s.getPacienteId())
+                    .ifPresent(p -> item.put("pacienteNome", p.getNome()));
+            return item;
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(resultado);
+    }
+}
