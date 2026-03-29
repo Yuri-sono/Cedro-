@@ -46,3 +46,6 @@ target/
 *.war
 !gradle-wrapper.jar
 .gradle/
+
+# Spring local config
+**/application-local.properties

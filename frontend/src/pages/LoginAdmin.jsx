@@ -1,59 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext.jsx';
 import API_BASE_URL from '../config.js';
 
 const LoginAdmin = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    senha: ''
-  });
+  const [formData, setFormData] = useState({ email: '', senha: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email, senha: formData.senha })
       });
-
       const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || 'Erro ao fazer login');
-        setLoading(false);
-        return;
-      }
-
-      // Verificar se é admin
-      const userType = data.usuario.tipoUsuario || data.usuario.tipo_usuario;
-      if (userType !== 'admin') {
-        setError('Acesso negado. Apenas administradores.');
-        setLoading(false);
-        return;
-      }
-
-      localStorage.setItem('adminLogado', JSON.stringify(data.usuario));
-      localStorage.setItem('token', data.token);
+      if (!response.ok) { setError(data.error || 'Erro ao fazer login'); return; }
+      const userType = data.usuario.tipoUsuario;
+      if (userType !== 'admin') { setError('Acesso negado. Apenas administradores.'); return; }
+      login(data.usuario, data.token);
       navigate('/admin/dashboard');
-    } catch (error) {
+    } catch {
       setError('Erro ao conectar com servidor');
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   return (

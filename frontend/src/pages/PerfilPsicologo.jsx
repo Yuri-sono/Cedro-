@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext.jsx';
 import NavbarPsicologo from '../components/NavbarPsicologo.jsx';
 import SidebarPsicologo from '../components/SidebarPsicologo.jsx';
 import axios from 'axios';
@@ -7,37 +8,27 @@ import API_BASE_URL from '../config.js';
 
 const PerfilPsicologo = () => {
   const navigate = useNavigate();
+  const { user, updateUser } = useAuth();
   const [editando, setEditando] = useState(false);
   const [psicologo, setPsicologo] = useState({
-    nome: '',
-    email: '',
-    telefone: '',
-    dataNascimento: '',
-    especialidade: '',
-    precoSessao: '',
-    bio: '',
-    fotoUrl: ''
+    nome: '', email: '', telefone: '', dataNascimento: '',
+    especialidade: '', precoSessao: '', bio: '', fotoUrl: ''
   });
 
   useEffect(() => {
-    const psicologoLogado = localStorage.getItem('psicologoLogado');
-    if (!psicologoLogado) {
-      navigate('/login-psicologo');
-      return;
-    }
-    const dados = JSON.parse(psicologoLogado);
-    const dataNasc = (dados.dataNascimento || dados.data_nascimento) ? (dados.dataNascimento || dados.data_nascimento).split('T')[0] : '';
+    if (!user) { navigate('/login-psicologo'); return; }
+    const dataNasc = user.dataNascimento ? user.dataNascimento.split('T')[0] : '';
     setPsicologo({
-      nome: dados.nome || '',
-      email: dados.email || '',
-      telefone: dados.telefone || '',
+      nome: user.nome || '',
+      email: user.email || '',
+      telefone: user.telefone || '',
       dataNascimento: dataNasc,
-      especialidade: dados.especialidade || '',
-      precoSessao: dados.precoSessao || dados.preco_sessao || '',
-      bio: dados.bio || '',
-      fotoUrl: dados.fotoUrl || dados.foto_url || ''
+      especialidade: user.especialidade || '',
+      precoSessao: user.precoSessao || '',
+      bio: user.bio || '',
+      fotoUrl: user.fotoUrl || ''
     });
-  }, [navigate]);
+  }, [user, navigate]);
 
   const handleChange = (e) => {
     setPsicologo({ ...psicologo, [e.target.name]: e.target.value });
@@ -46,13 +37,10 @@ const PerfilPsicologo = () => {
   const handleSalvar = async () => {
     try {
       const token = localStorage.getItem('token');
-      const psicologoLogado = JSON.parse(localStorage.getItem('psicologoLogado'));
-      
-      await axios.put(`${API_BASE_URL}/api/usuarios/${psicologoLogado.id}`, psicologo, {
+      await axios.put(`${API_BASE_URL}/api/auth/perfil`, psicologo, {
         headers: { Authorization: `Bearer ${token}` }
       });
-
-      localStorage.setItem('psicologoLogado', JSON.stringify({ ...psicologoLogado, ...psicologo }));
+      updateUser({ ...user, ...psicologo });
       alert('Perfil atualizado com sucesso!');
       setEditando(false);
     } catch (error) {
@@ -78,8 +66,7 @@ const PerfilPsicologo = () => {
             { headers: { Authorization: `Bearer ${token}` } }
           );
           setPsicologo({ ...psicologo, fotoUrl: base64 });
-          const psicologoLogado = JSON.parse(localStorage.getItem('psicologoLogado'));
-          localStorage.setItem('psicologoLogado', JSON.stringify({ ...psicologoLogado, fotoUrl: base64 }));
+          updateUser({ ...user, fotoUrl: base64 });
           alert('Foto atualizada com sucesso!');
         } catch (error) {
           console.error('Erro ao atualizar foto:', error);

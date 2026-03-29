@@ -10,7 +10,6 @@ function AgendarSessao() {
     data: '',
     hora: '',
     duracao: 60,
-    valor: '',
     observacoes: ''
   });
   const [loading, setLoading] = useState(false);
@@ -34,20 +33,16 @@ function AgendarSessao() {
         psicologoId: parseInt(psicologoId),
         dataSessao,
         duracao: parseInt(formData.duracao),
-        valor: parseFloat(formData.valor),
         observacoes: formData.observacoes
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      const sessaoId = response.data?.id || Math.random().toString(36).substr(2, 9);
-      
-      // Redirecionar para pagamento
+      const sessaoId = response.data?.id;
       navigate(`/pagamento/sessao/${sessaoId}`);
     } catch (error) {
-      alert('Sessão agendada! Redirecionando para pagamento...');
-      const sessaoId = Math.random().toString(36).substr(2, 9);
-      navigate(`/pagamento/sessao/${sessaoId}`);
+      const msg = error.response?.data?.error || 'Erro ao agendar sessão';
+      alert(msg);
     } finally {
       setLoading(false);
     }
@@ -116,24 +111,6 @@ function AgendarSessao() {
                     <option value="60">60 minutos</option>
                     <option value="90">90 minutos</option>
                   </select>
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label">
-                    <i className="bi bi-currency-dollar me-2"></i>
-                    Valor (R$)
-                  </label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    name="valor"
-                    value={formData.valor}
-                    onChange={handleChange}
-                    step="0.01"
-                    min="0"
-                    placeholder="150.00"
-                    required
-                  />
                 </div>
 
                 <div className="mb-4">

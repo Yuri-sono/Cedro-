@@ -109,11 +109,7 @@ const LoginPsicologo = () => {
                 </form>
 
                 <div className="text-center">
-                  <p className="mb-2">
-                    <Link to="/esqueci-senha" className="text-decoration-none">
-                      Esqueci minha senha
-                    </Link>
-                  </p>
+                  <p className="mb-2 text-muted">Esqueceu a senha? Entre em contato com o suporte.</p>
                   <p className="text-muted">
                     Não tem conta? 
                     <Link to="/cadastro-psicologo" className="text-decoration-none ms-1">

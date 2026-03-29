@@ -1,20 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 const Home = () => {
-  const [showAdminAccess, setShowAdminAccess] = useState(false);
-  const adminEmails = ['pazyuri84@gmail.com', 'ainutil87@gmail.com'];
-
-  useEffect(() => {
-    // Verificar se deve mostrar acesso admin baseado no email do usuário logado
-    const userData = localStorage.getItem('usuario');
-    if (userData) {
-      const user = JSON.parse(userData);
-      if (adminEmails.includes(user.email)) {
-        setShowAdminAccess(true);
-      }
-    }
-  }, []);
 
   useEffect(() => {
     // Scroll animation
@@ -50,12 +37,6 @@ const Home = () => {
                 <Link to="/contato" className="btn btn-light btn-lg">Agendar Consulta</Link>
                 <a href="#recursos" className="btn btn-outline-light btn-lg">Recursos Gratuitos</a>
                 <Link to="/cadastro-psicologo" className="btn btn-success btn-lg">Sou Psicólogo</Link>
-                {showAdminAccess && (
-                  <Link to="/admin/login" className="btn btn-danger btn-lg">
-                    <i className="bi bi-shield-lock me-2"></i>
-                    Painel Admin
-                  </Link>
-                )}
               </div>
             </div>
           </div>
@@ -99,32 +80,8 @@ const Home = () => {
       <section id="servicos" className="py-5 bg-light">
         <div className="container">
           <h2 className="text-center fw-bold mb-5">Nossos Serviços</h2>
-          <div className="row g-4">
-            <div className="col-md-4 animate-on-scroll">
-              <div className="card h-100 border-0 shadow-sm">
-                <div className="card-body text-center p-4">
-                  <div className="icon-box mb-4">
-                    <i className="bi bi-person-hearts text-primary fs-1"></i>
-                  </div>
-                  <h3 className="h4 fw-bold">Terapia Individual</h3>
-                  <p>Sessões personalizadas para abordar questões específicas como ansiedade, depressão, estresse e traumas.</p>
-                  <Link to="/terapia-individual" className="btn btn-outline-primary mt-3">Saiba mais</Link>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-4 animate-on-scroll">
-              <div className="card h-100 border-0 shadow-sm">
-                <div className="card-body text-center p-4">
-                  <div className="icon-box mb-4">
-                    <i className="bi bi-people text-primary fs-1"></i>
-                  </div>
-                  <h3 className="h4 fw-bold">Terapia em Grupo</h3>
-                  <p>Encontros terapêuticos em grupo que proporcionam apoio mútuo e compartilhamento de experiências.</p>
-                  <Link to="/terapia-grupo" className="btn btn-outline-primary mt-3">Saiba mais</Link>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-4 animate-on-scroll">
+          <div className="row g-4 justify-content-center">
+            <div className="col-md-6 animate-on-scroll">
               <div className="card h-100 border-0 shadow-sm">
                 <div className="card-body text-center p-4">
                   <div className="icon-box mb-4">
@@ -136,6 +93,18 @@ const Home = () => {
                 </div>
               </div>
             </div>
+            <div className="col-md-6 animate-on-scroll">
+              <div className="card h-100 border-0 shadow-sm">
+                <div className="card-body text-center p-4">
+                  <div className="icon-box mb-4">
+                    <i className="bi bi-people text-primary fs-1"></i>
+                  </div>
+                  <h3 className="h4 fw-bold">Psicólogos Especializados</h3>
+                  <p>Encontre o profissional ideal para você entre nossa rede de psicólogos qualificados e experientes.</p>
+                  <Link to="/psicologos" className="btn btn-outline-primary mt-3">Ver Psicólogos</Link>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -144,44 +113,8 @@ const Home = () => {
       <section id="recursos" className="py-5">
         <div className="container">
           <h2 className="text-center fw-bold mb-5">Recursos Gratuitos</h2>
-          <div className="row g-4">
-            <div className="col-md-6 col-lg-3 animate-on-scroll">
-              <div className="card h-100 border-0 shadow-sm">
-                <div className="card-body p-4">
-                  <div className="icon-box mb-3">
-                    <i className="bi bi-headphones text-primary fs-1"></i>
-                  </div>
-                  <h3 className="h5 fw-bold">Meditações Guiadas</h3>
-                  <p>Áudios gratuitos para ajudar na prática de mindfulness e relaxamento.</p>
-                  <Link to="/meditacoes-guiadas" className="btn btn-sm btn-primary">Acessar</Link>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-6 col-lg-3 animate-on-scroll">
-              <div className="card h-100 border-0 shadow-sm">
-                <div className="card-body p-4">
-                  <div className="icon-box mb-3">
-                    <i className="bi bi-book text-primary fs-1"></i>
-                  </div>
-                  <h3 className="h5 fw-bold">E-books</h3>
-                  <p>Materiais educativos sobre saúde mental e autocuidado emocional.</p>
-                  <Link to="/ebooks" className="btn btn-sm btn-primary">Baixar</Link>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-6 col-lg-3 animate-on-scroll">
-              <div className="card h-100 border-0 shadow-sm">
-                <div className="card-body p-4">
-                  <div className="icon-box mb-3">
-                    <i className="bi bi-camera-video text-primary fs-1"></i>
-                  </div>
-                  <h3 className="h5 fw-bold">Webinars</h3>
-                  <p>Palestras online sobre temas relevantes para o bem-estar psicológico.</p>
-                  <Link to="/webinars" className="btn btn-sm btn-primary">Assistir</Link>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-6 col-lg-3 animate-on-scroll">
+          <div className="row g-4 justify-content-center">
+            <div className="col-md-6 col-lg-4 animate-on-scroll">
               <div className="card h-100 border-0 shadow-sm">
                 <div className="card-body p-4">
                   <div className="icon-box mb-3">

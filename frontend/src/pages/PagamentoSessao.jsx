@@ -23,18 +23,24 @@ const PagamentoSessao = () => {
 
   const fetchSessao = async () => {
     try {
-      // Simular dados da sessão
+      const token = localStorage.getItem('token');
+      const [sessaoRes, psicologosRes] = await Promise.all([
+        axios.get(`${API_BASE_URL}/api/sessoes/${sessaoId}`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_BASE_URL}/api/psicologos`)
+      ]);
+      const s = sessaoRes.data;
+      const psicologo = psicologosRes.data.find(p => p.id === s.psicologoId) || {};
       setSessao({
-        id: sessaoId,
+        id: s.id,
         psicologo: {
-          nome: 'Dr. João Silva',
-          especialidade: 'Psicologia Clínica',
-          foto: ''
+          nome: psicologo.nome || `Psicólogo #${s.psicologoId}`,
+          especialidade: psicologo.especialidade || '',
+          foto: psicologo.fotoUrl || ''
         },
-        data: '2024-01-15',
-        horario: '14:00',
-        preco: '120,00',
-        duracao: '50 minutos'
+        data: s.dataSessao,
+        horario: new Date(s.dataSessao).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        preco: parseFloat(s.valor).toFixed(2).replace('.', ','),
+        duracao: `${s.duracao} minutos`
       });
     } catch (error) {
       console.error('Erro ao carregar sessão:', error);

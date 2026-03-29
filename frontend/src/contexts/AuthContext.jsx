@@ -17,9 +17,18 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('usuario');
-    
+
     if (token && userData) {
-      setUser(JSON.parse(userData));
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (payload.exp * 1000 > Date.now()) {
+          setUser(JSON.parse(userData));
+        } else {
+          localStorage.clear();
+        }
+      } catch {
+        localStorage.clear();
+      }
     }
     setLoading(false);
   }, []);

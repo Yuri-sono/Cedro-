@@ -7,12 +7,12 @@ function AdminSessoes() {
   const [loading, setLoading] = useState(true);
   const [editando, setEditando] = useState(null);
   const [form, setForm] = useState({
-    paciente_id: '',
-    terapeuta_id: '',
-    data_sessao: '',
+    pacienteId: '',
+    psicologoId: '',
+    dataSessao: '',
     duracao: 60,
     valor: '',
-    status_sessao: 'agendada',
+    statusSessao: 'agendada',
     observacoes: ''
   });
 
@@ -49,12 +49,12 @@ function AdminSessoes() {
   const editar = (sessao) => {
     setEditando(sessao.id);
     setForm({
-      paciente_id: sessao.pacienteId,
-      terapeuta_id: sessao.terapeutaId,
-      data_sessao: sessao.dataSessao?.substring(0, 16),
+      pacienteId: sessao.pacienteId,
+      psicologoId: sessao.psicologoId,
+      dataSessao: sessao.dataSessao?.substring(0, 16),
       duracao: sessao.duracao,
       valor: sessao.valor,
-      status_sessao: sessao.statusSessao,
+      statusSessao: sessao.statusSessao,
       observacoes: sessao.observacoes || ''
     });
   };
@@ -72,12 +72,12 @@ function AdminSessoes() {
   const limparForm = () => {
     setEditando(null);
     setForm({
-      paciente_id: '',
-      terapeuta_id: '',
-      data_sessao: '',
+      pacienteId: '',
+      psicologoId: '',
+      dataSessao: '',
       duracao: 60,
       valor: '',
-      status_sessao: 'agendada',
+      statusSessao: 'agendada',
       observacoes: ''
     });
   };
@@ -95,18 +95,18 @@ function AdminSessoes() {
             <div className="row">
               <div className="col-md-6 mb-3">
                 <label>Paciente ID</label>
-                <input type="number" className="form-control" value={form.paciente_id} 
-                  onChange={e => setForm({...form, paciente_id: e.target.value})} required />
+                <input type="number" className="form-control" value={form.pacienteId} 
+                  onChange={e => setForm({...form, pacienteId: e.target.value})} required />
               </div>
               <div className="col-md-6 mb-3">
-                <label>Terapeuta ID</label>
-                <input type="number" className="form-control" value={form.terapeuta_id}
-                  onChange={e => setForm({...form, terapeuta_id: e.target.value})} required />
+                <label>Psicólogo ID</label>
+                <input type="number" className="form-control" value={form.psicologoId}
+                  onChange={e => setForm({...form, psicologoId: e.target.value})} required />
               </div>
               <div className="col-md-4 mb-3">
                 <label>Data/Hora</label>
-                <input type="datetime-local" className="form-control" value={form.data_sessao}
-                  onChange={e => setForm({...form, data_sessao: e.target.value})} required />
+                <input type="datetime-local" className="form-control" value={form.dataSessao}
+                  onChange={e => setForm({...form, dataSessao: e.target.value})} required />
               </div>
               <div className="col-md-4 mb-3">
                 <label>Duração (min)</label>
@@ -120,8 +120,8 @@ function AdminSessoes() {
               </div>
               <div className="col-md-6 mb-3">
                 <label>Status</label>
-                <select className="form-select" value={form.status_sessao}
-                  onChange={e => setForm({...form, status_sessao: e.target.value})}>
+                <select className="form-select" value={form.statusSessao}
+                  onChange={e => setForm({...form, statusSessao: e.target.value})}>
                   <option value="agendada">Agendada</option>
                   <option value="confirmada">Confirmada</option>
                   <option value="realizada">Realizada</option>
@@ -158,7 +158,7 @@ function AdminSessoes() {
               <tr key={sessao.id}>
                 <td>{sessao.id}</td>
                 <td>{sessao.pacienteId}</td>
-                <td>{sessao.terapeutaId}</td>
+                <td>{sessao.psicologoId}</td>
                 <td>{new Date(sessao.dataSessao).toLocaleString()}</td>
                 <td>R$ {parseFloat(sessao.valor).toFixed(2)}</td>
                 <td><span className="badge bg-info">{sessao.statusSessao}</span></td>

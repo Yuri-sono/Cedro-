@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import axios from 'axios';
 import CustomModal from '../components/CustomModal.jsx';
@@ -411,40 +411,26 @@ const Perfil = () => {
                     Minha Jornada
                   </h5>
                   <div className="row g-3">
-                    <div className="col-6 col-md-3">
+                    <div className="col-6 col-md-6">
                       <div className="stat-card">
                         <div className="stat-icon bg-primary">
                           <i className="bi bi-calendar-check"></i>
                         </div>
-                        <h4>12</h4>
-                        <small>Sessões</small>
+                        <Link to="/minhas-sessoes" className="text-decoration-none text-dark">
+                          <h4>Ver</h4>
+                          <small>Minhas Sessões</small>
+                        </Link>
                       </div>
                     </div>
-                    <div className="col-6 col-md-3">
+                    <div className="col-6 col-md-6">
                       <div className="stat-card">
                         <div className="stat-icon bg-success">
-                          <i className="bi bi-headphones"></i>
+                          <i className="bi bi-clipboard-check"></i>
                         </div>
-                        <h4>8</h4>
-                        <small>Meditações</small>
-                      </div>
-                    </div>
-                    <div className="col-6 col-md-3">
-                      <div className="stat-card">
-                        <div className="stat-icon bg-info">
-                          <i className="bi bi-book"></i>
-                        </div>
-                        <h4>5</h4>
-                        <small>E-books</small>
-                      </div>
-                    </div>
-                    <div className="col-6 col-md-3">
-                      <div className="stat-card">
-                        <div className="stat-icon bg-warning">
-                          <i className="bi bi-camera-video"></i>
-                        </div>
-                        <h4>3</h4>
-                        <small>Webinars</small>
+                        <Link to="/autoavaliacoes" className="text-decoration-none text-dark">
+                          <h4>Ver</h4>
+                          <small>Autoavaliações</small>
+                        </Link>
                       </div>
                     </div>
                   </div>

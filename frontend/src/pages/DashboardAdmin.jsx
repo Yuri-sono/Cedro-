@@ -1,32 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext.jsx';
+import axios from 'axios';
+import API_BASE_URL from '../config.js';
 
 const DashboardAdmin = () => {
-  const [adminData, setAdminData] = useState(null);
-  const [stats, setStats] = useState({
-    usuarios: 156,
-    psicologos: 23,
-    sessoes: 89,
-    receita: 12450
-  });
+  const { user, logout } = useAuth();
+  const [stats, setStats] = useState({ usuarios: 0, psicologos: 0, sessoes: 0, receita: 0 });
   const navigate = useNavigate();
 
   useEffect(() => {
-    const admin = localStorage.getItem('adminLogado');
-    if (!admin) {
-      navigate('/admin/login');
-      return;
-    }
-    setAdminData(JSON.parse(admin));
-  }, [navigate]);
+    const token = localStorage.getItem('token');
+    Promise.all([
+      axios.get(`${API_BASE_URL}/api/usuarios`, { headers: { Authorization: `Bearer ${token}` } }),
+      axios.get(`${API_BASE_URL}/api/sessoes`, { headers: { Authorization: `Bearer ${token}` } })
+    ]).then(([usersRes, sessoesRes]) => {
+      const usuarios = usersRes.data;
+      const sessoes = sessoesRes.data;
+      const receita = sessoes
+        .filter(s => s.statusSessao === 'realizada')
+        .reduce((acc, s) => acc + parseFloat(s.valor || 0), 0);
+      setStats({
+        usuarios: usuarios.filter(u => u.tipoUsuario === 'paciente').length,
+        psicologos: usuarios.filter(u => u.tipoUsuario === 'psicologo').length,
+        sessoes: sessoes.length,
+        receita
+      });
+    }).catch(console.error);
+  }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('adminLogado');
-    localStorage.removeItem('token');
+    logout();
     navigate('/');
   };
 
-  if (!adminData) return null;
+  if (!user) return null;
 
   return (
     <div className="admin-dashboard">
@@ -40,7 +48,7 @@ const DashboardAdmin = () => {
           <div className="navbar-nav ms-auto">
             <span className="navbar-text me-3">
               <i className="bi bi-person-circle me-1"></i>
-              {adminData.nome}
+              {user.nome}
             </span>
             <button className="btn btn-outline-light btn-sm" onClick={handleLogout}>
               <i className="bi bi-box-arrow-right me-1"></i>

@@ -88,7 +88,6 @@ function Chat() {
           <i className="bi bi-person-circle me-3" style={{ fontSize: '2rem' }}></i>
           <div>
             <h5 className="mb-0">Usuário #{userId}</h5>
-            <small className="text-muted">Online</small>
           </div>
         </div>
       </div>

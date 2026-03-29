@@ -20,12 +20,7 @@ import NotificationSystem from './components/NotificationSystem.jsx';
 import Home from './pages/Home.jsx';
 import ChatEmergencia from './pages/ChatEmergencia.jsx';
 import Contato from './pages/Contato.jsx';
-import TerapiaIndividual from './pages/TerapiaIndividual.jsx';
-import TerapiaGrupo from './pages/TerapiaGrupo.jsx';
 import AtendimentoOnline from './pages/AtendimentoOnline.jsx';
-import MeditacoesGuiadas from './pages/MeditacoesGuiadas.jsx';
-import Ebooks from './pages/Ebooks.jsx';
-import Webinars from './pages/Webinars.jsx';
 import Perfil from './pages/Perfil.jsx';
 import Login from './pages/Login.jsx';
 import ListaPsicologos from './pages/ListaPsicologos.jsx';
@@ -67,12 +62,7 @@ function AppContent() {
             <Route path="/" element={<Home />} />
             <Route path="/chat-emergencia" element={<ChatEmergencia />} />
             <Route path="/contato" element={<Contato />} />
-            <Route path="/terapia-individual" element={<TerapiaIndividual />} />
-            <Route path="/terapia-grupo" element={<TerapiaGrupo />} />
             <Route path="/atendimento-online" element={<AtendimentoOnline />} />
-            <Route path="/meditacoes-guiadas" element={<MeditacoesGuiadas />} />
-            <Route path="/ebooks" element={<Ebooks />} />
-            <Route path="/webinars" element={<Webinars />} />
             <Route path="/perfil" element={
               <ProtectedRoute>
                 <Perfil />

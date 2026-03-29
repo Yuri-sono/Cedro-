@@ -47,7 +47,7 @@ function Login() {
     script.onload = () => {
       if (window.google) {
         window.google.accounts.id.initialize({
-          client_id: '243940514947-0sqfkpbe7njhdp5kuuslc8m6g9rp43i1.apps.googleusercontent.com',
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
           callback: handleGoogleLogin
         });
         

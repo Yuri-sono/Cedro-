@@ -30,11 +30,9 @@ const Footer = () => {
           <div className="col-lg-3 col-md-6">
             <h5 className="fw-bold mb-3">Serviços</h5>
             <ul className="list-unstyled">
-              <li className="mb-2"><Link to="/terapia-individual" className="text-white text-decoration-none">Terapia Individual</Link></li>
-              <li className="mb-2"><Link to="/terapia-grupo" className="text-white text-decoration-none">Terapia em Grupo</Link></li>
               <li className="mb-2"><Link to="/atendimento-online" className="text-white text-decoration-none">Atendimento Online</Link></li>
-              <li className="mb-2"><a href="#" className="text-white text-decoration-none">Palestras e Workshops</a></li>
-              <li><a href="#" className="text-white text-decoration-none">Programas Corporativos</a></li>
+              <li className="mb-2"><Link to="/psicologos" className="text-white text-decoration-none">Psicólogos</Link></li>
+              <li className="mb-2"><Link to="/autoavaliacoes" className="text-white text-decoration-none">Autoavaliações</Link></li>
             </ul>
           </div>
           

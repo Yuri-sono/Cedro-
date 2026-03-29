@@ -41,7 +41,7 @@ const DashboardPsicologo = () => {
 
   const carregarEstatisticas = async (token) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/psicologo/estatisticas`, {
+      const response = await axios.get(`${API_BASE_URL}/api/psicologos/estatisticas`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStats(response.data);
@@ -58,7 +58,7 @@ const DashboardPsicologo = () => {
 
   const carregarProximasConsultas = async (token) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/psicologo/consultas/proximas`, {
+      const response = await axios.get(`${API_BASE_URL}/api/psicologos/consultas/proximas`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setProximasConsultas(response.data.slice(0, 3));
