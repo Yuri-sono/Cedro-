@@ -1,3 +1,127 @@
+/* HAMBURGUER DESTACADO E ANIMADO */
+.custom-toggler {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 36px;
+  height: 26px;
+  padding: 0;
+  background: rgba(25, 135, 84, 0.85);
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(25, 135, 84, 0.18), 0 1.5px 6px rgba(0,0,0,0.10);
+  transition: box-shadow 0.25s, background 0.25s, transform 0.18s;
+  position: relative;
+  z-index: 1002;
+}
+
+.custom-toggler:hover, .custom-toggler:focus {
+  background: #198754;
+  box-shadow: 0 4px 18px rgba(25, 135, 84, 0.28), 0 2px 8px rgba(0,0,0,0.18);
+  transform: scale(1.08);
+  outline: none;
+}
+
+.custom-toggler .icon-bar {
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #fff 60%, #e0ffe0 100%);
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+  margin: 0.5px 0;
+  transition: all 0.32s cubic-bezier(0.4,0,0.2,1);
+  opacity: 1;
+}
+
+.custom-toggler .icon-bar:nth-child(1) {
+  animation: barIn1 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+.custom-toggler .icon-bar:nth-child(2) {
+  animation: barIn2 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+.custom-toggler .icon-bar:nth-child(3) {
+  animation: barIn3 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+
+@keyframes barIn1 {
+  from { transform: translateX(-18px) scaleX(0.2); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes barIn2 {
+  from { transform: translateX(18px) scaleX(0.2); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes barIn3 {
+  from { transform: translateX(-18px) scaleX(0.2); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+/* Animação para transformar em 'X' quando aberto */
+.custom-toggler[aria-expanded="true"] .icon-bar:nth-child(1) {
+  transform: translateY(11px) rotate(45deg);
+  background: linear-gradient(90deg, #fff 60%, #ffe0e0 100%);
+}
+.custom-toggler[aria-expanded="true"] .icon-bar:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0.2);
+}
+.custom-toggler[aria-expanded="true"] .icon-bar:nth-child(3) {
+  transform: translateY(-11px) rotate(-45deg);
+  background: linear-gradient(90deg, #fff 60%, #ffe0e0 100%);
+}
+
+@media (max-width: 768px) {
+  .custom-toggler {
+    width: 32px;
+    height: 22px;
+  }
+  .custom-toggler .icon-bar {
+    height: 3px;
+  }
+}
+/* Saudação animada */
+.header-greeting {
+  font-size: 1.05rem;
+  letter-spacing: 0.5px;
+  animation: fadeDown 0.6s ease-out forwards;
+}
+
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Desenho do Menu Hambúrguer Customizado */
+.custom-toggler {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 32px;
+  height: 22px;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.custom-toggler .icon-bar {
+  width: 100%;
+  height: 3px;
+  background-color: #ffffff;
+  border-radius: 4px;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Animação para transformar em 'X' quando aberto */
+.custom-toggler[aria-expanded="true"] .icon-bar:nth-child(1) {
+  transform: translateY(9.5px) rotate(45deg);
+}
+
+.custom-toggler[aria-expanded="true"] .icon-bar:nth-child(2) {
+  opacity: 0;
+}
+
+.custom-toggler[aria-expanded="true"] .icon-bar:nth-child(3) {
+  transform: translateY(-9.5px) rotate(-45deg);
+}
 /* Variáveis de tema */
 :root {
   --bg-primary: #ffffff;
@@ -460,13 +584,224 @@ body {
   filter: invert(1);
 }
 
+/* ========================================
+   OFFCANVAS MODERNO - GLASSMORPHISM
+   ======================================== */
+
+.offcanvas {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.offcanvas-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+}
+
+.offcanvas-body {
+  padding: 1.5rem;
+}
+
+.offcanvas-body .list-unstyled li a,
+.offcanvas-body .list-unstyled li button {
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  color: var(--text-primary);
+}
+
+.offcanvas-body .list-unstyled li a:hover,
+.offcanvas-body .list-unstyled li button:hover {
+  background-color: rgba(13, 110, 253, 0.1);
+  transform: translateX(5px);
+  color: #0d6efd;
+}
+
 [data-theme="dark"] .offcanvas {
-  background-color: #141414;
+  background: rgba(20, 20, 20, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.5);
   color: #ffffff;
 }
 
 [data-theme="dark"] .offcanvas-header {
-  border-bottom-color: #2a2a2a;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .offcanvas-body .list-unstyled li a,
+[data-theme="dark"] .offcanvas-body .list-unstyled li button {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .offcanvas-body .list-unstyled li a:hover,
+[data-theme="dark"] .offcanvas-body .list-unstyled li button:hover {
+  background-color: rgba(25, 135, 84, 0.2);
+  color: #20c997;
+}
+
+/* ========================================
+   THEME SELECTOR - MINI CARDS
+   ======================================== */
+
+.theme-selector {
+  padding: 1rem;
+}
+
+.theme-card {
+  position: relative;
+  padding: 1.25rem;
+  border: 2px solid var(--border-color);
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--card-bg);
+  height: 100%;
+  overflow: hidden;
+}
+
+.theme-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(13, 110, 253, 0.05), rgba(102, 16, 242, 0.05));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.theme-card:hover {
+  border-color: #0d6efd;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(13, 110, 253, 0.2);
+}
+
+.theme-card:hover::before {
+  opacity: 1;
+}
+
+.theme-card.active {
+  border-color: #0d6efd;
+  border-width: 3px;
+  box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15),
+              0 8px 20px rgba(13, 110, 253, 0.25);
+  transform: translateY(-2px);
+}
+
+.theme-card.active::before {
+  background: linear-gradient(135deg, rgba(13, 110, 253, 0.08), rgba(102, 16, 242, 0.08));
+  opacity: 1;
+}
+
+.theme-check {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  color: #0d6efd;
+  font-size: 1.5rem;
+  z-index: 2;
+  animation: checkBounce 0.4s ease;
+}
+
+@keyframes checkBounce {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.theme-preview {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.preview-circle {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.theme-card:hover .preview-circle {
+  transform: scale(1.1);
+}
+
+.theme-card.active .preview-circle {
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+}
+
+.theme-info {
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  position: relative;
+  z-index: 1;
+}
+
+.theme-card.active .theme-info {
+  color: #0d6efd;
+}
+
+/* Dark mode para theme selector */
+[data-theme="dark"] .theme-card {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .theme-card::before {
+  background: linear-gradient(135deg, rgba(25, 135, 84, 0.1), rgba(32, 201, 151, 0.1));
+}
+
+[data-theme="dark"] .theme-card:hover {
+  border-color: #198754;
+  box-shadow: 0 8px 20px rgba(25, 135, 84, 0.3);
+}
+
+[data-theme="dark"] .theme-card.active {
+  border-color: #198754;
+  box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.2),
+              0 8px 20px rgba(25, 135, 84, 0.4);
+}
+
+[data-theme="dark"] .theme-check {
+  color: #20c997;
+}
+
+[data-theme="dark"] .theme-card.active .theme-info {
+  color: #20c997;
+}
+
+/* Responsivo */
+@media (max-width: 576px) {
+  .theme-card {
+    padding: 1rem;
+  }
+  
+  .preview-circle {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  
+  .theme-info {
+    font-size: 0.8rem;
+  }
+  
+  .theme-check {
+    font-size: 1.25rem;
+    top: 0.5rem;
+    right: 0.5rem;
+  }
 }
 
 [data-theme="dark"] .toast {
@@ -826,3 +1161,340 @@ body {
     height: 40px;
     font-size: 16px;
   }
+
+/* ========================================
+   ESTILOS DE ACESSIBILIDADE - DALTONISMO
+   ======================================== */
+
+/* PROTANOPIA - Deficiência de vermelho
+   Substituir verde/vermelho por azul/laranja */
+[data-daltonismo="protanopia"] {
+  --navbar-bg: #0066cc;
+  --cedro-primary: #0066cc;
+  --cedro-hover: #3399ff;
+  --cedro-dark: #004499;
+  --cedro-light: #66b3ff;
+}
+
+[data-daltonismo="protanopia"] .btn-primary,
+[data-daltonismo="protanopia"] .bg-primary {
+  background-color: #0066cc !important;
+  border-color: #0066cc !important;
+}
+
+[data-daltonismo="protanopia"] .btn-primary:hover {
+  background-color: #0052a3 !important;
+  border-color: #004499 !important;
+}
+
+[data-daltonismo="protanopia"] .btn-success,
+[data-daltonismo="protanopia"] .bg-success {
+  background-color: #0066cc !important;
+  border-color: #0066cc !important;
+}
+
+[data-daltonismo="protanopia"] .btn-danger,
+[data-daltonismo="protanopia"] .bg-danger {
+  background-color: #ff8800 !important;
+  border-color: #ff8800 !important;
+}
+
+[data-daltonismo="protanopia"] .text-success {
+  color: #0066cc !important;
+}
+
+[data-daltonismo="protanopia"] .text-danger {
+  color: #ff8800 !important;
+}
+
+[data-daltonismo="protanopia"] .alert-success {
+  background-color: #cce5ff !important;
+  border-color: #99ccff !important;
+  color: #004499 !important;
+}
+
+[data-daltonismo="protanopia"] .alert-danger {
+  background-color: #ffe5cc !important;
+  border-color: #ffcc99 !important;
+  color: #cc6600 !important;
+}
+
+[data-daltonismo="protanopia"] .navbar-dark {
+  background-color: #0066cc !important;
+}
+
+[data-daltonismo="protanopia"] .profile-avatar,
+[data-daltonismo="protanopia"] .profile-avatar-small {
+  background: linear-gradient(135deg, #0066cc 0%, #3399ff 100%) !important;
+}
+
+[data-daltonismo="protanopia"] .btn-outline-primary {
+  color: #0066cc !important;
+  border-color: #0066cc !important;
+}
+
+[data-daltonismo="protanopia"] .btn-outline-primary:hover {
+  background-color: #0066cc !important;
+  border-color: #0066cc !important;
+}
+
+/* DEUTERANOPIA - Deficiência de verde
+   Substituir verde/vermelho por azul/amarelo-laranja */
+[data-daltonismo="deuteranopia"] {
+  --navbar-bg: #0073e6;
+  --cedro-primary: #0073e6;
+  --cedro-hover: #4da6ff;
+  --cedro-dark: #0052a3;
+  --cedro-light: #80bfff;
+}
+
+[data-daltonismo="deuteranopia"] .btn-primary,
+[data-daltonismo="deuteranopia"] .bg-primary {
+  background-color: #0073e6 !important;
+  border-color: #0073e6 !important;
+}
+
+[data-daltonismo="deuteranopia"] .btn-primary:hover {
+  background-color: #005bb5 !important;
+  border-color: #0052a3 !important;
+}
+
+[data-daltonismo="deuteranopia"] .btn-success,
+[data-daltonismo="deuteranopia"] .bg-success {
+  background-color: #0073e6 !important;
+  border-color: #0073e6 !important;
+}
+
+[data-daltonismo="deuteranopia"] .btn-danger,
+[data-daltonismo="deuteranopia"] .bg-danger {
+  background-color: #ffaa00 !important;
+  border-color: #ffaa00 !important;
+}
+
+[data-daltonismo="deuteranopia"] .text-success {
+  color: #0073e6 !important;
+}
+
+[data-daltonismo="deuteranopia"] .text-danger {
+  color: #cc8800 !important;
+}
+
+[data-daltonismo="deuteranopia"] .alert-success {
+  background-color: #d1e7ff !important;
+  border-color: #a3d1ff !important;
+  color: #0052a3 !important;
+}
+
+[data-daltonismo="deuteranopia"] .alert-danger {
+  background-color: #fff0cc !important;
+  border-color: #ffe699 !important;
+  color: #996600 !important;
+}
+
+[data-daltonismo="deuteranopia"] .navbar-dark {
+  background-color: #0073e6 !important;
+}
+
+[data-daltonismo="deuteranopia"] .profile-avatar,
+[data-daltonismo="deuteranopia"] .profile-avatar-small {
+  background: linear-gradient(135deg, #0073e6 0%, #4da6ff 100%) !important;
+}
+
+[data-daltonismo="deuteranopia"] .btn-outline-primary {
+  color: #0073e6 !important;
+  border-color: #0073e6 !important;
+}
+
+[data-daltonismo="deuteranopia"] .btn-outline-primary:hover {
+  background-color: #0073e6 !important;
+  border-color: #0073e6 !important;
+}
+
+/* TRITANOPIA - Deficiência de azul
+   Substituir azul/amarelo por vermelho/ciano */
+[data-daltonismo="tritanopia"] {
+  --navbar-bg: #cc0066;
+  --cedro-primary: #cc0066;
+  --cedro-hover: #ff3399;
+  --cedro-dark: #990050;
+  --cedro-light: #ff66b3;
+}
+
+[data-daltonismo="tritanopia"] .btn-primary,
+[data-daltonismo="tritanopia"] .bg-primary {
+  background-color: #cc0066 !important;
+  border-color: #cc0066 !important;
+}
+
+[data-daltonismo="tritanopia"] .btn-primary:hover {
+  background-color: #a30052 !important;
+  border-color: #990050 !important;
+}
+
+[data-daltonismo="tritanopia"] .btn-success,
+[data-daltonismo="tritanopia"] .bg-success {
+  background-color: #00cccc !important;
+  border-color: #00cccc !important;
+}
+
+[data-daltonismo="tritanopia"] .btn-danger,
+[data-daltonismo="tritanopia"] .bg-danger {
+  background-color: #cc0066 !important;
+  border-color: #cc0066 !important;
+}
+
+[data-daltonismo="tritanopia"] .text-success {
+  color: #00aaaa !important;
+}
+
+[data-daltonismo="tritanopia"] .text-danger {
+  color: #cc0066 !important;
+}
+
+[data-daltonismo="tritanopia"] .alert-success {
+  background-color: #ccf5f5 !important;
+  border-color: #99ebeb !important;
+  color: #008080 !important;
+}
+
+[data-daltonismo="tritanopia"] .alert-danger {
+  background-color: #ffcce0 !important;
+  border-color: #ff99c2 !important;
+  color: #990050 !important;
+}
+
+[data-daltonismo="tritanopia"] .navbar-dark {
+  background-color: #cc0066 !important;
+}
+
+[data-daltonismo="tritanopia"] .profile-avatar,
+[data-daltonismo="tritanopia"] .profile-avatar-small {
+  background: linear-gradient(135deg, #cc0066 0%, #ff3399 100%) !important;
+}
+
+[data-daltonismo="tritanopia"] .btn-outline-primary {
+  color: #cc0066 !important;
+  border-color: #cc0066 !important;
+}
+
+[data-daltonismo="tritanopia"] .btn-outline-primary:hover {
+  background-color: #cc0066 !important;
+  border-color: #cc0066 !important;
+}
+
+/* Estilos adicionais para todos os tipos de daltonismo */
+[data-daltonismo="protanopia"] .progress-bar,
+[data-daltonismo="deuteranopia"] .progress-bar {
+  background-color: #0066cc !important;
+}
+
+[data-daltonismo="tritanopia"] .progress-bar {
+  background-color: #00cccc !important;
+}
+
+[data-daltonismo="protanopia"] .badge.bg-success,
+[data-daltonismo="deuteranopia"] .badge.bg-success {
+  background-color: #0066cc !important;
+}
+
+[data-daltonismo="tritanopia"] .badge.bg-success {
+  background-color: #00cccc !important;
+}
+
+[data-daltonismo="protanopia"] .badge.bg-danger,
+[data-daltonismo="deuteranopia"] .badge.bg-danger {
+  background-color: #ff8800 !important;
+}
+
+[data-daltonismo="tritanopia"] .badge.bg-danger {
+  background-color: #cc0066 !important;
+}
+
+/* Links e elementos interativos */
+[data-daltonismo="protanopia"] a,
+[data-daltonismo="deuteranopia"] a {
+  color: #0066cc !important;
+}
+
+[data-daltonismo="tritanopia"] a {
+  color: #cc0066 !important;
+}
+
+[data-daltonismo="protanopia"] a:hover,
+[data-daltonismo="deuteranopia"] a:hover {
+  color: #004499 !important;
+}
+
+[data-daltonismo="tritanopia"] a:hover {
+  color: #990050 !important;
+}
+
+/* Formulários com validação */
+[data-daltonismo="protanopia"] .form-control.is-valid,
+[data-daltonismo="deuteranopia"] .form-control.is-valid {
+  border-color: #0066cc !important;
+}
+
+[data-daltonismo="tritanopia"] .form-control.is-valid {
+  border-color: #00cccc !important;
+}
+
+[data-daltonismo="protanopia"] .form-control.is-invalid,
+[data-daltonismo="deuteranopia"] .form-control.is-invalid,
+[data-daltonismo="tritanopia"] .form-control.is-invalid {
+  border-color: #ff8800 !important;
+}
+
+[data-daltonismo="protanopia"] .valid-feedback,
+[data-daltonismo="deuteranopia"] .valid-feedback {
+  color: #0066cc !important;
+}
+
+[data-daltonismo="tritanopia"] .valid-feedback {
+  color: #00cccc !important;
+}
+
+[data-daltonismo="protanopia"] .invalid-feedback,
+[data-daltonismo="deuteranopia"] .invalid-feedback,
+[data-daltonismo="tritanopia"] .invalid-feedback {
+  color: #ff8800 !important;
+}
+
+/* Modo escuro com daltonismo */
+[data-theme="dark"][data-daltonismo="protanopia"] {
+  --navbar-bg: #004499;
+}
+
+[data-theme="dark"][data-daltonismo="deuteranopia"] {
+  --navbar-bg: #0052a3;
+}
+
+[data-theme="dark"][data-daltonismo="tritanopia"] {
+  --navbar-bg: #990050;
+}
+
+[data-theme="dark"][data-daltonismo="protanopia"] .btn-primary,
+[data-theme="dark"][data-daltonismo="deuteranopia"] .btn-primary {
+  background-color: #3399ff !important;
+  border-color: #3399ff !important;
+}
+
+[data-theme="dark"][data-daltonismo="tritanopia"] .btn-primary {
+  background-color: #ff3399 !important;
+  border-color: #ff3399 !important;
+}
+
+[data-theme="dark"][data-daltonismo="protanopia"] .text-success,
+[data-theme="dark"][data-daltonismo="deuteranopia"] .text-success {
+  color: #66b3ff !important;
+}
+
+[data-theme="dark"][data-daltonismo="tritanopia"] .text-success {
+  color: #66ffff !important;
+}
+
+[data-theme="dark"][data-daltonismo="protanopia"] .text-danger,
+[data-theme="dark"][data-daltonismo="deuteranopia"] .text-danger,
+[data-theme="dark"][data-daltonismo="tritanopia"] .text-danger {
+  color: #ffaa66 !important;
+}

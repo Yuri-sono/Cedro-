@@ -489,3 +489,55 @@ section {
         padding: 2rem;
     }
 }
+
+/* Custom Hamburger Menu */
+.navbar .custom-toggler {
+    padding: 6px 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(4px);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    width: 42px;
+    height: 38px;
+    cursor: pointer;
+}
+
+.navbar .custom-toggler:hover,
+.navbar .custom-toggler:focus {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.navbar-burger-line,
+.icon-bar {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background-color: #ffffff;
+    border-radius: 2px;
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.custom-toggler:hover .navbar-burger-line:nth-child(1),
+.custom-toggler:hover .icon-bar:nth-child(1) {
+    transform: translateY(-2px);
+    width: 26px;
+}
+
+.custom-toggler:hover .navbar-burger-line:nth-child(2),
+.custom-toggler:hover .icon-bar:nth-child(2) {
+    width: 18px;
+}
+
+.custom-toggler:hover .navbar-burger-line:nth-child(3),
+.custom-toggler:hover .icon-bar:nth-child(3) {
+    transform: translateY(2px);
+    width: 26px;
+}

@@ -1,22 +1,22 @@
-/* Cores Cedro - Tom Marrom/Terra */
+/* Cores Cedro - Tom Verde */
 :root {
-  --cedro-primary: #8B4513;
-  --cedro-hover: #A0522D;
-  --cedro-dark: #654321;
-  --cedro-light: #D2691E;
+  --cedro-primary: #198754;
+  --cedro-hover: #20c997;
+  --cedro-dark: #146c43;
+  --cedro-light: #75b798;
 }
 
 /* Efeito hover em cards */
 .card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(139, 69, 19, 0.2) !important;
+  box-shadow: 0 8px 25px rgba(25, 135, 84, 0.2) !important;
   border-color: var(--cedro-light);
   transition: all 0.3s ease;
 }
 
 /* Efeito hover em botões */
 .btn:hover {
-  box-shadow: 0 4px 15px rgba(139, 69, 19, 0.3);
+  box-shadow: 0 4px 15px rgba(25, 135, 84, 0.3);
   transition: all 0.3s ease;
 }
 
@@ -34,13 +34,13 @@ a:hover {
 
 /* Dropdown items hover */
 .dropdown-item:hover {
-  background: linear-gradient(90deg, rgba(139, 69, 19, 0.1), rgba(160, 82, 45, 0.1)) !important;
+  background: linear-gradient(90deg, rgba(25, 135, 84, 0.1), rgba(32, 201, 151, 0.1)) !important;
   color: var(--cedro-dark) !important;
   transition: all 0.3s ease;
 }
 
 [data-theme="dark"] .dropdown-item:hover {
-  background: linear-gradient(90deg, rgba(139, 69, 19, 0.3), rgba(160, 82, 45, 0.3)) !important;
+  background: linear-gradient(90deg, rgba(25, 135, 84, 0.3), rgba(32, 201, 151, 0.3)) !important;
   color: var(--cedro-light) !important;
 }
 
@@ -53,14 +53,14 @@ a:hover {
 /* Cards de psicólogos hover */
 .card.h-100:hover {
   border-color: var(--cedro-light) !important;
-  box-shadow: 0 10px 30px rgba(139, 69, 19, 0.25) !important;
+  box-shadow: 0 10px 30px rgba(25, 135, 84, 0.25) !important;
 }
 
-/* Input focus com borda marrom */
+/* Input focus com borda verde */
 .form-control:focus,
 .form-select:focus {
   border-color: var(--cedro-hover) !important;
-  box-shadow: 0 0 0 0.2rem rgba(139, 69, 19, 0.25) !important;
+  box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25) !important;
 }
 
 /* Badges hover */
@@ -71,12 +71,12 @@ a:hover {
 
 /* Tabela hover */
 .table tbody tr:hover {
-  background-color: rgba(139, 69, 19, 0.05) !important;
+  background-color: rgba(25, 135, 84, 0.05) !important;
   transition: background-color 0.3s ease;
 }
 
 [data-theme="dark"] .table tbody tr:hover {
-  background-color: rgba(139, 69, 19, 0.15) !important;
+  background-color: rgba(25, 135, 84, 0.15) !important;
 }
 
 /* Botões de ação hover */
@@ -84,41 +84,41 @@ a:hover {
 .btn-success:hover,
 .btn-info:hover {
   filter: brightness(1.1);
-  box-shadow: 0 4px 15px rgba(139, 69, 19, 0.3);
+  box-shadow: 0 4px 15px rgba(25, 135, 84, 0.3);
   transition: all 0.3s ease;
 }
 
 /* Profile avatar hover */
 .profile-avatar:hover {
-  box-shadow: 0 8px 25px rgba(139, 69, 19, 0.4) !important;
+  box-shadow: 0 8px 25px rgba(25, 135, 84, 0.4) !important;
 }
 
 /* Stat cards hover */
 .stat-card:hover {
   border-color: var(--cedro-light) !important;
-  box-shadow: 0 8px 25px rgba(139, 69, 19, 0.2) !important;
+  box-shadow: 0 8px 25px rgba(25, 135, 84, 0.2) !important;
 }
 
 /* List group items hover */
 .list-group-item:hover {
-  background-color: rgba(139, 69, 19, 0.05) !important;
+  background-color: rgba(25, 135, 84, 0.05) !important;
   border-color: var(--cedro-light) !important;
   transition: all 0.3s ease;
 }
 
 [data-theme="dark"] .list-group-item:hover {
-  background-color: rgba(139, 69, 19, 0.15) !important;
+  background-color: rgba(25, 135, 84, 0.15) !important;
 }
 
 /* Pagination hover */
 .pagination .page-link:hover {
-  background-color: rgba(139, 69, 19, 0.1) !important;
+  background-color: rgba(25, 135, 84, 0.1) !important;
   border-color: var(--cedro-hover) !important;
   color: var(--cedro-dark) !important;
 }
 
 [data-theme="dark"] .pagination .page-link:hover {
-  background-color: rgba(139, 69, 19, 0.2) !important;
+  background-color: rgba(25, 135, 84, 0.2) !important;
   color: var(--cedro-light) !important;
 }
 
@@ -130,12 +130,12 @@ a:hover {
 
 /* Accordion hover */
 .accordion-button:hover {
-  background-color: rgba(139, 69, 19, 0.05) !important;
+  background-color: rgba(25, 135, 84, 0.05) !important;
   color: var(--cedro-dark) !important;
 }
 
 [data-theme="dark"] .accordion-button:hover {
-  background-color: rgba(139, 69, 19, 0.15) !important;
+  background-color: rgba(25, 135, 84, 0.15) !important;
   color: var(--cedro-light) !important;
 }
 
@@ -148,5 +148,5 @@ i:hover {
 /* Botão de voltar ao topo hover */
 .back-to-top:hover {
   background-color: var(--cedro-hover) !important;
-  box-shadow: 0 6px 20px rgba(139, 69, 19, 0.4) !important;
+  box-shadow: 0 6px 20px rgba(25, 135, 84, 0.4) !important;
 }
