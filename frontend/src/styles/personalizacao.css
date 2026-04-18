@@ -1,0 +1,87 @@
+@import url('https://fonts.cdnfonts.com/css/opendyslexic');
+
+/* Fonte para dislexia globalmente quando ativado */
+[data-font="dislexia"], [data-font="dislexia"] * {
+    font-family: 'OpenDyslexic', sans-serif !important;
+}
+
+/* Daltonismo Filters via CSS variables or SVG filters (opcional), ou classes especificas */
+/* Para simular cores de daltonismo nós estamos mudando variaveis de CSS globais, ou aplicando filtros na página inteira */
+
+[data-daltonismo="acromatopsia"] {
+    filter: grayscale(100%);
+}
+
+[data-daltonismo="tritanopia"] {
+    /* Tritanopia simulate filter (blue-yellow) */
+    filter: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg"><filter id="tritanopia"><feColorMatrix type="matrix" values="0.95 0.05 0 0 0 0 0.433 0.567 0 0 0 0.475 0.525 0 0 0 0 0 1 0"/></filter></svg>#tritanopia');
+}
+
+[data-daltonismo="deuteranopia"] {
+    /* Deuteranopia simulate filter (green-blind) */
+    filter: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg"><filter id="deuteranopia"><feColorMatrix type="matrix" values="0.625 0.375 0 0 0 0.7 0.3 0 0 0 0 0.3 0.7 0 0 0 0 0 1 0"/></filter></svg>#deuteranopia');
+}
+
+[data-daltonismo="protanopia"] {
+    /* Protanopia simulate filter (red-blind) */
+    filter: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg"><filter id="protanopia"><feColorMatrix type="matrix" values="0.567 0.433 0 0 0 0.558 0.442 0 0 0 0 0.242 0.758 0 0 0 0 0 1 0"/></filter></svg>#protanopia');
+}
+
+/* Estilos do menu de personalização */
+.custom-radio-theme {
+    display: flex;
+    align-items: center;
+}
+
+.custom-radio-theme .form-check-input {
+    margin-top: 0;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.custom-radio-theme .form-check-label {
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.swatches-container {
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.swatch {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    border-radius: 2px;
+}
+
+.accordion-item.bg-transparent {
+    background-color: transparent !important;
+}
+
+.accordion-button.bg-transparent {
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+
+.accordion-button:not(.collapsed) {
+    color: var(--text-primary);
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Hover effects */
+.custom-radio-theme:hover {
+    background-color: var(--bs-secondary-bg);
+    border-radius: 4px;
+}
+
+.custom-switch-theme .form-check-input:checked {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+[data-theme="dark"] .custom-radio-theme:hover {
+    background-color: #2a2a2a;
+}

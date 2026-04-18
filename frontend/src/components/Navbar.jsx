@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import PersonalizacaoMenu from './PersonalizacaoMenu.jsx';
 
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
@@ -69,10 +70,18 @@ const Navbar = () => {
             <li className="mb-2"><a className="d-block p-2" href="/#servicos" onClick={closeMenu}>Serviços</a></li>
             <li className="mb-2"><Link className="d-block p-2" to="/psicologos" onClick={closeMenu}>Psicólogos</Link></li>
             <li className="mb-2"><a className="d-block p-2" href="/#contato" onClick={closeMenu}>Contato</a></li>
+            <li className="mb-2"><Link className="d-block p-2" to="/saude-mental" onClick={closeMenu}>
+              <i className="bi bi-heart-pulse me-2 text-danger"></i>Saúde Mental
+            </Link></li>
+            <li className="mb-2"><Link className="d-block p-2" to="/relaxar" onClick={closeMenu}>
+              <i className="bi bi-controller me-2 text-info"></i>Passatempos
+            </Link></li>
             <li className="mb-2"><Link className="d-block p-2" to="/premium" onClick={closeMenu}>
               <i className="bi bi-star-fill text-warning me-2"></i>Premium
             </Link></li>
           </ul>
+
+          <PersonalizacaoMenu />
 
           <hr />
 

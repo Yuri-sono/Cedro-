@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
@@ -14,7 +14,6 @@ import './styles/theme.css';
 import './styles/notifications.css';
 import './styles/cedro-colors.css';
 
-import ThemeToggle from './components/ThemeToggle.jsx';
 import NotificationSystem from './components/NotificationSystem.jsx';
 
 import Home from './pages/Home.jsx';
@@ -51,12 +50,34 @@ const Chat = lazy(() => import('./pages/Chat.jsx'));
 const Premium = lazy(() => import('./pages/Premium.jsx'));
 const PagamentoSessao = lazy(() => import('./pages/PagamentoSessao.jsx'));
 const AdBanner = lazy(() => import('./components/AdBanner.jsx'));
+const JogosRelaxamento = lazy(() => import('./pages/JogosRelaxamento.jsx'));
+const CursorGlow = lazy(() => import('./components/CursorGlow.jsx'));
+const SaudeMental = lazy(() => import('./pages/SaudeMental.jsx'));
 
 function AppContent() {
   const location = useLocation();
   const isPsicologoRoute = location.pathname.startsWith('/psicologo/');
   const isAdminRoute = location.pathname.startsWith('/admin/');
   const shouldShowNavbar = !isPsicologoRoute && !isAdminRoute;
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    const savedColorMode = localStorage.getItem('colorMode');
+    const savedDyslexiaFont = localStorage.getItem('dyslexiaFont');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+
+    if (savedColorMode && savedColorMode !== 'padrao') {
+      document.documentElement.setAttribute('data-daltonismo', savedColorMode);
+    }
+
+    if (savedDyslexiaFont === 'true') {
+      document.documentElement.setAttribute('data-font', 'dislexia');
+    }
+  }, []);
 
   return (
     <div className="App">
@@ -156,14 +177,16 @@ function AppContent() {
               <PagamentoSessao />
             </ProtectedRoute>
           } />
+          <Route path="/relaxar" element={<JogosRelaxamento />} />
+          <Route path="/saude-mental" element={<SaudeMental />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Footer />
         <BackToTop />
         <EmergencyButton />
-        <ThemeToggle />
         <NotificationSystem />
         <AdBanner />
+        <CursorGlow />
       </Suspense>
     </div>
   );

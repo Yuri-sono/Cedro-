@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import PersonalizacaoMenu from './PersonalizacaoMenu.jsx';
 
 const NavbarPsicologo = ({ psicologo }) => {
   const navigate = useNavigate();
@@ -60,9 +61,14 @@ const NavbarPsicologo = ({ psicologo }) => {
             <p className="mb-0 fw-bold">{psicologo?.nome || 'Psicólogo'}</p>
           </div>
 
+          <PersonalizacaoMenu />
+
           <ul className="list-unstyled">
             <li className="mb-2"><Link className="d-block p-2" to="/psicologo/perfil" onClick={closeMenu}>
               <i className="bi bi-person-circle me-2"></i>Meu Perfil
+            </Link></li>
+            <li className="mb-2"><Link className="d-block p-2" to="/relaxar" onClick={closeMenu}>
+              <i className="bi bi-controller me-2 text-info"></i>Passatempos
             </Link></li>
             <li className="mb-2"><Link className="d-block p-2" to="/psicologo/configuracoes" onClick={closeMenu}>
               <i className="bi bi-gear me-2"></i>Configurações
