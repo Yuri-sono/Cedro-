@@ -55,7 +55,8 @@ public class SecurityConfig {
             "http://localhost:3000",
             "http://localhost:5173",
             "http://localhost:5174",
-            "https://cedro-eight.vercel.app"
+            "https://cedro-eight.vercel.app",
+            "https://cedro-blush.vercel.app"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
