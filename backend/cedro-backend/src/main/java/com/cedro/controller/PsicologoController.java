@@ -27,7 +27,21 @@ public class PsicologoController {
 
     @GetMapping
     public ResponseEntity<?> listarPsicologos() {
-        return ResponseEntity.ok(usuarioRepository.findByTipoUsuarioAndAtivo(TipoUsuario.psicologo, true));
+        var psicologos = usuarioRepository.findByTipoUsuarioAndAtivo(TipoUsuario.psicologo, true);
+        // SEGURANÇA: Retornar apenas dados públicos, não o entity completo
+        var dtos = psicologos.stream().map(p -> {
+            java.util.Map<String, Object> dto = new java.util.LinkedHashMap<>();
+            dto.put("id", p.getId());
+            dto.put("nome", p.getNome());
+            dto.put("especialidade", p.getEspecialidade());
+            dto.put("bio", p.getBio());
+            dto.put("precoSessao", p.getPrecoSessao());
+            dto.put("avaliacao", p.getAvaliacao());
+            dto.put("fotoUrl", p.getFotoUrl());
+            // Não expor: email, telefone, senhaHash, dataCriacao, ativo
+            return dto;
+        }).collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/{id}")

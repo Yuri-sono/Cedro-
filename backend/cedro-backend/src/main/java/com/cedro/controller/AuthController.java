@@ -34,15 +34,18 @@ public class AuthController {
     
     @PostMapping("/google")
     public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> request) {
-        String email = request.get("email");
-        String nome = request.get("nome");
+        String idToken = request.get("credential");
         
-        if (email == null || nome == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Faltam dados"));
+        if (idToken == null || idToken.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Token do Google não fornecido"));
         }
         
-        LoginResponse response = authService.googleLogin(email, nome);
-        return ResponseEntity.ok(response);
+        try {
+            LoginResponse response = authService.googleLoginWithToken(idToken);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
     
     @GetMapping("/health")

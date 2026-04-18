@@ -24,9 +24,11 @@ const Navbar = () => {
             <span className="fw-bold fs-4">CEDRO</span>
           </Link>
           <div className="d-flex align-items-center ms-auto">
-            <span className="header-greeting d-none d-md-block me-4 fw-medium text-white">
-              Olá, {user?.nome || 'Usuário'}
-            </span>
+            {isAuthenticated && (
+              <span className="header-greeting d-none d-md-block me-4 fw-medium text-white">
+                Olá, {user?.nome || 'Usuário'}
+              </span>
+            )}
             <button 
               className="navbar-toggler custom-toggler border-0 shadow-none" 
               type="button" 

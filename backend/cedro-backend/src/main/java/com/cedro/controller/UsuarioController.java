@@ -59,9 +59,11 @@ public class UsuarioController {
         return usuarioRepository.findById(id)
                 .map(usuario -> {
                     if (dados.get("nome") != null) usuario.setNome((String) dados.get("nome"));
-                    if (dados.get("email") != null) usuario.setEmail((String) dados.get("email"));
+                    // SEGURANÇA: Não permitir alteração de email via este endpoint
+                    // Alteração de email requer fluxo de verificação específico
                     if (dados.get("telefone") != null) usuario.setTelefone((String) dados.get("telefone"));
                     if (dados.get("especialidade") != null) usuario.setEspecialidade((String) dados.get("especialidade"));
+                    if (dados.get("crp") != null) usuario.setCrp((String) dados.get("crp"));
                     if (dados.get("bio") != null) usuario.setBio((String) dados.get("bio"));
                     if (dados.get("genero") != null) usuario.setGenero((String) dados.get("genero"));
                     if (dados.get("precoSessao") != null)

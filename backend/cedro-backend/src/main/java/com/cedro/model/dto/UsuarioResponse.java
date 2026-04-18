@@ -28,6 +28,8 @@ public class UsuarioResponse {
     
     private String especialidade;
     
+    private String crp;
+    
     @JsonProperty("precoSessao")
     private BigDecimal precoSessao;
     
@@ -35,7 +37,7 @@ public class UsuarioResponse {
     
     public UsuarioResponse(Integer id, String nome, String email, TipoUsuario tipoUsuario,
                           String telefone, LocalDate dataNascimento, String genero, 
-                          String endereco, String bio, String fotoUrl, String especialidade, BigDecimal precoSessao) {
+                          String endereco, String bio, String fotoUrl, String especialidade, String crp, BigDecimal precoSessao) {
         this.id = id;
         this.nome = nome;
         this.email = email;
@@ -47,6 +49,7 @@ public class UsuarioResponse {
         this.bio = bio;
         this.fotoUrl = fotoUrl;
         this.especialidade = especialidade;
+        this.crp = crp;
         this.precoSessao = precoSessao;
     }
     
@@ -82,6 +85,9 @@ public class UsuarioResponse {
     
     public String getEspecialidade() { return especialidade; }
     public void setEspecialidade(String especialidade) { this.especialidade = especialidade; }
+    
+    public String getCrp() { return crp; }
+    public void setCrp(String crp) { this.crp = crp; }
     
     public BigDecimal getPrecoSessao() { return precoSessao; }
     public void setPrecoSessao(BigDecimal precoSessao) { this.precoSessao = precoSessao; }

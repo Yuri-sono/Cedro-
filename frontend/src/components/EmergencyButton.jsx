@@ -2,7 +2,9 @@ import React from 'react';
 
 const EmergencyButton = () => {
   const handleEmergencyCall = () => {
-    window.location.href = 'tel:11951193385';
+    if (window.confirm('Deseja ligar para o Cedro - (11) 95119-3385?\n\nEm caso de emergência, ligue 188 (CVV).')) {
+      window.location.href = 'tel:11951193385';
+    }
   };
 
   return (

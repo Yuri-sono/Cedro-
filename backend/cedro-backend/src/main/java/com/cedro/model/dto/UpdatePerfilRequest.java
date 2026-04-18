@@ -15,6 +15,7 @@ public class UpdatePerfilRequest {
     private String endereco;
     private String bio;
     private String especialidade;
+    private String crp;
     
     @JsonProperty("precoSessao")
     private BigDecimal precoSessao;
@@ -39,6 +40,9 @@ public class UpdatePerfilRequest {
     
     public String getEspecialidade() { return especialidade; }
     public void setEspecialidade(String especialidade) { this.especialidade = especialidade; }
+    
+    public String getCrp() { return crp; }
+    public void setCrp(String crp) { this.crp = crp; }
     
     public BigDecimal getPrecoSessao() { return precoSessao; }
     public void setPrecoSessao(BigDecimal precoSessao) { this.precoSessao = precoSessao; }

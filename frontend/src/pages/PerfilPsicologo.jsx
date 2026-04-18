@@ -12,7 +12,7 @@ const PerfilPsicologo = () => {
   const [editando, setEditando] = useState(false);
   const [psicologo, setPsicologo] = useState({
     nome: '', email: '', telefone: '', dataNascimento: '',
-    especialidade: '', precoSessao: '', bio: '', fotoUrl: ''
+    especialidade: '', crp: '', precoSessao: '', bio: '', fotoUrl: ''
   });
 
   useEffect(() => {
@@ -24,6 +24,7 @@ const PerfilPsicologo = () => {
       telefone: user.telefone || '',
       dataNascimento: dataNasc,
       especialidade: user.especialidade || '',
+      crp: user.crp || '',
       precoSessao: user.precoSessao || '',
       bio: user.bio || '',
       fotoUrl: user.fotoUrl || ''
@@ -164,7 +165,7 @@ const PerfilPsicologo = () => {
                 </div>
 
                 <div className="row">
-                  <div className="col-md-6 mb-3">
+                  <div className="col-md-4 mb-3">
                     <label className="form-label">Especialidade</label>
                     <input
                       type="text"
@@ -175,7 +176,18 @@ const PerfilPsicologo = () => {
                       disabled={!editando}
                     />
                   </div>
-                  <div className="col-md-6 mb-3">
+                  <div className="col-md-4 mb-3">
+                    <label className="form-label">CRP</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="crp"
+                      value={psicologo.crp}
+                      onChange={handleChange}
+                      disabled={!editando}
+                    />
+                  </div>
+                  <div className="col-md-4 mb-3">
                     <label className="form-label">Preço da Sessão (R$)</label>
                     <input
                       type="number"

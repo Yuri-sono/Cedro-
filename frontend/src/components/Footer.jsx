@@ -39,7 +39,7 @@ const Footer = () => {
           <div className="col-lg-3 col-md-6">
             <h5 className="fw-bold mb-3">Newsletter</h5>
             <p>Receba dicas de saúde mental e novidades sobre nossos serviços.</p>
-            <form className="mt-3">
+            <form className="mt-3" onSubmit={(e) => { e.preventDefault(); alert('Inscrição realizada com sucesso! Você receberá nossas novidades por email.'); e.target.reset(); }}>
               <div className="input-group mb-3">
                 <input type="email" className="form-control" placeholder="Seu email" required />
                 <button className="btn btn-primary" type="submit">Inscrever</button>
@@ -52,7 +52,7 @@ const Footer = () => {
         
         <div className="row">
           <div className="col-md-6 mb-3 mb-md-0">
-            <p className="mb-0">&copy; 2023 Cedro. Todos os direitos reservados.</p>
+            <p className="mb-0">&copy; {new Date().getFullYear()} Cedro. Todos os direitos reservados.</p>
           </div>
           <div className="col-md-6 text-md-end">
             <Link to="/termos-uso" className="text-white text-decoration-none me-3">Termos de Uso</Link>

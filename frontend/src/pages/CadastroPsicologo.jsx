@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import API_BASE_URL from '../config.js';
+import api from '../services/api.js';
 
 const CadastroPsicologo = () => {
   const [formData, setFormData] = useState({
@@ -73,7 +72,7 @@ const CadastroPsicologo = () => {
       if (formData.especialidade) payload.especialidade = formData.especialidade;
       if (formData.preco_sessao) payload.precoSessao = parseFloat(formData.preco_sessao);
       
-      await axios.post(`${API_BASE_URL}/api/auth/register`, payload);
+      await api.post('/api/auth/register', payload);
       alert('Cadastro realizado com sucesso!');
       navigate('/login-psicologo');
     } catch (error) {

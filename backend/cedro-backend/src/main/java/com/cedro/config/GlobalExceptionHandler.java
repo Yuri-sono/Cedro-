@@ -25,7 +25,23 @@ public class GlobalExceptionHandler {
     
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
-        return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
+        // SEGURANÇA: Não vazar detalhes internos do sistema
+        String message = ex.getMessage();
+        // Mensagens conhecidas/intencionais podem ser retornadas
+        if (message != null && (
+                message.contains("Email") || 
+                message.contains("Senha") || 
+                message.contains("senha") ||
+                message.contains("encontrado") || 
+                message.contains("incorreto") ||
+                message.contains("em uso") ||
+                message.contains("Google") ||
+                message.contains("psicólogo") ||
+                message.contains("Acesso"))) {
+            return ResponseEntity.badRequest().body(Map.of("error", message));
+        }
+        // Mensagens desconhecidas: retornar erro genérico
+        return ResponseEntity.badRequest().body(Map.of("error", "Erro ao processar sua solicitação"));
     }
     
     @ExceptionHandler(Exception.class)

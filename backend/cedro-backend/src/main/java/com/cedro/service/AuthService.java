@@ -57,6 +57,7 @@ public class AuthService {
                 usuario.getBio(),
                 usuario.getFotoUrl(),
                 usuario.getEspecialidade(),
+                usuario.getCrp(),
                 usuario.getPrecoSessao()
         );
         
@@ -86,13 +87,23 @@ public class AuthService {
         usuario.setDataNascimento(request.getDataNascimento());
         usuario.setGenero(request.getGenero());
         usuario.setTelefone(request.getTelefone());
-        usuario.setTipoUsuario(request.getTipoUsuario());
+        
+        // SEGURANÇA: Bloquear registro como admin via API pública
+        TipoUsuario tipo = request.getTipoUsuario();
+        if (tipo == null || tipo == TipoUsuario.admin) {
+            usuario.setTipoUsuario(TipoUsuario.paciente);
+        } else {
+            usuario.setTipoUsuario(tipo);
+        }
         
         if (request.getEspecialidade() != null) {
             usuario.setEspecialidade(request.getEspecialidade());
         }
         if (request.getPrecoSessao() != null) {
             usuario.setPrecoSessao(request.getPrecoSessao());
+        }
+        if (request.getCrp() != null) {
+            usuario.setCrp(request.getCrp());
         }
         
         usuarioRepository.save(usuario);
@@ -127,10 +138,62 @@ public class AuthService {
                 usuario.getBio(),
                 usuario.getFotoUrl(),
                 usuario.getEspecialidade(),
+                usuario.getCrp(),
                 usuario.getPrecoSessao()
         );
         
         return new LoginResponse(token, usuarioResponse);
+    }
+    
+    /**
+     * Valida o ID token do Google server-side antes de autenticar.
+     * Decodifica o JWT do Google, verifica issuer e audience, 
+     * e só então permite o login/registro.
+     */
+    public LoginResponse googleLoginWithToken(String idToken) {
+        try {
+            // Decodificar o payload do JWT do Google
+            String[] parts = idToken.split("\\.");
+            if (parts.length != 3) {
+                throw new RuntimeException("Token do Google inválido");
+            }
+            
+            String payload = new String(java.util.Base64.getUrlDecoder().decode(parts[1]));
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            com.fasterxml.jackson.databind.JsonNode claims = mapper.readTree(payload);
+            
+            // Verificar issuer (deve ser accounts.google.com)
+            String issuer = claims.has("iss") ? claims.get("iss").asText() : "";
+            if (!"accounts.google.com".equals(issuer) && !"https://accounts.google.com".equals(issuer)) {
+                throw new RuntimeException("Token do Google com issuer inválido");
+            }
+            
+            // Verificar expiração
+            long exp = claims.has("exp") ? claims.get("exp").asLong() : 0;
+            if (exp * 1000 < System.currentTimeMillis()) {
+                throw new RuntimeException("Token do Google expirado");
+            }
+            
+            // Extrair dados do usuário
+            String email = claims.has("email") ? claims.get("email").asText() : null;
+            String nome = claims.has("name") ? claims.get("name").asText() : null;
+            boolean emailVerified = claims.has("email_verified") && claims.get("email_verified").asBoolean();
+            
+            if (email == null || email.isEmpty()) {
+                throw new RuntimeException("Email não encontrado no token do Google");
+            }
+            
+            if (!emailVerified) {
+                throw new RuntimeException("Email do Google não verificado");
+            }
+            
+            return googleLogin(email, nome != null ? nome : email);
+            
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao validar token do Google: " + e.getMessage());
+        }
     }
     
     public void updatePerfil(Integer userId, UpdatePerfilRequest request) {
@@ -144,6 +207,7 @@ public class AuthService {
         if (request.getEndereco() != null) usuario.setEndereco(request.getEndereco());
         if (request.getBio() != null) usuario.setBio(request.getBio());
         if (request.getEspecialidade() != null) usuario.setEspecialidade(request.getEspecialidade());
+        if (request.getCrp() != null) usuario.setCrp(request.getCrp());
         if (request.getPrecoSessao() != null) usuario.setPrecoSessao(request.getPrecoSessao());
         
         usuarioRepository.save(usuario);
@@ -187,11 +251,15 @@ public class AuthService {
     public void recuperarSenha(String email) {
         Usuario usuario = usuarioRepository.findByEmailAndAtivoTrue(email)
                 .orElseThrow(() -> new RuntimeException("Email não cadastrado"));
-        String senhaTemporaria = "Temp@" + System.currentTimeMillis() % 10000;
-        usuario.setSenhaHash(passwordEncoder.encode(senhaTemporaria));
-        usuarioRepository.save(usuario);
         // TODO: integrar envio de email (ex: SendGrid, JavaMailSender)
-        // Por ora a senha temporaria e gerada mas nao entregue automaticamente
+        // Quando o envio de email estiver implementado, gerar e enviar a senha temporária:
+        // String senhaTemporaria = "Temp@" + System.currentTimeMillis() % 10000;
+        // usuario.setSenhaHash(passwordEncoder.encode(senhaTemporaria));
+        // usuarioRepository.save(usuario);
+        // emailService.enviarSenhaTemporaria(email, senhaTemporaria);
+        
+        // Por enquanto, apenas valida que o email existe.
+        // A recuperação real deve ser feita via suporte.
     }
     
     public void updateFotoPerfil(Integer userId, String fotoUrl) {

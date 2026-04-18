@@ -56,6 +56,9 @@ public class Usuario {
     @Size(max = 100)
     private String especialidade;
     
+    @Size(max = 20)
+    private String crp;
+    
     @Column(name = "preco_sessao", precision = 10, scale = 2)
     private BigDecimal precoSessao;
     
@@ -111,6 +114,9 @@ public class Usuario {
     
     public String getEspecialidade() { return especialidade; }
     public void setEspecialidade(String especialidade) { this.especialidade = especialidade; }
+    
+    public String getCrp() { return crp; }
+    public void setCrp(String crp) { this.crp = crp; }
     
     public BigDecimal getPrecoSessao() { return precoSessao; }
     public void setPrecoSessao(BigDecimal precoSessao) { this.precoSessao = precoSessao; }

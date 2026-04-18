@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const Contato = () => {
   return (
@@ -60,7 +61,11 @@ const Contato = () => {
                   Envie uma Mensagem
                 </h3>
                 
-                <form>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  alert('Mensagem enviada com sucesso! Entraremos em contato em breve.');
+                  e.target.reset();
+                }}>
                   <div className="mb-3">
                     <label htmlFor="nome" className="form-label">Nome Completo</label>
                     <input type="text" className="form-control" id="nome" required />
@@ -120,10 +125,10 @@ const Contato = () => {
                   <i className="bi bi-ambulance me-2"></i>
                   SAMU - 192
                 </a>
-                <a href="/chat-emergencia" className="btn btn-info">
+                <Link to="/chat-emergencia" className="btn btn-info">
                   <i className="bi bi-chat-heart me-2"></i>
                   Chat de Emergência
-                </a>
+                </Link>
               </div>
             </div>
           </div>

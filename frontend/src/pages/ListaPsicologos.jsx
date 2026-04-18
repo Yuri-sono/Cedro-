@@ -1,21 +1,34 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import psicologoService from '../services/psicologoService';
 
 function ListaPsicologos() {
   const [psicologos, setPsicologos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMsg, setLoadingMsg] = useState('Carregando psicólogos...');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchPsicologos();
   }, []);
 
+  useEffect(() => {
+    if (!loading) return;
+    const timer = setTimeout(() => {
+      setLoadingMsg('O servidor está iniciando, por favor aguarde...');
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [loading]);
+
   const fetchPsicologos = async () => {
     try {
+      setError('');
       const data = await psicologoService.listar();
       setPsicologos(data);
     } catch (error) {
       console.error('Erro ao buscar psicólogos:', error);
-      alert('Erro ao conectar com o servidor');
+      setError('Erro ao conectar com o servidor. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -25,10 +38,10 @@ function ListaPsicologos() {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
     if (!usuario.id) {
       alert('Faça login para agendar uma sessão');
-      window.location.href = '/login';
+      navigate('/login');
       return;
     }
-    window.location.href = `/agendar-sessao/${psicologoId}`;
+    navigate(`/agendar-sessao/${psicologoId}`);
   };
 
   if (loading) {
@@ -37,6 +50,7 @@ function ListaPsicologos() {
         <div className="spinner-border" role="status">
           <span className="visually-hidden">Carregando...</span>
         </div>
+        <p className="mt-3 text-muted">{loadingMsg}</p>
       </div>
     );
   }
@@ -47,6 +61,20 @@ function ListaPsicologos() {
         <h1 className="fw-bold mb-3">Nossos Psicólogos</h1>
         <p className="lead text-muted">Encontre o profissional ideal para você</p>
       </div>
+
+      {error && (
+        <div className="text-center py-4">
+          <div className="alert alert-danger d-inline-block">
+            <i className="bi bi-exclamation-triangle me-2"></i>
+            {error}
+          </div>
+          <div className="mt-3">
+            <button className="btn btn-primary" onClick={() => { setLoading(true); setError(''); fetchPsicologos(); }}>
+              <i className="bi bi-arrow-clockwise me-2"></i>Tentar novamente
+            </button>
+          </div>
+        </div>
+      )}
       
       <div className="row g-4">
         {psicologos.map(psicologo => (
@@ -127,7 +155,7 @@ function ListaPsicologos() {
         ))}
       </div>
       
-      {psicologos.length === 0 && (
+      {!error && psicologos.length === 0 && (
         <div className="text-center py-5">
           <div className="mb-4">
             <i className="bi bi-person-x fs-1 text-muted"></i>

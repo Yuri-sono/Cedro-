@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
-import axios from 'axios';
+import api from '../services/api.js';
 import API_BASE_URL from '../config.js';
 
 function Login() {
@@ -11,6 +11,8 @@ function Login() {
   });
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [senhaValidacao, setSenhaValidacao] = useState({
     minLength: false,
     hasNumber: false,
@@ -46,8 +48,13 @@ function Login() {
 
     script.onload = () => {
       if (window.google) {
+        const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+        if (!clientId || clientId === 'seu_google_client_id_aqui') {
+          console.warn('VITE_GOOGLE_CLIENT_ID não configurado. Login com Google desabilitado.');
+          return;
+        }
         window.google.accounts.id.initialize({
-          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+          client_id: clientId,
           callback: handleGoogleLogin
         });
         
@@ -59,34 +66,37 @@ function Login() {
     };
 
     return () => {
-      document.body.removeChild(script);
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
     };
   }, []);
 
   const handleGoogleLogin = async (response) => {
+    setErrorMsg('');
     try {
-      const decoded = JSON.parse(atob(response.credential.split('.')[1]));
-      
-      const res = await axios.post(`${API_BASE_URL}/api/auth/google`, {
-        email: decoded.email,
-        nome: decoded.name,
-        foto_url: decoded.picture
+      // SEGURANÇA: Enviar o token inteiro para validação server-side
+      // O backend decodifica e valida o token do Google
+      const res = await api.post('/api/auth/google', {
+        credential: response.credential
       });
       
       login(res.data.usuario, res.data.token);
       navigate('/');
     } catch (error) {
       console.error('Erro no login Google:', error);
-      alert('Deu ruim no login com Google');
+      setErrorMsg(error.response?.data?.error || 'Erro ao fazer login com Google. Tente novamente.');
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMsg('');
+    setSuccessMsg('');
     
     if (!isLogin) {
       if (!senhaValidacao.minLength || !senhaValidacao.hasNumber || !senhaValidacao.hasSpecial) {
-        alert('Senha fraca demais');
+        setErrorMsg('A senha não atende aos requisitos mínimos de segurança.');
         return;
       }
     }
@@ -104,19 +114,19 @@ function Login() {
         genero: formData.genero,
         tipoUsuario: 'paciente'
       };
-      const response = await axios.post(`${API_BASE_URL}${endpoint}`, dataToSend);
+      const response = await api.post(endpoint, dataToSend);
       
       if (isLogin) {
         login(response.data.usuario, response.data.token);
         navigate('/');
       } else {
-        alert('Conta criada!');
+        setSuccessMsg('Conta criada com sucesso! Faça login para continuar.');
         setIsLogin(true);
       }
     } catch (error) {
       console.error('Erro:', error);
-      const errorMessage = error.response?.data?.error || 'Algo deu errado';
-      alert(errorMessage);
+      const errorMessage = error.response?.data?.error || 'Erro ao processar sua solicitação. Tente novamente.';
+      setErrorMsg(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -134,6 +144,22 @@ function Login() {
                   <h2 className="fw-bold mt-3">{isLogin ? 'Olá novamente' : 'Criar conta'}</h2>
                   <p className="text-muted">{isLogin ? 'Faça login' : 'Cadastre-se'}</p>
                 </div>
+                
+                {errorMsg && (
+                  <div className="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                    {errorMsg}
+                    <button type="button" className="btn-close" onClick={() => setErrorMsg('')}></button>
+                  </div>
+                )}
+                
+                {successMsg && (
+                  <div className="alert alert-success alert-dismissible fade show" role="alert">
+                    <i className="bi bi-check-circle-fill me-2"></i>
+                    {successMsg}
+                    <button type="button" className="btn-close" onClick={() => setSuccessMsg('')}></button>
+                  </div>
+                )}
                 
                 <form onSubmit={handleSubmit}>
                   {!isLogin && (
@@ -276,7 +302,7 @@ function Login() {
                   <div>
                     <button
                       className="btn btn-link text-decoration-none"
-                      onClick={() => setIsLogin(!isLogin)}
+                      onClick={() => { setIsLogin(!isLogin); setErrorMsg(''); setSuccessMsg(''); }}
                     >
                       {isLogin ? 'Não tem conta? Cadastre-se' : 'Já tem conta? Faça login'}
                     </button>
@@ -292,7 +318,7 @@ function Login() {
                           <button type="button" className="btn-close" onClick={() => setShowRecuperarSenha(false)}></button>
                         </div>
                         <div className="modal-body">
-                          <p className="text-muted">Informe seu email pra gente te ajudar.</p>
+                          <p className="text-muted">Informe seu email para receber instruções de recuperação.</p>
                           <input
                             type="email"
                             className="form-control"
@@ -308,12 +334,13 @@ function Login() {
                             className="btn btn-primary"
                             onClick={async () => {
                               try {
-                                await axios.post(`${API_BASE_URL}/api/auth/recuperar-senha`, { email: emailRecuperacao });
-                                alert('Senha temporária gerada! Fala com o suporte.');
+                                await api.post('/api/auth/recuperar-senha', { email: emailRecuperacao });
+                                alert('Instruções de recuperação enviadas! Verifique seu email ou entre em contato com o suporte.');
                                 setShowRecuperarSenha(false);
                                 setEmailRecuperacao('');
                               } catch (error) {
-                                alert('Email não encontrado');
+                                setErrorMsg(error.response?.data?.error || 'Email não encontrado');
+                                setShowRecuperarSenha(false);
                               }
                             }}
                           >

@@ -345,7 +345,7 @@ const Perfil = () => {
                         const value = e.target.value;
                         setNovaSenha(value);
                         setSenhaValidacao({
-                          minLength: value.length >= 5,
+                          minLength: value.length >= 6,
                           hasNumber: /\d/.test(value),
                           hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(value)
                         });
@@ -354,7 +354,7 @@ const Perfil = () => {
                     {novaSenha && (
                       <div className="mt-1">
                         <small className={senhaValidacao.minLength ? 'text-success' : 'text-danger'}>
-                          <i className={`bi bi-${senhaValidacao.minLength ? 'check-circle-fill' : 'x-circle-fill'}`}></i> 5+ caracteres
+                          <i className={`bi bi-${senhaValidacao.minLength ? 'check-circle-fill' : 'x-circle-fill'}`}></i> 6+ caracteres
                         </small>{' '}
                         <small className={senhaValidacao.hasNumber ? 'text-success' : 'text-danger'}>
                           <i className={`bi bi-${senhaValidacao.hasNumber ? 'check-circle-fill' : 'x-circle-fill'}`}></i> 1 número

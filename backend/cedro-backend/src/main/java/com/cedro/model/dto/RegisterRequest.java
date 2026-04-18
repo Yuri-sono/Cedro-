@@ -33,6 +33,8 @@ public class RegisterRequest {
     
     private String especialidade;
     
+    private String crp;
+    
     @JsonProperty("precoSessao")
     private java.math.BigDecimal precoSessao;
     
@@ -61,6 +63,9 @@ public class RegisterRequest {
     
     public String getEspecialidade() { return especialidade; }
     public void setEspecialidade(String especialidade) { this.especialidade = especialidade; }
+    
+    public String getCrp() { return crp; }
+    public void setCrp(String crp) { this.crp = crp; }
     
     public java.math.BigDecimal getPrecoSessao() { return precoSessao; }
     public void setPrecoSessao(java.math.BigDecimal precoSessao) { this.precoSessao = precoSessao; }

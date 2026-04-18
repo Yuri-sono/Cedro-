@@ -41,6 +41,7 @@ CREATE TABLE usuarios (
     bio TEXT,
     tipo_usuario VARCHAR(20) NOT NULL DEFAULT 'paciente', -- 'paciente', 'psicologo', 'admin'
     especialidade VARCHAR(100), -- Apenas para psicólogos
+    crp VARCHAR(20), -- Apenas para psicólogos
     preco_sessao DECIMAL(10,2), -- Apenas para psicólogos
     avaliacao DECIMAL(3,2) DEFAULT 5.0, -- Apenas para psicólogos
     foto_url VARCHAR(255),
