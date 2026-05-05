@@ -20,7 +20,14 @@ const TesteReflexo = () => {
     }, delay);
   };
 
-  const handleClick = () => {
+  const handleClick = (e) => {
+    // Anti-cheat: verifica se o clique foi feito por um usuário real e não via script
+    if (e && !e.isTrusted) {
+      alert("⚠️ Trapaça detectada: O uso de scripts não é permitido!");
+      setGameState('idle');
+      return;
+    }
+
     if (gameState === 'idle' || gameState === 'result' || gameState === 'too-early') {
       startGame();
     } else if (gameState === 'waiting') {
@@ -28,7 +35,17 @@ const TesteReflexo = () => {
       setGameState('too-early');
     } else if (gameState === 'ready') {
       const endTime = Date.now();
-      setReactionTime(endTime - startTime);
+      const time = endTime - startTime;
+      
+      // Anti-cheat: Limite físico humano (recorde mundial é ~100ms).
+      // Menos de 50ms é matematicamente impossível para um humano, indicando bot/script.
+      if (time < 50) {
+        alert(`⚠️ Trapaça detectada: Tempo de ${time}ms é humanamente impossível!`);
+        setGameState('idle');
+        return;
+      }
+
+      setReactionTime(time);
       setGameState('result');
     }
   };

@@ -153,7 +153,7 @@ const Home = () => {
       <section id="recursos" className="py-5" style={{ background: 'var(--bg-primary)' }}>
         <div className="container py-5">
           <div className="row align-items-center g-5">
-            <div className="col-lg-5 animate-on-scroll">
+            <div className="col-lg-6 animate-on-scroll">
               <h6 className="text-success fw-bold text-uppercase mb-2">Recursos Gratuitos</h6>
               <h2 className="display-5 fw-bold mb-4">Informação e acolhimento à sua disposição</h2>
               <p className="lead text-muted mb-4">
@@ -161,7 +161,7 @@ const Home = () => {
               </p>
               
               <Link to="/saude-mental" className="feature-card d-flex align-items-center p-4 mb-3 text-decoration-none border">
-                <div className="bg-danger bg-opacity-10 text-danger p-3 rounded-circle me-4 fs-3">
+                <div className="bg-danger bg-opacity-10 text-danger p-3 rounded-circle me-4 fs-3 flex-shrink-0">
                   <i className="bi bi-heart-pulse-fill"></i>
                 </div>
                 <div>
@@ -172,7 +172,7 @@ const Home = () => {
               </Link>
 
               <Link to="/autoavaliacoes" className="feature-card d-flex align-items-center p-4 text-decoration-none border">
-                <div className="bg-primary bg-opacity-10 text-primary p-3 rounded-circle me-4 fs-3">
+                <div className="bg-primary bg-opacity-10 text-primary p-3 rounded-circle me-4 fs-3 flex-shrink-0">
                   <i className="bi bi-clipboard2-pulse-fill"></i>
                 </div>
                 <div>
@@ -183,7 +183,7 @@ const Home = () => {
               </Link>
             </div>
             
-            <div className="col-lg-7 animate-on-scroll">
+            <div className="col-lg-6 animate-on-scroll">
               <div className="highlight-banner text-center">
                 <i className="bi bi-controller fs-1 mb-3 d-block"></i>
                 <h2 className="fw-bold mb-3">Precisa relaxar a mente agora?</h2>

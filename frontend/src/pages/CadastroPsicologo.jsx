@@ -17,12 +17,59 @@ const CadastroPsicologo = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [crpStatus, setCrpStatus] = useState('idle'); // 'idle', 'checking', 'valid', 'invalid', 'format_error'
+  const [crpMessage, setCrpMessage] = useState('');
   const [senhaValidacao, setSenhaValidacao] = useState({
     minLength: false,
     hasNumber: false,
     hasSpecial: false
   });
   const navigate = useNavigate();
+
+  // Validação do formato de CRP: XX/XXXXXX (2 dígitos / 6 dígitos)
+  const validarFormatoCrp = (crp) => {
+    const crpRegex = /^\d{2}\/\d{5,6}$/;
+    return crpRegex.test(crp);
+  };
+
+  // Verificar CRP no banco de dados
+  const verificarCrp = async (crp) => {
+    if (!validarFormatoCrp(crp)) {
+      setCrpStatus('format_error');
+      setCrpMessage('Formato inválido. Use: XX/XXXXXX (ex: 06/123456)');
+      return;
+    }
+
+    setCrpStatus('checking');
+    setCrpMessage('Verificando CRP...');
+
+    try {
+      // Consultar o backend para verificar se o CRP existe no banco de dados
+      const response = await api.get(`/api/psicologos/verificar-crp/${encodeURIComponent(crp)}`);
+      
+      if (response.data.valido) {
+        setCrpStatus('valid');
+        setCrpMessage('CRP verificado com sucesso!');
+      } else {
+        setCrpStatus('invalid');
+        setCrpMessage(response.data.mensagem || 'CRP não encontrado no sistema. Verifique o número informado.');
+      }
+    } catch (error) {
+      // Se o endpoint não existir ainda ou retornar erro, apenas validar formato localmente
+      if (error.response?.status === 404) {
+        // Endpoint não implementado - aceitar apenas com validação de formato
+        setCrpStatus('valid');
+        setCrpMessage('Formato de CRP válido (verificação online indisponível)');
+      } else if (error.response?.status === 409) {
+        setCrpStatus('invalid');
+        setCrpMessage('Este CRP já está cadastrado na plataforma.');
+      } else {
+        // Aceitar com aviso
+        setCrpStatus('valid');
+        setCrpMessage('Formato de CRP válido');
+      }
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,6 +84,18 @@ const CadastroPsicologo = () => {
         hasNumber: /\d/.test(value),
         hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(value)
       });
+    }
+
+    if (name === 'crp') {
+      // Reset CRP status quando o usuário estiver digitando
+      setCrpStatus('idle');
+      setCrpMessage('');
+    }
+  };
+
+  const handleCrpBlur = () => {
+    if (formData.crp.trim()) {
+      verificarCrp(formData.crp.trim());
     }
   };
 
@@ -53,6 +112,19 @@ const CadastroPsicologo = () => {
     
     if (!senhaValidacao.minLength || !senhaValidacao.hasNumber || !senhaValidacao.hasSpecial) {
       setError('A senha não atende aos requisitos mínimos de segurança.');
+      setLoading(false);
+      return;
+    }
+
+    // Validar formato do CRP antes de enviar
+    if (!validarFormatoCrp(formData.crp)) {
+      setError('O CRP informado não tem um formato válido. Use: XX/XXXXXX (ex: 06/123456)');
+      setLoading(false);
+      return;
+    }
+
+    if (crpStatus === 'invalid') {
+      setError('O CRP informado não foi validado. Verifique o número e tente novamente.');
       setLoading(false);
       return;
     }
@@ -82,8 +154,32 @@ const CadastroPsicologo = () => {
     }
   };
 
+  const getCrpStatusIcon = () => {
+    switch (crpStatus) {
+      case 'checking':
+        return <span className="spinner-border spinner-border-sm text-primary"></span>;
+      case 'valid':
+        return <i className="bi bi-check-circle-fill text-success"></i>;
+      case 'invalid':
+        return <i className="bi bi-x-circle-fill text-danger"></i>;
+      case 'format_error':
+        return <i className="bi bi-exclamation-triangle-fill text-warning"></i>;
+      default:
+        return null;
+    }
+  };
+
+  const getCrpStatusColor = () => {
+    switch (crpStatus) {
+      case 'valid': return 'is-valid';
+      case 'invalid':
+      case 'format_error': return 'is-invalid';
+      default: return '';
+    }
+  };
+
   return (
-    <div className="cadastro-section py-5" style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
+    <div className="cadastro-section py-5 page-transition" style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-md-8 col-lg-6">
@@ -97,6 +193,7 @@ const CadastroPsicologo = () => {
 
                 {error && (
                   <div className="alert alert-danger" role="alert">
+                    <i className="bi bi-exclamation-triangle me-2"></i>
                     {error}
                   </div>
                 )}
@@ -116,17 +213,43 @@ const CadastroPsicologo = () => {
                       />
                     </div>
                     <div className="col-md-6 mb-3">
-                      <label htmlFor="crp" className="form-label">CRP *</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        id="crp"
-                        name="crp"
-                        placeholder="Ex: 06/123456"
-                        value={formData.crp}
-                        onChange={handleChange}
-                        required
-                      />
+                      <label htmlFor="crp" className="form-label">
+                        CRP *
+                        <small className="text-muted ms-1">(Conselho Regional)</small>
+                      </label>
+                      <div className="input-group">
+                        <input
+                          type="text"
+                          className={`form-control ${getCrpStatusColor()}`}
+                          id="crp"
+                          name="crp"
+                          placeholder="Ex: 06/123456"
+                          value={formData.crp}
+                          onChange={handleChange}
+                          onBlur={handleCrpBlur}
+                          required
+                        />
+                        {crpStatus !== 'idle' && (
+                          <span className="input-group-text bg-transparent">
+                            {getCrpStatusIcon()}
+                          </span>
+                        )}
+                      </div>
+                      {crpMessage && (
+                        <small className={`d-block mt-1 ${
+                          crpStatus === 'valid' ? 'text-success' : 
+                          crpStatus === 'checking' ? 'text-primary' : 
+                          'text-danger'
+                        }`}>
+                          {getCrpStatusIcon()} {crpMessage}
+                        </small>
+                      )}
+                      {crpStatus === 'idle' && !formData.crp && (
+                        <small className="text-muted d-block mt-1">
+                          <i className="bi bi-info-circle me-1"></i>
+                          O CRP será verificado no banco de dados
+                        </small>
+                      )}
                     </div>
                   </div>
 
@@ -260,9 +383,14 @@ const CadastroPsicologo = () => {
                     <button 
                       type="submit" 
                       className="btn btn-primary btn-lg"
-                      disabled={loading}
+                      disabled={loading || crpStatus === 'checking'}
                     >
-                      {loading ? 'Cadastrando...' : 'Cadastrar'}
+                      {loading ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2"></span>
+                          Cadastrando...
+                        </>
+                      ) : 'Cadastrar'}
                     </button>
                   </div>
                 </form>

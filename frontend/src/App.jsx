@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
+import PageTransition from './components/PageTransition.jsx';
 import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
 import BackToTop from './components/BackToTop.jsx';
@@ -13,6 +14,7 @@ import './styles/navbar-spacing.css';
 import './styles/theme.css';
 import './styles/notifications.css';
 import './styles/cedro-colors.css';
+import './styles/page-transitions.css';
 
 import NotificationSystem from './components/NotificationSystem.jsx';
 
@@ -54,6 +56,19 @@ const JogosRelaxamento = lazy(() => import('./pages/JogosRelaxamento.jsx'));
 const CursorGlow = lazy(() => import('./components/CursorGlow.jsx'));
 const SaudeMental = lazy(() => import('./pages/SaudeMental.jsx'));
 
+/**
+ * Wrapper que re-monta o PageTransition em cada mudança de rota,
+ * garantindo que a animação de entrada seja disparada.
+ */
+function AnimatedRoute({ children }) {
+  const location = useLocation();
+  return (
+    <PageTransition key={location.pathname}>
+      {children}
+    </PageTransition>
+  );
+}
+
 function AppContent() {
   const location = useLocation();
   const isPsicologoRoute = location.pathname.startsWith('/psicologo/');
@@ -83,104 +98,106 @@ function AppContent() {
     <div className="App">
       {shouldShowNavbar && <Navbar />}
       <Suspense fallback={<LoadingSpinner />}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/chat-emergencia" element={<ChatEmergencia />} />
-          <Route path="/contato" element={<Contato />} />
-          <Route path="/atendimento-online" element={<AtendimentoOnline />} />
-          <Route path="/perfil" element={
-            <ProtectedRoute>
-              <Perfil />
-            </ProtectedRoute>
-          } />
-          <Route path="/login" element={<Login />} />
-          <Route path="/psicologos" element={<ListaPsicologos />} />
-          <Route path="/cadastro-psicologo" element={<CadastroPsicologo />} />
-          <Route path="/login-psicologo" element={<LoginPsicologo />} />
-          <Route path="/psicologo/dashboard" element={
-            <ProtectedRoute requiredUserType="psicologo">
-              <DashboardPsicologo />
-            </ProtectedRoute>
-          } />
-          <Route path="/psicologo/agenda" element={
-            <ProtectedRoute requiredUserType="psicologo">
-              <AgendaPsicologo />
-            </ProtectedRoute>
-          } />
-          <Route path="/psicologo/pacientes" element={
-            <ProtectedRoute requiredUserType="psicologo">
-              <PacientesPsicologo />
-            </ProtectedRoute>
-          } />
-          <Route path="/psicologo/consultas" element={
-            <ProtectedRoute requiredUserType="psicologo">
-              <ConsultasPsicologo />
-            </ProtectedRoute>
-          } />
-          <Route path="/psicologo/financeiro" element={
-            <ProtectedRoute requiredUserType="psicologo">
-              <FinanceiroPsicologo />
-            </ProtectedRoute>
-          } />
-          <Route path="/psicologo/perfil" element={
-            <ProtectedRoute requiredUserType="psicologo">
-              <PerfilPsicologo />
-            </ProtectedRoute>
-          } />
-          <Route path="/psicologo/configuracoes" element={
-            <ProtectedRoute requiredUserType="psicologo">
-              <ConfiguracoesPsicologo />
-            </ProtectedRoute>
-          } />
-          <Route path="/psicologo/estatisticas" element={
-            <ProtectedRoute requiredUserType="psicologo">
-              <EstatisticasPsicologo />
-            </ProtectedRoute>
-          } />
-          <Route path="/termos-uso" element={<TermosUso />} />
-          <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} />
-          <Route path="/autoavaliacoes" element={<Autoavaliacoes />} />
-          <Route path="/admin/login" element={<LoginAdmin />} />
-          <Route path="/admin/dashboard" element={
-            <ProtectedRoute requiredUserType="admin">
-              <DashboardAdmin />
-            </ProtectedRoute>
-          } />
-          <Route path="/admin/usuarios" element={
-            <ProtectedRoute requiredUserType="admin">
-              <AdminUsuarios />
-            </ProtectedRoute>
-          } />
-          <Route path="/admin/sessoes" element={
-            <ProtectedRoute requiredUserType="admin">
-              <AdminSessoes />
-            </ProtectedRoute>
-          } />
-          <Route path="/minhas-sessoes" element={
-            <ProtectedRoute>
-              <MinhasSessoes />
-            </ProtectedRoute>
-          } />
-          <Route path="/agendar-sessao/:psicologoId" element={
-            <ProtectedRoute>
-              <AgendarSessao />
-            </ProtectedRoute>
-          } />
-          <Route path="/chat/:userId" element={
-            <ProtectedRoute>
-              <Chat />
-            </ProtectedRoute>
-          } />
-          <Route path="/premium" element={<Premium />} />
-          <Route path="/pagamento/sessao/:sessaoId" element={
-            <ProtectedRoute>
-              <PagamentoSessao />
-            </ProtectedRoute>
-          } />
-          <Route path="/relaxar" element={<JogosRelaxamento />} />
-          <Route path="/saude-mental" element={<SaudeMental />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AnimatedRoute>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/chat-emergencia" element={<ChatEmergencia />} />
+            <Route path="/contato" element={<Contato />} />
+            <Route path="/atendimento-online" element={<AtendimentoOnline />} />
+            <Route path="/perfil" element={
+              <ProtectedRoute>
+                <Perfil />
+              </ProtectedRoute>
+            } />
+            <Route path="/login" element={<Login />} />
+            <Route path="/psicologos" element={<ListaPsicologos />} />
+            <Route path="/cadastro-psicologo" element={<CadastroPsicologo />} />
+            <Route path="/login-psicologo" element={<LoginPsicologo />} />
+            <Route path="/psicologo/dashboard" element={
+              <ProtectedRoute requiredUserType="psicologo">
+                <DashboardPsicologo />
+              </ProtectedRoute>
+            } />
+            <Route path="/psicologo/agenda" element={
+              <ProtectedRoute requiredUserType="psicologo">
+                <AgendaPsicologo />
+              </ProtectedRoute>
+            } />
+            <Route path="/psicologo/pacientes" element={
+              <ProtectedRoute requiredUserType="psicologo">
+                <PacientesPsicologo />
+              </ProtectedRoute>
+            } />
+            <Route path="/psicologo/consultas" element={
+              <ProtectedRoute requiredUserType="psicologo">
+                <ConsultasPsicologo />
+              </ProtectedRoute>
+            } />
+            <Route path="/psicologo/financeiro" element={
+              <ProtectedRoute requiredUserType="psicologo">
+                <FinanceiroPsicologo />
+              </ProtectedRoute>
+            } />
+            <Route path="/psicologo/perfil" element={
+              <ProtectedRoute requiredUserType="psicologo">
+                <PerfilPsicologo />
+              </ProtectedRoute>
+            } />
+            <Route path="/psicologo/configuracoes" element={
+              <ProtectedRoute requiredUserType="psicologo">
+                <ConfiguracoesPsicologo />
+              </ProtectedRoute>
+            } />
+            <Route path="/psicologo/estatisticas" element={
+              <ProtectedRoute requiredUserType="psicologo">
+                <EstatisticasPsicologo />
+              </ProtectedRoute>
+            } />
+            <Route path="/termos-uso" element={<TermosUso />} />
+            <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} />
+            <Route path="/autoavaliacoes" element={<Autoavaliacoes />} />
+            <Route path="/admin/login" element={<LoginAdmin />} />
+            <Route path="/admin/dashboard" element={
+              <ProtectedRoute requiredUserType="admin">
+                <DashboardAdmin />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/usuarios" element={
+              <ProtectedRoute requiredUserType="admin">
+                <AdminUsuarios />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/sessoes" element={
+              <ProtectedRoute requiredUserType="admin">
+                <AdminSessoes />
+              </ProtectedRoute>
+            } />
+            <Route path="/minhas-sessoes" element={
+              <ProtectedRoute>
+                <MinhasSessoes />
+              </ProtectedRoute>
+            } />
+            <Route path="/agendar-sessao/:psicologoId" element={
+              <ProtectedRoute>
+                <AgendarSessao />
+              </ProtectedRoute>
+            } />
+            <Route path="/chat/:userId" element={
+              <ProtectedRoute>
+                <Chat />
+              </ProtectedRoute>
+            } />
+            <Route path="/premium" element={<Premium />} />
+            <Route path="/pagamento/sessao/:sessaoId" element={
+              <ProtectedRoute>
+                <PagamentoSessao />
+              </ProtectedRoute>
+            } />
+            <Route path="/relaxar" element={<JogosRelaxamento />} />
+            <Route path="/saude-mental" element={<SaudeMental />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AnimatedRoute>
         <Footer />
         <BackToTop />
         <EmergencyButton />

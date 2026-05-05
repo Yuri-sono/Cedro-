@@ -13,9 +13,12 @@ const ChatEmergencia = () => {
   const [currentStep, setCurrentStep] = useState('menu');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   };
 
   useEffect(() => {
@@ -155,7 +158,7 @@ const ChatEmergencia = () => {
               </div>
               
               <div className="card-body p-0 chat-body">
-                <div className="chat-container p-4">
+                <div className="chat-container p-4" ref={chatContainerRef}>
                   {messages.map(message => (
                     <div key={message.id} className={`d-flex mb-4 ${message.isUser ? 'justify-content-end' : 'justify-content-start'}`}>
                       {!message.isUser && (

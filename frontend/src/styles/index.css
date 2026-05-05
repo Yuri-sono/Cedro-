@@ -297,152 +297,140 @@ section {
     font-size: 1.5rem;
 }
 
-/* Login e Cadastro Styles */
-.login-section, .cadastro-section {
-    background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+/* Login e Cadastro Premium Layout */
+.login-page-wrapper {
+    display: flex;
     min-height: 100vh;
+    background-color: var(--light-color);
 }
 
-[data-theme="dark"] .login-section,
-[data-theme="dark"] .cadastro-section {
-    background: linear-gradient(135deg, #0a0a0a 0%, #111111 100%);
+[data-theme="dark"] .login-page-wrapper {
+    background-color: #0a0a0a;
 }
 
-.login-section .card, .cadastro-section .card {
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    border: none;
+.login-side-image {
+    flex: 1.2;
+    position: relative;
+    background: url('/images/login-bg.png') center/cover no-repeat;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
 }
 
-[data-theme="dark"] .login-section .card,
-[data-theme="dark"] .cadastro-section .card {
-    background-color: #141414;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-    border: 1px solid #2a2a2a;
+.login-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(46, 125, 50, 0.2) 0%, rgba(27, 94, 32, 0.7) 100%);
+    z-index: 1;
 }
 
-.login-section .card-body, .cadastro-section .card-body {
-    padding: 3rem;
+.login-brand-content {
+    position: relative;
+    z-index: 2;
+    padding: 3.5rem;
+    max-width: 650px;
+    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+    transform: translateY(0);
+    transition: transform 0.3s ease;
 }
 
-[data-theme="dark"] .login-section .card-body,
-[data-theme="dark"] .cadastro-section .card-body {
-    background-color: #141414;
-    color: #ffffff;
+.login-brand-content:hover {
+    transform: translateY(-5px);
 }
 
-.login-section .form-control, .cadastro-section .form-control {
-    border-radius: 10px;
-    border: 2px solid #e9ecef;
-    padding: 12px 15px;
+.login-side-form {
+    flex: 1;
+    background: #ffffff;
+    box-shadow: -15px 0 40px rgba(0,0,0,0.08);
+    z-index: 3;
+}
+
+[data-theme="dark"] .login-side-form {
+    background: #141414;
+    box-shadow: -15px 0 40px rgba(0,0,0,0.5);
+    border-left: 1px solid #2a2a2a;
+}
+
+.login-form-container {
+    animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Form Controls and Buttons */
+.login-page-wrapper .form-control, .login-page-wrapper .form-select {
+    border-radius: 12px;
+    border: 2px solid #eef0f2;
+    padding: 14px 18px;
+    background-color: #f8f9fa;
     transition: all 0.3s ease;
+    font-size: 1rem;
 }
 
-.login-section .form-control:focus, .cadastro-section .form-control:focus {
+.login-page-wrapper .form-control:focus, .login-page-wrapper .form-select:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(46, 125, 50, 0.25);
+    background-color: #ffffff;
+    box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.1);
 }
 
-[data-theme="dark"] .login-section .form-control,
-[data-theme="dark"] .cadastro-section .form-control {
+[data-theme="dark"] .login-page-wrapper .form-control,
+[data-theme="dark"] .login-page-wrapper .form-select {
     background-color: #1a1a1a;
-    border-color: #333333;
+    border-color: #2a2a2a;
     color: #ffffff;
 }
 
-[data-theme="dark"] .login-section .form-control:focus,
-[data-theme="dark"] .cadastro-section .form-control:focus {
+[data-theme="dark"] .login-page-wrapper .form-control:focus,
+[data-theme="dark"] .login-page-wrapper .form-select:focus {
     background-color: #1a1a1a;
     border-color: #198754;
-    color: #ffffff;
-    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.4);
+    box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.2);
 }
 
-[data-theme="dark"] .login-section .form-control::placeholder,
-[data-theme="dark"] .cadastro-section .form-control::placeholder {
+[data-theme="dark"] .login-page-wrapper .form-control::placeholder {
     color: #888888;
 }
 
-[data-theme="dark"] .login-section .form-select,
-[data-theme="dark"] .cadastro-section .form-select {
-    background-color: #1a1a1a;
-    border-color: #333333;
-    color: #ffffff;
-}
-
-[data-theme="dark"] .login-section .form-select:focus,
-[data-theme="dark"] .cadastro-section .form-select:focus {
-    background-color: #1a1a1a;
-    border-color: #198754;
-    color: #ffffff;
-    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.4);
-}
-
-.login-section .btn-primary, .cadastro-section .btn-primary {
-    background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+.login-page-wrapper .btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
     border: none;
-    border-radius: 10px;
-    padding: 12px;
-    font-weight: 500;
-    transition: all 0.3s ease;
+    border-radius: 12px;
+    padding: 14px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 8px 20px rgba(46, 125, 50, 0.25);
 }
 
-.login-section .btn-primary:hover, .cadastro-section .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3);
+.login-page-wrapper .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px rgba(46, 125, 50, 0.35);
 }
 
-.login-section .btn-outline-success {
-    border-radius: 10px;
-    border: 2px solid var(--accent-color);
-    color: var(--accent-color);
-}
-
-.login-section .btn-outline-success:hover {
-    background-color: var(--accent-color);
-    border-color: var(--accent-color);
-}
-
-[data-theme="dark"] .login-section .btn-outline-success,
-[data-theme="dark"] .cadastro-section .btn-outline-success {
-    border-color: #20c997;
-    color: #20c997;
-}
-
-[data-theme="dark"] .login-section .btn-outline-success:hover,
-[data-theme="dark"] .cadastro-section .btn-outline-success:hover {
-    background-color: #20c997;
-    border-color: #20c997;
-    color: #0a0a0a;
-}
-
-[data-theme="dark"] .login-section .btn-outline-secondary,
-[data-theme="dark"] .cadastro-section .btn-outline-secondary {
-    border-color: #cccccc;
-    color: #cccccc;
-}
-
-[data-theme="dark"] .login-section .btn-outline-secondary:hover,
-[data-theme="dark"] .cadastro-section .btn-outline-secondary:hover {
-    background-color: #cccccc;
-    border-color: #cccccc;
-    color: #0a0a0a;
-}
-
-[data-theme="dark"] .login-section .bg-light,
-[data-theme="dark"] .cadastro-section .bg-light {
-    background-color: #1a1a1a !important;
-    border: 1px solid #2a2a2a;
-}
-
-[data-theme="dark"] .login-section hr,
-[data-theme="dark"] .cadastro-section hr {
+[data-theme="dark"] .login-page-wrapper hr {
     border-color: #2a2a2a;
 }
 
-[data-theme="dark"] .login-section .bg-white,
-[data-theme="dark"] .cadastro-section .bg-white {
+[data-theme="dark"] .login-page-wrapper .bg-white {
     background-color: #141414 !important;
+}
+
+.login-page-wrapper .btn-outline-secondary {
+    border-radius: 10px;
+    padding: 10px 20px;
 }
 
 /* Admin Dashboard Styles */

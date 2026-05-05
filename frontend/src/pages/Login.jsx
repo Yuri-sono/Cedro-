@@ -40,13 +40,20 @@ function Login() {
   };
 
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    document.body.appendChild(script);
+    const loadGoogleScript = () => {
+      if (window.google) return;
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
 
-    script.onload = () => {
+      script.onload = () => {
+        initializeGoogle();
+      };
+    };
+
+    const initializeGoogle = () => {
       if (window.google) {
         const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
         if (!clientId || clientId === 'seu_google_client_id_aqui') {
@@ -57,20 +64,33 @@ function Login() {
           client_id: clientId,
           callback: handleGoogleLogin
         });
-        
-        window.google.accounts.id.renderButton(
-          document.getElementById('googleSignInButton'),
-          { theme: 'outline', size: 'large', width: '100%', text: 'continue_with' }
-        );
+        renderGoogleButton();
       }
     };
 
-    return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-    };
+    loadGoogleScript();
+    
+    // Initialize if script was already loaded
+    if (window.google) {
+      initializeGoogle();
+    }
   }, []);
+
+  const renderGoogleButton = () => {
+    if (window.google && isLogin) {
+      const btnContainer = document.getElementById('googleSignInButton');
+      if (btnContainer) {
+        window.google.accounts.id.renderButton(
+          btnContainer,
+          { theme: 'outline', size: 'large', text: 'continue_with' }
+        );
+      }
+    }
+  };
+
+  useEffect(() => {
+    renderGoogleButton();
+  }, [isLogin]);
 
   const handleGoogleLogin = async (response) => {
     setErrorMsg('');
@@ -133,17 +153,25 @@ function Login() {
   };
 
   return (
-    <div className="login-section py-5">
-      <div className="container">
-        <div className="row justify-content-center">
-          <div className="col-md-6 col-lg-5">
-            <div className="card">
-              <div className="card-body">
-                <div className="text-center mb-4">
-                  <i className="bi bi-heart-pulse text-primary" style={{ fontSize: '3rem' }}></i>
-                  <h2 className="fw-bold mt-3">{isLogin ? 'Olá novamente' : 'Criar conta'}</h2>
-                  <p className="text-muted">{isLogin ? 'Faça login' : 'Cadastre-se'}</p>
-                </div>
+    <div className="login-page-wrapper">
+      {/* Lado Esquerdo - Imagem e Branding */}
+      <div className="login-side-image d-none d-lg-flex">
+        <div className="login-overlay"></div>
+        <div className="login-brand-content text-white text-center">
+          <i className="bi bi-heart-pulse-fill" style={{ fontSize: '4.5rem', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.3))' }}></i>
+          <h1 className="fw-bold mt-4 mb-3" style={{ fontSize: '3.5rem', letterSpacing: '-1px', textShadow: '0 4px 15px rgba(0,0,0,0.3)' }}>Cedro</h1>
+          <p className="lead fw-light" style={{ fontSize: '1.25rem', opacity: 0.9, textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>Seu espaço seguro e acolhedor<br/>para o cuidado emocional.</p>
+        </div>
+      </div>
+      
+      {/* Lado Direito - Formulário */}
+      <div className="login-side-form d-flex align-items-center justify-content-center w-100">
+        <div className="login-form-container w-100" style={{ maxWidth: '480px', padding: '2rem' }}>
+          <div className="text-center mb-5">
+            <i className="bi bi-heart-pulse text-primary d-lg-none mb-3" style={{ fontSize: '3rem' }}></i>
+            <h2 className="fw-bold mb-2" style={{ letterSpacing: '-0.5px' }}>{isLogin ? 'Bem-vindo de volta' : 'Crie sua conta'}</h2>
+            <p className="text-muted">{isLogin ? 'Entre para continuar sua jornada de bem-estar.' : 'Dê o primeiro passo para o seu cuidado mental.'}</p>
+          </div>
                 
                 {errorMsg && (
                   <div className="alert alert-danger alert-dismissible fade show" role="alert">
@@ -278,14 +306,10 @@ function Login() {
                 
                 <style>{`
                   .google-btn-wrapper {
-                    padding: 0;
-                  }
-                  .google-btn-wrapper > div {
-                    width: 100% !important;
-                  }
-                  .google-btn-wrapper iframe {
-                    width: 100% !important;
-                    height: 44px !important;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: 100%;
                   }
                 `}</style>
                 
@@ -351,9 +375,6 @@ function Login() {
                     </div>
                   </div>
                 )}
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

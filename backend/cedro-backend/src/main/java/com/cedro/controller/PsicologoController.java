@@ -53,6 +53,35 @@ public class PsicologoController {
         return ResponseEntity.ok(p);
     }
 
+    /**
+     * Verifica se um CRP é válido e se já existe no banco de dados.
+     * Formato esperado: XX/XXXXXX (2 dígitos / 5 ou 6 dígitos)
+     */
+    @GetMapping("/verificar-crp/{crp}")
+    public ResponseEntity<?> verificarCrp(@PathVariable String crp) {
+        // Validar formato do CRP
+        if (!crp.matches("\\d{2}/\\d{5,6}")) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "valido", false,
+                "mensagem", "Formato de CRP inválido. Use: XX/XXXXXX"
+            ));
+        }
+        
+        // Verificar se o CRP já está cadastrado por outro psicólogo
+        if (usuarioRepository.existsByCrp(crp)) {
+            return ResponseEntity.status(409).body(Map.of(
+                "valido", false,
+                "mensagem", "Este CRP já está cadastrado na plataforma."
+            ));
+        }
+        
+        // CRP com formato válido e não duplicado
+        return ResponseEntity.ok(Map.of(
+            "valido", true,
+            "mensagem", "CRP disponível para cadastro"
+        ));
+    }
+
     @PostMapping
     public ResponseEntity<?> criar(
             @RequestBody Usuario psicologo,

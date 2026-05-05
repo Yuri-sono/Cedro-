@@ -20,4 +20,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     List<Usuario> findByTipoUsuarioAndAtivo(TipoUsuario tipoUsuario, boolean ativo);
     
     List<Usuario> findByAtivoTrue();
+    
+    boolean existsByCrp(String crp);
+    
+    Optional<Usuario> findByCrpAndAtivoTrue(String crp);
 }

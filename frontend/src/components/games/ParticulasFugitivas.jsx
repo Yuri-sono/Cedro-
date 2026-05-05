@@ -63,6 +63,14 @@ const ParticulasFugitivas = () => {
 
     const handleMouseDown = (e) => {
       if (!gameStarted) return;
+      
+      // Anti-cheat: previne disparos de clique automatizados
+      if (!e.isTrusted) {
+        alert("⚠️ Trapaça detectada: Cliques artificiais (scripts) não são permitidos!");
+        setGameStarted(false);
+        setScore(0);
+        return;
+      }
       const rect = canvas.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
       const clickY = e.clientY - rect.top;
