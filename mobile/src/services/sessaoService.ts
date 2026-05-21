@@ -1,0 +1,29 @@
+import api from './api';
+import { API_ENDPOINTS } from '../constants/api';
+import { Sessao, SessaoRequest } from '../types/api.types';
+
+export const sessaoService = {
+  listarTodas: async (): Promise<Sessao[]> => {
+    const response = await api.get<Sessao[]>(API_ENDPOINTS.SESSOES.LISTAR);
+    return response.data;
+  },
+
+  minhasSessoes: async (): Promise<Sessao[]> => {
+    const response = await api.get<Sessao[]>(API_ENDPOINTS.SESSOES.MINHAS);
+    return response.data;
+  },
+
+  buscarPorId: async (id: number): Promise<Sessao> => {
+    const response = await api.get<Sessao>(API_ENDPOINTS.SESSOES.POR_ID(id));
+    return response.data;
+  },
+
+  criar: async (data: SessaoRequest): Promise<Sessao> => {
+    const response = await api.post<Sessao>(API_ENDPOINTS.SESSOES.CRIAR, data);
+    return response.data;
+  },
+
+  deletar: async (id: number): Promise<void> => {
+    await api.delete(API_ENDPOINTS.SESSOES.DELETAR(id));
+  },
+};
