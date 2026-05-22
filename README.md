@@ -76,25 +76,207 @@ npm run dev
 ```
 
 ### 4. Configurando o Mobile (App)
-1. Navegue até a pasta `mobile/`.
-2. Crie o arquivo `.env.development` com a URL apontando para a sua máquina (*Ex: Se for no emulador Android, a ponte pro localhost é `10.0.2.2`*):
-```env
-EXPO_PUBLIC_API_URL=http://10.0.2.2:8080
+
+#### 📱 Ambiente de Desenvolvimento
+1. Navegue até a pasta `mobile/`:
+```bash
+cd mobile
 ```
+
+2. Crie o arquivo `.env.development` com a URL do backend:
+```env
+# Para emulador Android
+EXPO_PUBLIC_API_URL=http://10.0.2.2:8080
+
+# Para iOS Simulator (Mac)
+# EXPO_PUBLIC_API_URL=http://localhost:8080
+
+# Para dispositivo físico (na mesma rede)
+# EXPO_PUBLIC_API_URL=http://SEU_IP_LOCAL:8080
+```
+
 3. Instale as dependências:
 ```bash
 npm install
 ```
-4. Gere a Build Nativa para simular o motor de chamadas do Agora.io (*o Expo Go tradicional não executa código nativo modificado*):
+
+4. Inicie o servidor de desenvolvimento:
 ```bash
+# Para desenvolvimento rápido (Expo Go)
+npx expo start
+
+# Para Android
 npx expo run:android
-# ou, se quiser testar no iOS via Mac: npx expo run:ios
+
+# Para iOS (Mac)
+npx expo run:ios
 ```
+
+#### 🏗️ Builds de Produção com EAS
+
+Para gerar builds otimizados para produção:
+
+1. **Configuração inicial (uma vez):**
+```bash
+# Login na conta Expo
+npx eas-cli login
+
+# Configurar projeto EAS
+npx eas-cli init
+```
+
+2. **Build para Android:**
+```bash
+# Build de preview (teste interno)
+npx eas-cli build --platform android --profile preview
+
+# Build de produção
+npx eas-cli build --platform android --profile production
+```
+
+3. **Build para iOS (requer Mac):**
+```bash
+# Build de preview
+npx eas-cli build --platform ios --profile preview
+
+# Build de produção
+npx eas-cli build --platform ios --profile production
+```
+
+#### 🔧 Configurações Importantes
+
+**EAS Build (`eas.json`):**
+```json
+{
+  "cli": {
+    "version": ">= 19.0.8",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {
+      "autoIncrement": true
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
+```
+
+**Configuração Babel (`babel.config.js`):**
+```javascript
+module.exports = function (api) {
+  api.cache(true);
+  return {
+    presets: ['babel-preset-expo'],
+    plugins: [
+      [
+        'module-resolver',
+        {
+          root: ['./src'],
+          alias: {
+            '@': './src',
+          },
+        },
+      ],
+    ],
+  };
+};
+```
+
+#### 🚨 Solução de Problemas Comuns
+
+**Erro: "Cannot find module 'babel-preset-expo'"**
+```bash
+# Verifique se está instalado
+npm ls babel-preset-expo
+
+# Instale a versão correta
+npm install babel-preset-expo@~54.0.10
+```
+
+**Erro: Assets não encontrados**
+- Certifique-se que todos os arquivos referenciados em `require()` existem na pasta `assets/`
+- Nomes devem ser exatos (Linux é case-sensitive)
+
+**Cache persistente do EAS**
+```bash
+# Limpe o cache
+npx eas-cli build --platform android --profile preview --clear-cache
+```
+
+#### 📦 Dependências Críticas
+Certifique-se que estas versões estão corretas no `package.json`:
+```json
+"dependencies": {
+  "@react-native-async-storage/async-storage": "2.2.0",
+  "@react-native-community/netinfo": "11.4.1",
+  "babel-plugin-module-resolver": "^5.0.0",
+  "babel-preset-expo": "~54.0.10",
+  "expo": "~54.0.33",
+  "react": "19.1.0",
+  "react-native": "0.81.5"
+}
+```
+
+#### 📱 Testando no Dispositivo Físico
+1. Instale o app **Expo Go** na Play Store/App Store
+2. Escaneie o QR code gerado por `npx expo start`
+3. Para recursos nativos (Agora.io), use builds EAS
+
+#### 🎯 Dicas de Performance
+- Use `npx expo prebuild --clean` antes de builds importantes
+- Configure variáveis de ambiente no EAS Console para builds de produção
+- Use `--clear-cache` quando houver problemas persistentes
 
 ---
 
 ## 🔒 Variáveis de Ambiente & Segurança
-Todos os tokens (JWT Secrets, Chaves de API do Google OAuth, Tokens do Agora.io e RevenueCat SDK Keys) **não devem ser incluídos no controle de versão**. Utilize sempre arquivos locais como `.env` e configure-os com segurança no seu serviço de nuvem/hospedagem no ambiente de Produção.
+
+### Backend (Spring Boot)
+- `application.properties` - Configurações de banco, JWT, etc.
+- **NUNCA** commit arquivos com credenciais reais
+
+### Frontend Web (React + Vite)
+- `.env` - URL da API, chaves públicas
+- `.env.production` - Configurações de produção
+
+### Mobile (React Native / Expo)
+- `.env.development` - Desenvolvimento local
+- `.env.production` - Produção (configurado no EAS Console)
+- `app.config.ts` - Configurações do app (Expo)
+
+**Variáveis críticas NUNCA no versionamento:**
+- JWT Secrets
+- Chaves de API do Google OAuth  
+- Tokens do Agora.io
+- RevenueCat SDK Keys
+- Credenciais de banco de dados
+
+**Configuração no EAS (produção):**
+1. Acesse [Expo Dashboard](https://expo.dev)
+2. Navegue até seu projeto
+3. Em "Environment Variables" configure:
+   - `EXPO_PUBLIC_API_URL` (URL do backend em produção)
+   - `EXPO_PUBLIC_RC_APPLE` (RevenueCat Apple)
+   - `EXPO_PUBLIC_RC_GOOGLE` (RevenueCat Google)
+   - Tokens do Agora.io
+
+### 🛡️ Boas Práticas de Segurança
+1. Use variáveis de ambiente para todos os secrets
+2. Configure `.gitignore` para excluir arquivos sensíveis
+3. Use diferentes credenciais por ambiente (dev/staging/prod)
+4. Revise permissões regularmente
+5. Monitore logs de acesso
+
+Todos os tokens **não devem ser incluídos no controle de versão**. Utilize sempre arquivos locais como `.env` e configure-os com segurança no seu serviço de nuvem/hospedagem no ambiente de Produção.
 
 ---
 *Feito com propósito e dedicação para melhorar a saúde mental e expandir a acessibilidade ao suporte psicológico.* 💙
