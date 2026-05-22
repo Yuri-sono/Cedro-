@@ -9,9 +9,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   icon: './assets/icon.png',
   userInterfaceStyle: 'automatic',
   splash: {
-    image: './assets/splash.png',
+    image: './assets/splash-icon.png',
     resizeMode: 'contain',
-    backgroundColor: '#198754', // cedro-primary
+    backgroundColor: '#198754',
   },
   assetBundlePatterns: ['**/*'],
   ios: {
@@ -49,7 +49,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ],
   extra: {
     eas: {
-      projectId: '', // Preencher na Sprint 9
+      projectId: '7778b28a-a4ba-4fe5-9435-d38050a80a3e',
     },
   },
 });
