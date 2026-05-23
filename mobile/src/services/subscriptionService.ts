@@ -53,8 +53,9 @@ export const subscriptionService = {
     try {
       const { customerInfo } = await Purchases.purchasePackage(pacote);
       return customerInfo;
-    } catch (e: any) {
-      if (!e.userCancelled) {
+    } catch (e) {
+      const purchaseError = e as { userCancelled?: boolean };
+      if (!purchaseError.userCancelled) {
         console.error('Erro na compra', e);
       }
       return null;

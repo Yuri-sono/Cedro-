@@ -21,6 +21,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private JwtUtil jwtUtil;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return "/api/assinatura/webhook".equals(request.getRequestURI());
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         

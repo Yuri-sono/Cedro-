@@ -45,13 +45,15 @@ public class ChamadaController {
     @PostMapping("/{channelName}/finalizar")
     public ResponseEntity<?> finalizarChamada(
         @PathVariable String channelName,
-        @RequestBody Map<String, Integer> body,
+        @RequestBody Map<String, Object> body,
         @RequestHeader("Authorization") String authHeader
     ) {
         Integer usuarioId = getUserIdFromToken(authHeader);
-        Integer duracaoSegundos = body.get("duracaoSegundos");
+        Object duracao = body.get("duracaoSegundos");
+        Integer duracaoSegundos = duracao instanceof Number number ? number.intValue() : 0;
+        String tipo = String.valueOf(body.getOrDefault("tipo", "video"));
         
-        chamadaService.registrarChamada(usuarioId, "video", duracaoSegundos);
+        chamadaService.registrarChamada(usuarioId, channelName, tipo, duracaoSegundos);
         
         return ResponseEntity.ok(Map.of("message", "Chamada registrada"));
     }

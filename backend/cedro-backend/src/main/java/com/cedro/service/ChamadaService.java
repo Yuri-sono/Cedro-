@@ -22,12 +22,16 @@ public class ChamadaService {
         return count != null ? count : 0;
     }
     
-    public void registrarChamada(Integer usuarioId, String tipo, Integer duracaoSegundos) {
+    public void registrarChamada(Integer usuarioId, String channelName, String tipo, Integer duracaoSegundos) {
+        if (!"voz".equals(tipo) && !"video".equals(tipo)) {
+            throw new IllegalArgumentException("Tipo de chamada invalido");
+        }
+
         String sql = """
-            INSERT INTO chamadas_historico (usuario_id, tipo, duracao_segundos, data_chamada)
-            VALUES (?, ?, ?, GETDATE())
+            INSERT INTO chamadas_historico (usuario_id, channel_name, tipo, duracao_segundos, data_chamada)
+            VALUES (?, ?, ?, ?, GETDATE())
         """;
         
-        jdbcTemplate.update(sql, usuarioId, tipo, duracaoSegundos);
+        jdbcTemplate.update(sql, usuarioId, channelName, tipo, duracaoSegundos);
     }
 }

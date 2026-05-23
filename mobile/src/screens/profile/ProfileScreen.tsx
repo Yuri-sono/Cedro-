@@ -45,9 +45,11 @@ export const ProfileScreen = () => {
           <Text style={styles.menuItemText}>Minhas Sessões</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Subscription')}>
-          <Text style={styles.menuItemText}>Assinatura Premium</Text>
-        </TouchableOpacity>
+        {user.tipoUsuario === 'paciente' && (
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Subscription')}>
+            <Text style={styles.menuItemText}>Assinatura Premium</Text>
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('ChangePassword')}>
           <Text style={styles.menuItemText}>Alterar Senha</Text>

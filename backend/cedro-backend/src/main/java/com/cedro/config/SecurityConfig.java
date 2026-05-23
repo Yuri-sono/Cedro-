@@ -30,6 +30,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/assinatura/webhook").permitAll()
                 .requestMatchers("/api/psicologos").permitAll()
                 .requestMatchers("/api/psicologos/{id}").permitAll()
                 .requestMatchers("/", "/api/auth/health").permitAll()

@@ -1,24 +1,35 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import createAgoraRtcEngine, { IRtcEngine, ChannelProfileType, ClientRoleType } from 'react-native-agora';
 import { useCall } from '../../hooks/useCall';
-import { colors, spacing, typography, borderRadius } from '../../theme';
+import { colors, spacing, typography } from '../../theme';
 import { Avatar } from '../../components/Avatar';
+import { RootStackParamList } from '../../types/navigation.types';
+
+type VoiceCallRouteProp = RouteProp<RootStackParamList, 'VoiceCall'>;
+type VoiceCallNavigationProp = NativeStackNavigationProp<RootStackParamList, 'VoiceCall'>;
 
 export const VoiceCallScreen = () => {
-  const route = useRoute<any>();
-  const navigation = useNavigation();
+  const route = useRoute<VoiceCallRouteProp>();
+  const navigation = useNavigation<VoiceCallNavigationProp>();
   const { channelName, userName } = route.params;
 
   const { iniciarChamada, encerrarChamada, isInitializing } = useCall();
-  
+
   const [joined, setJoined] = useState(false);
   const [remoteUid, setRemoteUid] = useState<number | null>(null);
   const [isMuted, setIsMuted] = useState(false);
-  const [startTime, setStartTime] = useState<Date | null>(null);
-
+  const startTimeRef = useRef<Date | null>(null);
   const agoraEngineRef = useRef<IRtcEngine | null>(null);
+
+  const handleEndCall = async () => {
+    const startTime = startTimeRef.current;
+    const duration = startTime ? Math.floor((Date.now() - startTime.getTime()) / 1000) : 0;
+    await encerrarChamada(channelName, duration, 'voz');
+    navigation.goBack();
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -31,30 +42,27 @@ export const VoiceCallScreen = () => {
       }
 
       try {
-        agoraEngineRef.current = createAgoraRtcEngine();
-        const engine = agoraEngineRef.current;
+        const engine = createAgoraRtcEngine();
+        agoraEngineRef.current = engine;
 
         engine.initialize({ appId: tokenData.appId });
-        
-        // Configurações para chamada de voz pura
         engine.enableAudio();
         engine.disableVideo();
 
         engine.addListener('onJoinChannelSuccess', () => {
-          if (isMounted) {
-            setJoined(true);
-            setStartTime(new Date());
-          }
+          if (!isMounted) return;
+          setJoined(true);
+          startTimeRef.current = new Date();
         });
 
         engine.addListener('onUserJoined', (_connection, uid) => {
           if (isMounted) setRemoteUid(uid);
         });
 
-        engine.addListener('onUserOffline', (_connection, _uid) => {
+        engine.addListener('onUserOffline', () => {
           if (isMounted) {
             setRemoteUid(null);
-            handleEndCall(); // Encerra se o outro sair
+            handleEndCall();
           }
         });
 
@@ -64,9 +72,8 @@ export const VoiceCallScreen = () => {
           publishMicrophoneTrack: true,
           autoSubscribeAudio: true,
         });
-
-      } catch (e) {
-        console.error('Erro ao inicializar Agora', e);
+      } catch (error) {
+        console.error('Erro ao inicializar Agora', error);
         if (isMounted) navigation.goBack();
       }
     };
@@ -80,14 +87,7 @@ export const VoiceCallScreen = () => {
         agoraEngineRef.current.release();
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleEndCall = () => {
-    const duration = startTime ? Math.floor((new Date().getTime() - startTime.getTime()) / 1000) : 0;
-    encerrarChamada(channelName, duration);
-    navigation.goBack();
-  };
+  }, [channelName, iniciarChamada, navigation]);
 
   const toggleMute = () => {
     if (agoraEngineRef.current) {
@@ -120,11 +120,11 @@ export const VoiceCallScreen = () => {
 
       <View style={styles.controls}>
         <TouchableOpacity style={[styles.controlButton, isMuted && styles.controlButtonActive]} onPress={toggleMute}>
-          <Text style={styles.controlIcon}>{isMuted ? '🔇' : '🎙️'}</Text>
+          <Text style={styles.controlIcon}>{isMuted ? 'Mute' : 'Mic'}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={[styles.controlButton, styles.endCallButton]} onPress={handleEndCall}>
-          <Text style={styles.controlIcon}>📞</Text>
+          <Text style={styles.controlIcon}>Sair</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -134,7 +134,7 @@ export const VoiceCallScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1C1C1E', // Fundo escuro para tela de chamada
+    backgroundColor: '#1C1C1E',
     justifyContent: 'space-between',
     paddingVertical: spacing['3xl'],
   },
@@ -173,9 +173,10 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
   },
   controlButton: {
-    width: 64,
+    minWidth: 64,
     height: 64,
     borderRadius: 32,
+    paddingHorizontal: spacing.sm,
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -187,6 +188,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.error,
   },
   controlIcon: {
-    fontSize: 24,
+    color: colors.white,
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.bold,
   },
 });

@@ -8,6 +8,8 @@ export interface AgoraTokenResponse {
   uid: number;
 }
 
+export type CallType = 'voz' | 'video';
+
 export const callService = {
   /**
    * Solicita ao Spring Boot um token do Agora.io para um determinado canal.
@@ -29,7 +31,11 @@ export const callService = {
    * Finaliza uma chamada, sinalizando para o Spring Boot computar a duração
    * e debitar dos limites do mês (se necessário).
    */
-  finalizarChamada: async (channelName: string, duracaoSegundos: number): Promise<void> => {
-    await api.post(`/api/chamadas/${channelName}/finalizar`, { duracaoSegundos });
+  finalizarChamada: async (
+    channelName: string,
+    duracaoSegundos: number,
+    tipo: CallType,
+  ): Promise<void> => {
+    await api.post(`/api/chamadas/${channelName}/finalizar`, { duracaoSegundos, tipo });
   },
 };
