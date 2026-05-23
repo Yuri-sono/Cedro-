@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import api from '../services/api';
 import { ConversaResumo } from '../types/api.types';
-import { useEffect } from 'react';
-import { chatService } from '../services/chatService';
 import { useAuthStore } from '../store/authStore';
+import { API_ENDPOINTS } from '../constants/api';
 
 export const useConversas = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -11,28 +10,12 @@ export const useConversas = () => {
   const query = useQuery({
     queryKey: ['conversas'],
     queryFn: async () => {
-      // Assumindo endpoint: GET /api/mensagens/conversas
-      const response = await api.get<ConversaResumo[]>('/api/mensagens/conversas');
-      return response.data || [];
+      const response = await api.get<ConversaResumo[]>(API_ENDPOINTS.MENSAGENS.CONVERSAS);
+      return response.data;
     },
     enabled: isAuthenticated,
+    refetchInterval: 3000, // Polling a cada 3 segundos
   });
-
-  // Conectar ao STOMP ao entrar na tela de conversas para receber notificações globais
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    
-    chatService.connect();
-
-    // Listener para invalidar o cache da lista de conversas sempre que chegar qualquer mensagem nova
-    const unsubscribe = chatService.addMessageListener(() => {
-      query.refetch();
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [isAuthenticated, query]);
 
   return {
     conversas: query.data || [],

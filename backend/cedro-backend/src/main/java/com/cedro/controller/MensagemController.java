@@ -15,18 +15,18 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/mensagens")
 public class MensagemController {
-    
+
     @Autowired
     private MensagemService mensagemService;
-    
+
     @Autowired
     private JwtUtil jwtUtil;
-    
+
     private Integer getUserIdFromToken(String authHeader) {
         String token = authHeader.replace("Bearer ", "");
         return jwtUtil.extractUserId(token);
     }
-    
+
     @PostMapping
     public ResponseEntity<?> enviarMensagem(
             @RequestHeader("Authorization") String authHeader,
@@ -35,7 +35,7 @@ public class MensagemController {
         Mensagem mensagem = mensagemService.enviarMensagem(remetenteId, request);
         return ResponseEntity.ok(mensagem);
     }
-    
+
     @GetMapping("/conversa/{userId}")
     public ResponseEntity<?> listarConversa(
             @RequestHeader("Authorization") String authHeader,
@@ -44,21 +44,21 @@ public class MensagemController {
         List<Mensagem> mensagens = mensagemService.listarConversa(meuId, userId);
         return ResponseEntity.ok(mensagens);
     }
-    
+
     @GetMapping("/nao-lidas")
     public ResponseEntity<?> listarMensagensNaoLidas(@RequestHeader("Authorization") String authHeader) {
         Integer usuarioId = getUserIdFromToken(authHeader);
         List<Mensagem> mensagens = mensagemService.listarMensagensNaoLidas(usuarioId);
         return ResponseEntity.ok(mensagens);
     }
-    
+
     @GetMapping("/nao-lidas/count")
     public ResponseEntity<?> contarMensagensNaoLidas(@RequestHeader("Authorization") String authHeader) {
         Integer usuarioId = getUserIdFromToken(authHeader);
         long count = mensagemService.contarMensagensNaoLidas(usuarioId);
         return ResponseEntity.ok(Map.of("count", count));
     }
-    
+
     @PutMapping("/{id}/lida")
     public ResponseEntity<?> marcarComoLida(
             @PathVariable Integer id,
@@ -70,7 +70,7 @@ public class MensagemController {
         mensagemService.marcarComoLida(id);
         return ResponseEntity.ok(Map.of("message", "ok"));
     }
-    
+
     @PutMapping("/marcar-lidas/{remetenteId}")
     public ResponseEntity<?> marcarTodasComoLidas(
             @RequestHeader("Authorization") String authHeader,
@@ -78,5 +78,15 @@ public class MensagemController {
         Integer usuarioId = getUserIdFromToken(authHeader);
         mensagemService.marcarTodasComoLidas(usuarioId, remetenteId);
         return ResponseEntity.ok(Map.of("message", "ok"));
+    }
+
+    /**
+     * Lista conversas agrupadas por usuário
+     * GET /api/mensagens/conversas
+     */
+    @GetMapping("/conversas")
+    public ResponseEntity<?> listarConversas(@RequestHeader("Authorization") String authHeader) {
+        Integer usuarioId = getUserIdFromToken(authHeader);
+        return ResponseEntity.ok(mensagemService.listarConversas(usuarioId));
     }
 }

@@ -9,7 +9,7 @@ interface Props {
 }
 
 export const MessageBubble = ({ mensagem }: Props) => {
-  const currentUserId = useAuthStore((state: any) => state.user?.id);
+  const currentUserId = useAuthStore((state) => state.user?.id);
   const isMine = mensagem.remetenteId === currentUserId;
 
   const dataObj = new Date(mensagem.dataCriacao);

@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback } from 'react';
-import { chatService } from '../services/chatService';
 import { Mensagem } from '../types/api.types';
 import { useAuthStore } from '../store/authStore';
 import api from '../services/api';
@@ -14,9 +13,9 @@ export const useChat = (destinatarioId: number) => {
   const carregarHistorico = useCallback(async () => {
     try {
       setIsLoading(true);
-      // Assumindo que o Spring Boot tenha esse endpoint mapeado:
-      const response = await api.get<Mensagem[]>(`/api/mensagens/historico/${destinatarioId}`);
+      const response = await api.get<Mensagem[]>(API_ENDPOINTS.MENSAGENS.CONVERSA(destinatarioId));
       setMensagens(response.data || []);
+      await api.put(API_ENDPOINTS.MENSAGENS.MARCAR_TODAS_LIDAS(destinatarioId), {});
     } catch (error) {
       console.error('Erro ao buscar histórico de mensagens', error);
     } finally {
@@ -28,35 +27,30 @@ export const useChat = (destinatarioId: number) => {
     if (!isAuthenticated) return;
 
     carregarHistorico();
-    
-    // Conecta ao WebSocket globalmente (ou garante que está ativo)
-    chatService.connect();
 
-    // Registra listener para novas mensagens em tempo real
-    const unsubscribe = chatService.addMessageListener((novaMensagem: Mensagem) => {
-      // Verifica se a mensagem recebida pertence a esta conversa específica
-      if (
-        novaMensagem.remetenteId === destinatarioId ||
-        novaMensagem.destinatarioId === destinatarioId
-      ) {
-        setMensagens((prev) => [...prev, novaMensagem]);
-      }
-    });
+    // Polling a cada 3 segundos (igual ao web)
+    const interval = setInterval(carregarHistorico, 3000);
 
     return () => {
-      unsubscribe();
-      // Não desconecta o client inteiro, pois o usuário pode voltar para a lista de conversas
+      clearInterval(interval);
     };
   }, [destinatarioId, isAuthenticated, carregarHistorico]);
 
-  const enviarMensagem = (conteudo: string) => {
+  const enviarMensagem = async (conteudo: string) => {
     if (!conteudo.trim()) return;
 
-    // Envia via STOMP WebSocket para o Spring Boot
-    chatService.sendMessage(destinatarioId, conteudo);
-    
-    // Opcional: Adicionar a mensagem de forma otimista localmente antes de receber o ACK do servidor
-    // Para simplificar, dependemos da volta pelo `/user/queue/messages` ou recarregamos o REST
+    try {
+      // Enviar via REST até WebSocket ser implementado
+      const response = await api.post<Mensagem>(API_ENDPOINTS.MENSAGENS.ENVIAR, {
+        destinatarioId,
+        mensagem: conteudo,
+      });
+
+      // Adicionar mensagem localmente
+      setMensagens((prev) => [...prev, response.data]);
+    } catch (error) {
+      console.error('Erro ao enviar mensagem', error);
+    }
   };
 
   return {

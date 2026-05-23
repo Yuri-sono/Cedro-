@@ -1,13 +1,14 @@
 import { Client } from '@stomp/stompjs';
 import { WS_CHAT_URL } from '../config/environment';
 import { tokenStorage } from './api';
+import { Mensagem } from '../types/api.types';
 
 // Reusa a mesma origem da API REST e troca o protocolo para WebSocket.
 const WS_URL = WS_CHAT_URL;
 
 class ChatService {
   private client: Client;
-  private messageListeners: ((msg: any) => void)[] = [];
+  private messageListeners: ((msg: Mensagem) => void)[] = [];
 
   constructor() {
     this.client = new Client({
@@ -27,7 +28,7 @@ class ChatService {
       // O Spring Boot geralmente direciona mensagens para /user/queue/messages usando SimpMessagingTemplate.convertAndSendToUser
       this.client.subscribe('/user/queue/messages', (message) => {
         if (message.body) {
-          const parsedMessage = JSON.parse(message.body);
+          const parsedMessage = JSON.parse(message.body) as Mensagem;
           this.messageListeners.forEach((listener) => listener(parsedMessage));
         }
       });
@@ -70,7 +71,7 @@ class ChatService {
     });
   }
 
-  public addMessageListener(listener: (msg: any) => void) {
+  public addMessageListener(listener: (msg: Mensagem) => void) {
     this.messageListeners.push(listener);
     return () => {
       this.messageListeners = this.messageListeners.filter((l) => l !== listener);

@@ -1,21 +1,26 @@
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, FlatList, KeyboardAvoidingView, Platform, ActivityIndicator, TouchableOpacity, Text } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList, ChatStackParamList } from '../../types/navigation.types';
 import { useChat } from '../../hooks/useChat';
 import { MessageBubble } from '../../components/MessageBubble';
 import { ChatInput } from '../../components/ChatInput';
 import { colors, spacing } from '../../theme';
+import { useAuthStore } from '../../store/authStore';
 
-type NavigationProp = NativeStackNavigationProp<ChatStackParamList, 'Chat'>;
+type ChatRouteProp = RouteProp<ChatStackParamList, 'Chat'>;
+type ChatNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export const ChatScreen = () => {
-  const route = useRoute<any>();
-  // Precisa do RootStack para chamar a tela de chamadas
-  const navigation = useNavigation<any>();
+  const route = useRoute<ChatRouteProp>();
+  const navigation = useNavigation<ChatNavigationProp>();
+  const currentUserId = useAuthStore((state) => state.user?.id);
   
   const { userId, userName } = route.params;
+  const channelName = currentUserId
+    ? `chat-${Math.min(currentUserId, userId)}-${Math.max(currentUserId, userId)}`
+    : `chat-${userId}`;
 
   // Atualiza o título e adiciona botões de chamada no header
   useEffect(() => {
@@ -25,20 +30,20 @@ export const ChatScreen = () => {
         <View style={styles.headerButtons}>
           <TouchableOpacity 
             style={styles.headerButton}
-            onPress={() => navigation.navigate('VoiceCall', { channelName: `chat-${userId}`, userName })}
+            onPress={() => navigation.navigate('VoiceCall', { channelName, userName })}
           >
             <Text style={styles.headerIcon}>📞</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.headerButton}
-            onPress={() => navigation.navigate('VideoCall', { channelName: `chat-${userId}`, userName })}
+            onPress={() => navigation.navigate('VideoCall', { channelName, userName })}
           >
             <Text style={styles.headerIcon}>📹</Text>
           </TouchableOpacity>
         </View>
       ),
     });
-  }, [navigation, userName, userId]);
+  }, [channelName, navigation, userName]);
 
   const { mensagens, isLoading, enviarMensagem } = useChat(userId);
   const flatListRef = useRef<FlatList>(null);
