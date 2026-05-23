@@ -16,7 +16,7 @@ import { Button } from '../../components/Button';
 import { Avatar } from '../../components/Avatar';
 import { colors, spacing, typography } from '../../theme';
 import { useNavigation } from '@react-navigation/native';
-import { TipoUsuario } from '../../types/api.types';
+import { TipoUsuario, UpdatePerfilRequest } from '../../types/api.types';
 
 export const EditProfileScreen = () => {
   const user = useAuthStore((state) => state.user);
@@ -48,7 +48,7 @@ export const EditProfileScreen = () => {
   };
 
   const handleSave = async () => {
-    const data: any = {
+    const data: UpdatePerfilRequest = {
       nome: nome.trim(),
       telefone: telefone.trim(),
       dataNascimento: dataNascimento.trim() || undefined,

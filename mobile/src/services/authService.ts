@@ -22,6 +22,14 @@ function extractApiMessage(data: unknown): string | undefined {
   return typeof firstFieldError === 'string' ? firstFieldError : undefined;
 }
 
+function errorName(error: unknown): string | undefined {
+  return error instanceof Error ? error.name : undefined;
+}
+
+function errorMessage(error: unknown): string | undefined {
+  return error instanceof Error ? error.message : undefined;
+}
+
 async function readResponseBody(response: Response): Promise<unknown> {
   const text = await response.text();
   if (!text) return undefined;
@@ -59,22 +67,20 @@ async function authRequest<T>(
     if (!response.ok) {
       throw new Error(
         extractApiMessage(data) ||
-          `${label}: erro ${response.status} ao processar solicitação.`,
+          `${label}: erro ${response.status} ao processar solicitacao.`,
       );
     }
 
     return data as T;
-  } catch (error: any) {
-    if (error?.name === 'AbortError') {
-      throw new Error(`${label}: tempo de conexão esgotado. API: ${API_BASE_URL}`);
+  } catch (error) {
+    if (errorName(error) === 'AbortError') {
+      throw new Error(`${label}: tempo de conexao esgotado. API: ${API_BASE_URL}`);
     }
 
-    if (
-      error instanceof TypeError ||
-      error?.message === 'Network request failed'
-    ) {
+    const message = errorMessage(error);
+    if (error instanceof TypeError || message === 'Network request failed') {
       throw new Error(
-        `${label}: sem conexão com o servidor (${error?.message || 'erro de rede'}). API: ${API_BASE_URL}`,
+        `${label}: sem conexao com o servidor (${message || 'erro de rede'}). API: ${API_BASE_URL}`,
       );
     }
 
@@ -100,17 +106,15 @@ async function assertApiReachable(): Promise<void> {
     if (!response.ok) {
       throw new Error(`health: resposta ${response.status}. API: ${API_BASE_URL}`);
     }
-  } catch (error: any) {
-    if (error?.name === 'AbortError') {
-      throw new Error(`health: tempo de conexão esgotado. API: ${API_BASE_URL}`);
+  } catch (error) {
+    if (errorName(error) === 'AbortError') {
+      throw new Error(`health: tempo de conexao esgotado. API: ${API_BASE_URL}`);
     }
 
-    if (
-      error instanceof TypeError ||
-      error?.message === 'Network request failed'
-    ) {
+    const message = errorMessage(error);
+    if (error instanceof TypeError || message === 'Network request failed') {
       throw new Error(
-        `health: sem conexão com o servidor (${error?.message || 'erro de rede'}). API: ${API_BASE_URL}`,
+        `health: sem conexao com o servidor (${message || 'erro de rede'}). API: ${API_BASE_URL}`,
       );
     }
 

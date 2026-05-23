@@ -35,6 +35,10 @@ public class GlobalExceptionHandler {
                 message.contains("encontrado") || 
                 message.contains("incorreto") ||
                 message.contains("em uso") ||
+                message.contains("indisponivel") ||
+                message.contains("Precisa ter") ||
+                message.contains("caractere especial") ||
+                message.contains("Agora") ||
                 message.contains("Google") ||
                 message.contains("psicólogo") ||
                 message.contains("Acesso"))) {

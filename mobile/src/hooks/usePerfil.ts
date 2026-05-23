@@ -16,8 +16,9 @@ export const usePerfil = () => {
       // Opcional: invalidar query de usuário se tivermos uma
       showToast.success('Perfil atualizado', 'Seus dados foram salvos com sucesso.');
     },
-    onError: (error: any) => {
-      showToast.error('Erro ao atualizar', error.message || 'Verifique os dados e tente novamente.');
+    onError: (error) => {
+      const message = error instanceof Error ? error.message : undefined;
+      showToast.error('Erro ao atualizar', message || 'Verifique os dados e tente novamente.');
     },
   });
 
@@ -26,8 +27,9 @@ export const usePerfil = () => {
     onSuccess: () => {
       showToast.success('Senha alterada', 'Sua senha foi atualizada com sucesso.');
     },
-    onError: (error: any) => {
-      showToast.error('Erro ao alterar senha', error.message || 'Verifique sua senha atual.');
+    onError: (error) => {
+      const message = error instanceof Error ? error.message : undefined;
+      showToast.error('Erro ao alterar senha', message || 'Verifique sua senha atual.');
     },
   });
 
