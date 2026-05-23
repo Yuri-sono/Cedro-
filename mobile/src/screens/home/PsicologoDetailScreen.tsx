@@ -1,40 +1,24 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '../../types/navigation.types';
 import { usePsicologoDetail } from '../../hooks/usePsicologos';
-import { useSessoes } from '../../hooks/useSessoes';
 import { colors, typography, spacing, borderRadius } from '../../theme';
 import { Avatar } from '../../components/Avatar';
 import { Button } from '../../components/Button';
-import { showToast } from '../../components/Toast';
 
+type PsicologoDetailRouteProp = RouteProp<HomeStackParamList, 'PsicologoDetail'>;
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'PsicologoDetail'>;
 
 export const PsicologoDetailScreen = () => {
-  const route = useRoute<any>();
+  const route = useRoute<PsicologoDetailRouteProp>();
   const navigation = useNavigation<NavigationProp>();
-  const psicologoId = route.params?.psicologoId;
+  const psicologoId = route.params.psicologoId;
 
   const { psicologo, isLoading } = usePsicologoDetail(psicologoId);
-  const { agendarSessao, isAgendando } = useSessoes();
 
-  const handleAgendar = async () => {
-    // Exemplo simplificado de agendamento (na prática, abriria um modal de calendário)
-    // Aqui estamos agendando para o dia seguinte
-    const amanha = new Date();
-    amanha.setDate(amanha.getDate() + 1);
-    
-    try {
-      await agendarSessao({
-        psicologoId: psicologoId,
-        dataSessao: amanha.toISOString(),
-      });
-      navigation.navigate('SessionSuccess');
-    } catch (error) {
-      // Erro já é tratado no hook com Toast
-    }
+  const handleAgendar = () => {
+    navigation.navigate('ScheduleSession', { psicologoId });
   };
 
   if (isLoading || !psicologo) {
@@ -79,7 +63,6 @@ export const PsicologoDetailScreen = () => {
         <Button
           title="Agendar Consulta"
           onPress={handleAgendar}
-          isLoading={isAgendando}
         />
       </View>
     </ScrollView>

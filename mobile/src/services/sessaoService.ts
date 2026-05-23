@@ -1,6 +1,6 @@
 import api from './api';
 import { API_ENDPOINTS } from '../constants/api';
-import { Sessao, SessaoRequest } from '../types/api.types';
+import { DisponibilidadeResponse, Sessao, SessaoRequest } from '../types/api.types';
 
 export const sessaoService = {
   listarTodas: async (): Promise<Sessao[]> => {
@@ -20,6 +20,13 @@ export const sessaoService = {
 
   criar: async (data: SessaoRequest): Promise<Sessao> => {
     const response = await api.post<Sessao>(API_ENDPOINTS.SESSOES.CRIAR, data);
+    return response.data;
+  },
+
+  disponibilidade: async (psicologoId: number, data: string): Promise<DisponibilidadeResponse> => {
+    const response = await api.get<DisponibilidadeResponse>(
+      API_ENDPOINTS.SESSOES.DISPONIBILIDADE(psicologoId, data),
+    );
     return response.data;
   },
 

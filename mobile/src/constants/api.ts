@@ -34,7 +34,6 @@ export const API_ENDPOINTS = {
     MARCAR_LIDA: (id: number) => `/api/mensagens/${id}/lida`,
     MARCAR_TODAS_LIDAS: (remetenteId: number) =>
       `/api/mensagens/marcar-lidas/${remetenteId}`,
-    // Futuro (Sprint 5):
     CONVERSAS: '/api/mensagens/conversas',
   },
 
@@ -46,6 +45,8 @@ export const API_ENDPOINTS = {
     POR_PACIENTE: (pacienteId: number) => `/api/sessoes/paciente/${pacienteId}`,
     POR_PSICOLOGO: (psicologoId: number) =>
       `/api/sessoes/psicologo/${psicologoId}`,
+    DISPONIBILIDADE: (psicologoId: number, data: string) =>
+      `/api/sessoes/disponibilidade/${psicologoId}?data=${data}`,
     CRIAR: '/api/sessoes',
     DELETAR: (id: number) => `/api/sessoes/${id}`,
   },

@@ -15,10 +15,11 @@ export const useSessoes = () => {
     mutationFn: (data: SessaoRequest) => sessaoService.criar(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sessoes', 'minhas'] });
-      showToast.success('Sessão agendada', 'Sua consulta foi agendada com sucesso!');
+      showToast.success('Sessao agendada', 'Sua consulta foi agendada com sucesso.');
     },
-    onError: (error: any) => {
-      showToast.error('Erro ao agendar', error.message || 'Tente novamente mais tarde.');
+    onError: (error) => {
+      const message = error instanceof Error ? error.message : undefined;
+      showToast.error('Erro ao agendar', message || 'Tente novamente mais tarde.');
     },
   });
 
@@ -26,10 +27,11 @@ export const useSessoes = () => {
     mutationFn: (id: number) => sessaoService.deletar(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sessoes', 'minhas'] });
-      showToast.success('Sessão cancelada', 'Consulta cancelada com sucesso.');
+      showToast.success('Sessao cancelada', 'Consulta cancelada com sucesso.');
     },
-    onError: (error: any) => {
-      showToast.error('Erro ao cancelar', error.message || 'Não foi possível cancelar a sessão.');
+    onError: (error) => {
+      const message = error instanceof Error ? error.message : undefined;
+      showToast.error('Erro ao cancelar', message || 'Nao foi possivel cancelar a sessao.');
     },
   });
 
@@ -42,5 +44,19 @@ export const useSessoes = () => {
     isAgendando: criarSessaoMutation.isPending,
     cancelarSessao: cancelarSessaoMutation.mutateAsync,
     isCancelando: cancelarSessaoMutation.isPending,
+  };
+};
+
+export const useDisponibilidade = (psicologoId: number, data?: string) => {
+  const query = useQuery({
+    queryKey: ['sessoes', 'disponibilidade', psicologoId, data],
+    queryFn: () => sessaoService.disponibilidade(psicologoId, data as string),
+    enabled: Boolean(data),
+  });
+
+  return {
+    disponibilidade: query.data,
+    isLoadingDisponibilidade: query.isLoading,
+    refetchDisponibilidade: query.refetch,
   };
 };

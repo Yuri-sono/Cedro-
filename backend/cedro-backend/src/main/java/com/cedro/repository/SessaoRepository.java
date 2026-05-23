@@ -17,6 +17,8 @@ public interface SessaoRepository extends JpaRepository<Sessao, Integer> {
 
     List<Sessao> findByPsicologoIdAndDataSessaoBetween(Integer psicologoId, LocalDateTime inicio, LocalDateTime fim);
 
+    boolean existsByPsicologoIdAndDataSessaoAndStatusSessaoNot(Integer psicologoId, LocalDateTime dataSessao, String statusSessao);
+
     @Query("SELECT COUNT(DISTINCT s.pacienteId) FROM Sessao s WHERE s.psicologoId = ?1 AND s.statusSessao != 'cancelada'")
     long countPacientesAtivosByPsicologoId(Integer psicologoId);
 

@@ -5,9 +5,11 @@ import com.cedro.model.entity.Sessao;
 import com.cedro.security.JwtUtil;
 import com.cedro.service.SessaoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -77,6 +79,13 @@ public class SessaoController {
             return ResponseEntity.status(403).build();
         }
         return ResponseEntity.ok(sessaoService.listarPorPsicologo(psicologoId));
+    }
+
+    @GetMapping("/disponibilidade/{psicologoId}")
+    public ResponseEntity<?> consultarDisponibilidade(
+            @PathVariable Integer psicologoId,
+            @RequestParam("data") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data) {
+        return ResponseEntity.ok(sessaoService.consultarDisponibilidade(psicologoId, data));
     }
 
     @PostMapping

@@ -118,6 +118,12 @@ export interface Sessao {
   dataCriacao: string;
 }
 
+export interface DisponibilidadeResponse {
+  data: string;
+  horariosDisponiveis: string[];
+  horariosOcupados: string[];
+}
+
 // ── UpdatePerfilRequest (UpdatePerfilRequest.java) ──
 export interface UpdatePerfilRequest {
   nome?: string;

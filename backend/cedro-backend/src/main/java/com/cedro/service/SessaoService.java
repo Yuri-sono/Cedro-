@@ -8,7 +8,11 @@ import com.cedro.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class SessaoService {
@@ -40,7 +44,15 @@ public class SessaoService {
         // Buscar o preço do psicólogo
         Usuario psicologo = usuarioRepository.findById(request.getPsicologoId())
                 .orElseThrow(() -> new RuntimeException("Psicólogo não encontrado"));
-        
+        boolean horarioOcupado = sessaoRepository.existsByPsicologoIdAndDataSessaoAndStatusSessaoNot(
+                request.getPsicologoId(),
+                request.getDataSessao(),
+                "cancelada"
+        );
+        if (horarioOcupado) {
+            throw new RuntimeException("Horario indisponivel");
+        }
+
         Sessao sessao = new Sessao();
         sessao.setPacienteId(request.getPacienteId());
         sessao.setPsicologoId(request.getPsicologoId());
@@ -61,6 +73,30 @@ public class SessaoService {
         if (request.getStatusSessao() != null) sessao.setStatusSessao(request.getStatusSessao());
         if (request.getObservacoes() != null) sessao.setObservacoes(request.getObservacoes());
         return sessaoRepository.save(sessao);
+    }
+
+    public Map<String, Object> consultarDisponibilidade(Integer psicologoId, LocalDate data) {
+        LocalDateTime inicio = data.atStartOfDay();
+        LocalDateTime fim = data.plusDays(1).atStartOfDay().minusNanos(1);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+
+        List<String> horariosOcupados = sessaoRepository
+                .findByPsicologoIdAndDataSessaoBetween(psicologoId, inicio, fim)
+                .stream()
+                .filter(sessao -> !"cancelada".equals(sessao.getStatusSessao()))
+                .map(sessao -> sessao.getDataSessao().format(formatter))
+                .toList();
+
+        List<String> horariosBase = List.of("08:00", "09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00", "18:00");
+        List<String> horariosDisponiveis = horariosBase.stream()
+                .filter(horario -> !horariosOcupados.contains(horario))
+                .toList();
+
+        return Map.of(
+                "data", data.toString(),
+                "horariosDisponiveis", horariosDisponiveis,
+                "horariosOcupados", horariosOcupados
+        );
     }
     
     public void deletar(Integer id) {
