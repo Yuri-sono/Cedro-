@@ -1,9 +1,9 @@
 import { Client } from '@stomp/stompjs';
-import * as SecureStore from 'expo-secure-store';
+import { WS_CHAT_URL } from '../config/environment';
+import { tokenStorage } from './api';
 
-// A URL WebSocket base. Note que a porta/path depende da configuração exata do Spring Boot.
-// Geralmente, se a API REST é http://10.0.2.2:8080, o STOMP endpoint é ws://10.0.2.2:8080/ws-chat
-const WS_URL = process.env.EXPO_PUBLIC_API_URL?.replace('http', 'ws') + '/ws-chat';
+// Reusa a mesma origem da API REST e troca o protocolo para WebSocket.
+const WS_URL = WS_CHAT_URL;
 
 class ChatService {
   private client: Client;
@@ -42,7 +42,7 @@ class ChatService {
   public async connect() {
     if (this.client.active) return;
     
-    const token = await SecureStore.getItemAsync('token');
+    const token = await tokenStorage.get();
     
     this.client.connectHeaders = {
       Authorization: `Bearer ${token}`,

@@ -28,6 +28,17 @@ export const RegisterScreen = () => {
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
 
+  const senhaValidacao = {
+    minLength: senha.length >= 6,
+    hasNumber: /\d/.test(senha),
+    hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(senha),
+  };
+
+  const senhaValida =
+    senhaValidacao.minLength &&
+    senhaValidacao.hasNumber &&
+    senhaValidacao.hasSpecial;
+
   const handleRegister = async () => {
     if (!nome || !email || !senha) return;
     
@@ -36,9 +47,17 @@ export const RegisterScreen = () => {
       return;
     }
 
+    if (!senhaValida) {
+      showToast.error(
+        'Senha inválida',
+        'Use 6+ caracteres, 1 número e 1 caractere especial.',
+      );
+      return;
+    }
+
     const success = await register({
-      nome,
-      email,
+      nome: nome.trim(),
+      email: email.trim(),
       senha,
       tipoUsuario: TipoUsuario.paciente, // Padrão: registro pelo app é sempre paciente
     });
@@ -82,19 +101,59 @@ export const RegisterScreen = () => {
             value={senha}
             onChangeText={setSenha}
           />
+          {senha ? (
+            <View style={styles.passwordRules}>
+              <Text
+                style={[
+                  styles.passwordRule,
+                  senhaValidacao.minLength ? styles.passwordRuleValid : styles.passwordRuleInvalid,
+                ]}
+              >
+                6+ caracteres
+              </Text>
+              <Text
+                style={[
+                  styles.passwordRule,
+                  senhaValidacao.hasNumber ? styles.passwordRuleValid : styles.passwordRuleInvalid,
+                ]}
+              >
+                1 número
+              </Text>
+              <Text
+                style={[
+                  styles.passwordRule,
+                  senhaValidacao.hasSpecial ? styles.passwordRuleValid : styles.passwordRuleInvalid,
+                ]}
+              >
+                1 caractere especial
+              </Text>
+            </View>
+          ) : null}
           <Input
             label="Confirmar Senha"
             placeholder="Repita sua senha"
             isPassword
             value={confirmarSenha}
             onChangeText={setConfirmarSenha}
+            error={
+              confirmarSenha && senha !== confirmarSenha
+                ? 'As senhas não coincidem.'
+                : undefined
+            }
           />
 
           <Button
             title="Cadastrar"
             onPress={handleRegister}
             isLoading={isLoading}
-            disabled={!nome || !email || !senha || !confirmarSenha}
+            disabled={
+              !nome ||
+              !email ||
+              !senha ||
+              !confirmarSenha ||
+              !senhaValida ||
+              senha !== confirmarSenha
+            }
             style={styles.registerButton}
           />
 
@@ -137,6 +196,23 @@ const styles = StyleSheet.create({
   },
   form: {
     width: '100%',
+  },
+  passwordRules: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginTop: -spacing.sm,
+    marginBottom: spacing.base,
+  },
+  passwordRule: {
+    fontSize: typography.size.xs,
+    fontWeight: typography.weight.medium,
+  },
+  passwordRuleValid: {
+    color: colors.success,
+  },
+  passwordRuleInvalid: {
+    color: colors.error,
   },
   registerButton: {
     marginTop: spacing.md,

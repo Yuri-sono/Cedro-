@@ -49,7 +49,7 @@ export const ProfileScreen = () => {
           <Text style={styles.menuItemText}>Assinatura Premium</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem} onPress={() => {}}>
+        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('ChangePassword')}>
           <Text style={styles.menuItemText}>Alterar Senha</Text>
         </TouchableOpacity>
       </View>

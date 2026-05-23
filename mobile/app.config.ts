@@ -1,5 +1,8 @@
 import { ExpoConfig, ConfigContext } from 'expo/config';
 
+const DEFAULT_API_URL = 'https://cedro-vc32.onrender.com';
+const API_URL = process.env.EXPO_PUBLIC_API_URL?.trim() || DEFAULT_API_URL;
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Cedro Saúde Mental',
@@ -48,7 +51,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // 'expo-camera', // Adicionar na Sprint 8
   ],
   extra: {
+    ...config.extra,
+    apiUrl: API_URL,
     eas: {
+      ...(config.extra?.eas as Record<string, unknown> | undefined),
       projectId: '7778b28a-a4ba-4fe5-9435-d38050a80a3e',
     },
   },

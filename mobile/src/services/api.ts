@@ -11,12 +11,10 @@ import axios, {
 } from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { useAuthStore } from '../store/authStore';
+import { API_BASE_URL } from '../config/environment';
 
 const SECURE_STORE_TOKEN_KEY = 'cedro_jwt_token';
-
-// URL base configurada por ambiente (placeholder até .env ser preenchido)
-const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:8080';
+const RETRYABLE_METHODS = new Set(['get', 'head', 'options']);
 
 // ── Classificação de erros ──
 export enum ApiErrorType {
@@ -34,12 +32,29 @@ export interface ClassifiedError {
   status?: number;
 }
 
+function extractApiMessage(data: unknown): string | undefined {
+  if (!data || typeof data !== 'object') return undefined;
+
+  const responseData = data as Record<string, unknown>;
+  const directMessage = responseData.error || responseData.message;
+
+  if (typeof directMessage === 'string') {
+    return directMessage;
+  }
+
+  const firstFieldError = Object.values(responseData).find(
+    (value) => typeof value === 'string',
+  );
+
+  return typeof firstFieldError === 'string' ? firstFieldError : undefined;
+}
+
 function classifyError(error: AxiosError): ClassifiedError {
   if (!error.response) {
     if (error.code === 'ECONNABORTED') {
-      return { type: ApiErrorType.TIMEOUT, message: 'Tempo de conexão esgotado.' };
+      return { type: ApiErrorType.TIMEOUT, message: `Tempo de conexão esgotado. API: ${API_BASE_URL}` };
     }
-    return { type: ApiErrorType.NETWORK, message: 'Sem conexão com o servidor.' };
+    return { type: ApiErrorType.NETWORK, message: `Sem conexão com o servidor. API: ${API_BASE_URL}` };
   }
 
   const status = error.response.status;
@@ -51,10 +66,9 @@ function classifyError(error: AxiosError): ClassifiedError {
     return { type: ApiErrorType.AUTH, message: 'Acesso negado.', status };
   }
   if (status === 400 || status === 422) {
-    const data = error.response.data as Record<string, string> | undefined;
     return {
       type: ApiErrorType.VALIDATION,
-      message: data?.error || data?.message || 'Dados inválidos.',
+      message: extractApiMessage(error.response.data) || 'Dados inválidos.',
       status,
     };
   }
@@ -68,7 +82,7 @@ function classifyError(error: AxiosError): ClassifiedError {
 // ── Criar instância ──
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: 60000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -78,6 +92,11 @@ const api: AxiosInstance = axios.create({
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     try {
+      const isPublicAuthEndpoint = config.url?.startsWith('/api/auth/');
+      if (isPublicAuthEndpoint) {
+        return config;
+      }
+
       const token = await SecureStore.getItemAsync(SECURE_STORE_TOKEN_KEY);
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -106,8 +125,14 @@ api.interceptors.response.use(
       return Promise.reject(classifyError(error));
     }
 
-    // Retry automático para falhas de rede (máx 1 retry)
-    if (!error.response && originalRequest && !originalRequest._retry) {
+    const method = originalRequest?.method?.toLowerCase();
+    const canRetry =
+      method &&
+      RETRYABLE_METHODS.has(method) &&
+      error.code !== 'ECONNABORTED';
+
+    // Retry somente em métodos seguros. Nunca repetir POST de login/cadastro.
+    if (!error.response && originalRequest && !originalRequest._retry && canRetry) {
       originalRequest._retry = true;
       return api(originalRequest);
     }

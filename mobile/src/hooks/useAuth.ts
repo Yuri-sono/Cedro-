@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Alert } from 'react-native';
 import { authService } from '../services/authService';
 import { useAuthStore } from '../store/authStore';
 import { showToast } from '../components/Toast';
@@ -8,6 +9,11 @@ export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const authStore = useAuthStore();
 
+  const showAuthError = (title: string, message: string) => {
+    showToast.error(title, message);
+    Alert.alert(title, message);
+  };
+
   const handleLogin = async (data: LoginRequest) => {
     try {
       setIsLoading(true);
@@ -16,7 +22,7 @@ export const useAuth = () => {
       showToast.success('Bem-vindo!', `Olá, ${response.usuario.nome}.`);
       return true;
     } catch (error: any) {
-      showToast.error('Erro no Login', error.message || 'E-mail ou senha inválidos.');
+      showAuthError('Erro no Login', error.message || 'E-mail ou senha inválidos.');
       return false;
     } finally {
       setIsLoading(false);
@@ -30,7 +36,7 @@ export const useAuth = () => {
       showToast.success('Conta criada!', response.message || 'Faça login para continuar.');
       return true;
     } catch (error: any) {
-      showToast.error('Erro no Cadastro', error.message || 'Não foi possível criar a conta.');
+      showAuthError('Erro no Cadastro', error.message || 'Não foi possível criar a conta.');
       return false;
     } finally {
       setIsLoading(false);
@@ -44,7 +50,7 @@ export const useAuth = () => {
       showToast.success('E-mail enviado', response.message || 'Verifique sua caixa de entrada.');
       return true;
     } catch (error: any) {
-      showToast.error('Erro', error.message || 'Não foi possível enviar o e-mail.');
+      showAuthError('Erro', error.message || 'Não foi possível enviar o e-mail.');
       return false;
     } finally {
       setIsLoading(false);
