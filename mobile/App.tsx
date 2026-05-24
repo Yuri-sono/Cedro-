@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { QueryClientProvider } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
-import { colors } from './src/theme';
 
 // Utils e Stores
 import { queryClient, asyncStoragePersister } from './src/utils/queryClient';
@@ -18,6 +15,7 @@ import { OfflineBanner } from './src/components/OfflineBanner';
 
 // Navegação
 import { RootNavigator } from './src/navigation/RootNavigator';
+import { SplashScreen } from './src/screens/SplashScreen';
 
 export default function App() {
   const [isReady, setIsReady] = useState(false);
@@ -26,20 +24,20 @@ export default function App() {
 
   useEffect(() => {
     async function initApp() {
-      // Carregar preferências e auth state antes de exibir a UI
-      await loadPreferences();
-      await checkAuth();
-      setIsReady(true);
+      try {
+        await loadPreferences();
+        await checkAuth();
+      } catch (error) {
+        console.error('Erro ao iniciar app:', error);
+      } finally {
+        setIsReady(true);
+      }
     }
     initApp();
   }, [checkAuth, loadPreferences]);
 
   if (!isReady) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
+    return <SplashScreen />;
   }
 
   return (
@@ -60,11 +58,3 @@ export default function App() {
   );
 }
 
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF', // colors.background não está importado aqui mais, mas podemos usar branco puro ou reimportar colors
-  },
-});

@@ -81,30 +81,30 @@ export const Button = ({
 
 const styles = StyleSheet.create({
   base: {
-    height: 48,
-    borderRadius: borderRadius.md,
+    minHeight: 52,
+    borderRadius: borderRadius.lg,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: spacing.base,
     width: '100%',
   },
   primary: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.forest,
     borderWidth: 1,
     borderColor: colors.primaryDark,
-    shadowColor: colors.primaryDark,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowColor: colors.forest,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   secondary: {
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: colors.mint,
   },
   outline: {
-    backgroundColor: 'transparent',
+    backgroundColor: colors.surfaceWarm,
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: colors.forest,
   },
   textVariant: {
     backgroundColor: 'transparent',
@@ -116,7 +116,8 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: typography.size.base,
-    fontWeight: typography.weight.semibold,
+    fontWeight: typography.weight.bold,
+    textAlign: 'center',
   },
   textUnderline: {
     textDecorationLine: 'none',

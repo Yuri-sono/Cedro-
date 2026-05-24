@@ -6,6 +6,8 @@ import {
   StyleSheet,
   Text,
   View,
+  Image,
+  useWindowDimensions,
 } from 'react-native';
 import { borderRadius, colors, spacing, typography } from '../theme';
 
@@ -22,26 +24,35 @@ export const AuthScreenLayout = ({
   children,
   footer,
 }: AuthScreenLayoutProps) => {
+  const { width } = useWindowDimensions();
+  const isSmall = width < 380;
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.brandBand}>
-        <View style={styles.brandPill}>
-          <Text style={styles.brandPillText}>CEDRO</Text>
-        </View>
-          <Text style={styles.brandTitle}>CEDRO APOIO PSICOLOGICO E SAUDE</Text>
-        </View>
-
-        <View style={styles.formPanel}>
-          <View style={styles.header}>
-            <Text style={styles.title}>{title}</Text>
-            <Text style={styles.subtitle}>{subtitle}</Text>
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={[styles.scrollContent, isSmall && styles.scrollContentSmall]}
+      >
+        <View style={styles.inner}>
+          <View style={styles.brandBand}>
+            <Image source={require('../../assets/splash-icon.png')} style={styles.logo} resizeMode="contain" />
+            <View style={styles.brandTextBlock}>
+              <Text style={styles.brandPillText}>CEDRO</Text>
+              <Text style={styles.brandTitle}>CEDRO APOIO PSICOLOGICO E SAUDE</Text>
+            </View>
           </View>
-          <View style={styles.formBody}>{children}</View>
-          {footer ? <View style={styles.footer}>{footer}</View> : null}
+
+          <View style={styles.formPanel}>
+            <View style={styles.header}>
+              <Text style={styles.title}>{title}</Text>
+              <Text style={styles.subtitle}>{subtitle}</Text>
+            </View>
+            <View style={styles.formBody}>{children}</View>
+            {footer ? <View style={styles.footer}>{footer}</View> : null}
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -51,54 +62,74 @@ export const AuthScreenLayout = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: colors.cream,
   },
   scrollContent: {
     flexGrow: 1,
     padding: spacing.base,
     justifyContent: 'center',
   },
-  brandBand: {
-    backgroundColor: colors.primaryDark,
-    borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.base,
-    paddingVertical: spacing.lg,
-    marginBottom: spacing.base,
+  scrollContentSmall: {
+    padding: spacing.md,
+    justifyContent: 'flex-start',
   },
-  brandPill: {
-    alignSelf: 'flex-start',
-    backgroundColor: colors.primaryAccent,
-    borderRadius: borderRadius.full,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
+  inner: {
+    width: '100%',
+    maxWidth: 460,
+    alignSelf: 'center',
+  },
+  brandBand: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    backgroundColor: colors.surfaceWarm,
+    borderRadius: borderRadius.xl,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xl,
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: '#E7DCC6',
+    shadowColor: colors.forest,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 3,
+  },
+  logo: {
+    width: 118,
+    height: 118,
     marginBottom: spacing.sm,
   },
+  brandTextBlock: {
+    alignItems: 'center',
+  },
   brandPillText: {
-    color: colors.white,
-    fontSize: typography.size.sm,
+    color: colors.forest,
+    fontSize: typography.size.lg,
     fontWeight: typography.weight.bold,
     textTransform: 'uppercase',
   },
   brandTitle: {
-    color: colors.white,
-    fontSize: typography.size.base,
+    color: colors.textSecondary,
+    fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
-    lineHeight: typography.size.base * 1.4,
+    lineHeight: typography.size.sm * 1.35,
+    marginTop: spacing.xs,
+    textAlign: 'center',
   },
   formPanel: {
     backgroundColor: colors.surface,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.xl,
     borderWidth: 1,
-    borderColor: colors.border,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
+    borderColor: '#E7DCC6',
+    shadowColor: colors.forest,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.10,
+    shadowRadius: 18,
+    elevation: 4,
     overflow: 'hidden',
   },
   header: {
-    paddingHorizontal: spacing.base,
+    paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
     paddingBottom: spacing.sm,
   },
@@ -114,14 +145,14 @@ const styles = StyleSheet.create({
     lineHeight: typography.size.base * 1.4,
   },
   formBody: {
-    paddingHorizontal: spacing.base,
-    paddingBottom: spacing.base,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.lg,
   },
   footer: {
     borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingHorizontal: spacing.base,
+    borderTopColor: '#E7DCC6',
+    paddingHorizontal: spacing.lg,
     paddingVertical: spacing.base,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: colors.surfaceWarm,
   },
 });

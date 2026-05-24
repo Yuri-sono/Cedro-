@@ -18,12 +18,8 @@ export const usuarioService = {
     return response.data;
   },
 
-  atualizarFoto: async (formData: FormData): Promise<ApiMessage> => {
-    const response = await api.put<ApiMessage>(API_ENDPOINTS.AUTH.FOTO_PERFIL, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+  atualizarFoto: async (fotoUrl: string): Promise<ApiMessage> => {
+    const response = await api.put<ApiMessage>(API_ENDPOINTS.AUTH.FOTO_PERFIL, { fotoUrl });
     return response.data;
   },
 

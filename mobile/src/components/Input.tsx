@@ -32,7 +32,7 @@ export const Input = forwardRef<TextInput, InputProps>(
           <TextInput
             ref={ref}
             style={[styles.input, style]}
-            placeholderTextColor={colors.textSecondary}
+            placeholderTextColor="#8C968D"
             secureTextEntry={isPassword && !isPasswordVisible}
             onFocus={(e) => {
               setIsFocused(true);
@@ -73,18 +73,19 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.medium,
     color: colors.textPrimary,
     marginBottom: spacing.xs,
+    marginLeft: spacing.xs,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.backgroundSecondary,
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderRadius: borderRadius.md,
-    minHeight: 48,
+    backgroundColor: colors.surfaceWarm,
+    borderWidth: 1,
+    borderColor: '#E6DDC8',
+    borderRadius: borderRadius.lg,
+    minHeight: 52,
   },
   inputContainerFocused: {
-    borderColor: colors.primary,
+    borderColor: colors.forest,
     backgroundColor: colors.surface,
   },
   inputContainerError: {
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.base,
     fontSize: typography.size.base,
     color: colors.textPrimary,
-    minHeight: 48,
+    minHeight: 52,
   },
   eyeIcon: {
     padding: spacing.sm,

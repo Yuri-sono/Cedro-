@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuthStore } from '../../store/authStore';
 import { usePerfil } from '../../hooks/usePerfil';
 import { Input } from '../../components/Input';
@@ -20,7 +21,7 @@ import { TipoUsuario, UpdatePerfilRequest } from '../../types/api.types';
 
 export const EditProfileScreen = () => {
   const user = useAuthStore((state) => state.user);
-  const { atualizarPerfil, isAtualizando } = usePerfil();
+  const { atualizarPerfil, atualizarFoto, isAtualizando, isAtualizandoFoto } = usePerfil();
   const navigation = useNavigation();
 
   const [nome, setNome] = useState(user?.nome || '');
@@ -29,6 +30,7 @@ export const EditProfileScreen = () => {
   const [genero, setGenero] = useState(user?.genero || '');
   const [endereco, setEndereco] = useState(user?.endereco || '');
   const [bio, setBio] = useState(user?.bio || '');
+  const [fotoUrl, setFotoUrl] = useState(user?.fotoUrl || '');
   
   // Campos específicos para psicólogos
   const [especialidade, setEspecialidade] = useState(user?.especialidade || '');
@@ -39,12 +41,37 @@ export const EditProfileScreen = () => {
 
   const isPsicologo = user?.tipoUsuario === TipoUsuario.psicologo;
 
-  const handleChangePhoto = () => {
-    Alert.alert(
-      'Foto de Perfil',
-      'Funcionalidade de upload de foto será implementada em breve.',
-      [{ text: 'OK' }]
-    );
+  const handleChangePhoto = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert('Permissao necessaria', 'Autorize o acesso as fotos para alterar sua imagem de perfil.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.45,
+      base64: true,
+    });
+
+    if (result.canceled) return;
+
+    const asset = result.assets[0];
+    if (!asset.base64) {
+      Alert.alert('Imagem invalida', 'Nao foi possivel processar essa imagem.');
+      return;
+    }
+
+    const dataUri = `data:${asset.mimeType || 'image/jpeg'};base64,${asset.base64}`;
+    if (dataUri.length > 1_900_000) {
+      Alert.alert('Imagem muito grande', 'Escolha uma imagem menor para usar no perfil.');
+      return;
+    }
+
+    await atualizarFoto(dataUri);
+    setFotoUrl(dataUri);
   };
 
   const handleSave = async () => {
@@ -80,9 +107,11 @@ export const EditProfileScreen = () => {
       <ScrollView contentContainerStyle={styles.content}>
         {/* Avatar com botão de edição */}
         <View style={styles.avatarContainer}>
-          <Avatar url={user?.fotoUrl} size={100} />
+          <Avatar url={fotoUrl} size={104} />
           <TouchableOpacity style={styles.changePhotoButton} onPress={handleChangePhoto}>
-            <Text style={styles.changePhotoText}>Alterar Foto</Text>
+            <Text style={styles.changePhotoText}>
+              {isAtualizandoFoto ? 'Salvando foto...' : 'Alterar foto'}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -178,7 +207,7 @@ export const EditProfileScreen = () => {
           title="Salvar Alterações"
           onPress={handleSave}
           isLoading={isAtualizando}
-          disabled={!nome.trim()}
+          disabled={!nome.trim() || isAtualizandoFoto}
           style={styles.saveButton}
         />
       </ScrollView>
@@ -189,14 +218,23 @@ export const EditProfileScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.cream,
   },
   content: {
-    padding: spacing.xl,
+    padding: spacing.base,
+    paddingBottom: spacing['3xl'],
+    maxWidth: 520,
+    width: '100%',
+    alignSelf: 'center',
   },
   avatarContainer: {
     alignItems: 'center',
     marginBottom: spacing['2xl'],
+    backgroundColor: colors.surfaceWarm,
+    borderRadius: 24,
+    padding: spacing.xl,
+    borderWidth: 1,
+    borderColor: '#E7DCC6',
   },
   changePhotoButton: {
     marginTop: spacing.sm,

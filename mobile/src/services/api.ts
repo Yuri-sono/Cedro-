@@ -59,9 +59,9 @@ function extractApiMessage(data: unknown): string | undefined {
 function classifyError(error: AxiosError): ClassifiedError {
   if (!error.response) {
     if (error.code === 'ECONNABORTED') {
-      return { type: ApiErrorType.TIMEOUT, message: `Tempo de conexão esgotado. API: ${API_BASE_URL}` };
+      return { type: ApiErrorType.TIMEOUT, message: 'O servidor demorou para responder. Tente novamente em instantes.' };
     }
-    return { type: ApiErrorType.NETWORK, message: `Sem conexão com o servidor. API: ${API_BASE_URL}` };
+    return { type: ApiErrorType.NETWORK, message: 'Nao foi possivel concluir agora. Verifique sua internet e tente novamente.' };
   }
 
   const status = error.response.status;
@@ -80,10 +80,10 @@ function classifyError(error: AxiosError): ClassifiedError {
     };
   }
   if (status >= 500) {
-    return { type: ApiErrorType.SERVER, message: 'Erro interno do servidor.', status };
+    return { type: ApiErrorType.SERVER, message: 'O servidor encontrou um problema. Tente novamente em instantes.', status };
   }
 
-  return { type: ApiErrorType.UNKNOWN, message: 'Erro inesperado.', status };
+  return { type: ApiErrorType.UNKNOWN, message: extractApiMessage(error.response.data) || 'Nao foi possivel concluir a acao.', status };
 }
 
 function normalizePath(url?: string): string {

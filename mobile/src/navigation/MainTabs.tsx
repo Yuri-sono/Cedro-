@@ -15,18 +15,24 @@ export const MainTabs = () => {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
+        tabBarActiveTintColor: colors.forest,
         tabBarInactiveTintColor: colors.textSecondary,
         tabBarLabelStyle: {
           fontSize: 12,
-          fontWeight: '600',
+          fontWeight: '700',
+          marginTop: 2,
         },
         tabBarStyle: {
           backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          height: 64,
-          paddingBottom: 6,
-          paddingTop: 6,
+          borderTopColor: '#E8DDC8',
+          height: 72,
+          paddingBottom: 10,
+          paddingTop: 8,
+          shadowColor: colors.forest,
+          shadowOffset: { width: 0, height: -3 },
+          shadowOpacity: 0.08,
+          shadowRadius: 10,
+          elevation: 12,
         },
         tabBarIcon: ({ color, size, focused }) => {
           const iconName =

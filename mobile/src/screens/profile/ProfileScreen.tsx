@@ -26,11 +26,11 @@ export const ProfileScreen = () => {
   if (!user) return null;
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Avatar url={user.fotoUrl} size={100} style={styles.avatar} />
-        <Text style={styles.nome}>{user.nome}</Text>
-        <Text style={styles.email}>{user.email}</Text>
+        <Text style={styles.nome} numberOfLines={2}>{user.nome}</Text>
+        <Text style={styles.email} numberOfLines={2}>{user.email}</Text>
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{user.tipoUsuario.toUpperCase()}</Text>
         </View>
@@ -71,14 +71,20 @@ export const ProfileScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.cream,
+  },
+  content: {
+    maxWidth: 520,
+    width: '100%',
+    alignSelf: 'center',
+    paddingBottom: spacing['3xl'],
   },
   header: {
     alignItems: 'center',
     padding: spacing['2xl'],
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceWarm,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: '#E7DCC6',
   },
   avatar: {
     marginBottom: spacing.base,
@@ -87,15 +93,17 @@ const styles = StyleSheet.create({
     fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
     color: colors.textPrimary,
+    textAlign: 'center',
   },
   email: {
     fontSize: typography.size.base,
     color: colors.textSecondary,
     marginTop: spacing.xs,
+    textAlign: 'center',
   },
   badge: {
     marginTop: spacing.sm,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: colors.mint,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: borderRadius.md,
@@ -109,10 +117,13 @@ const styles = StyleSheet.create({
     marginTop: spacing.xl,
   },
   menuItem: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceWarm,
     padding: spacing.base,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: '#E7DCC6',
+    borderRadius: borderRadius.md,
+    marginHorizontal: spacing.base,
+    marginBottom: spacing.sm,
   },
   menuItemText: {
     fontSize: typography.size.base,

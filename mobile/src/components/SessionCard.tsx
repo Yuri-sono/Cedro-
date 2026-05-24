@@ -39,12 +39,12 @@ export const SessionCard = ({ sessao, onPress, isPaciente = true }: Props) => {
       
       <View style={styles.info}>
         {/* Futuro: Exibir nome do psicólogo ou paciente dependendo de quem está logado */}
-        <Text style={styles.title}>Consulta de Terapia</Text>
+        <Text style={styles.title} numberOfLines={1}>Consulta de terapia</Text>
         <Text style={styles.subtitle}>{sessao.duracao} minutos</Text>
       </View>
       
       <View style={[styles.statusBadge, { backgroundColor: getStatusColor(sessao.statusSessao) + '20' }]}>
-        <Text style={[styles.statusText, { color: getStatusColor(sessao.statusSessao) }]}>
+        <Text style={[styles.statusText, { color: getStatusColor(sessao.statusSessao) }]} numberOfLines={1}>
           {sessao.statusSessao}
         </Text>
       </View>
@@ -55,16 +55,17 @@ export const SessionCard = ({ sessao, onPress, isPaciente = true }: Props) => {
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.md,
+    backgroundColor: colors.surfaceWarm,
+    borderRadius: borderRadius.xl,
     padding: spacing.base,
     marginBottom: spacing.sm,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: '#E7DCC6',
     alignItems: 'center',
+    gap: spacing.md,
   },
   dateBlock: {
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: colors.mint,
     padding: spacing.sm,
     borderRadius: borderRadius.md,
     alignItems: 'center',
@@ -83,7 +84,7 @@ const styles = StyleSheet.create({
   },
   info: {
     flex: 1,
-    marginLeft: spacing.base,
+    minWidth: 0,
   },
   title: {
     fontSize: typography.size.md,
@@ -99,6 +100,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: borderRadius.full,
+    maxWidth: 96,
   },
   statusText: {
     fontSize: typography.size.xs,

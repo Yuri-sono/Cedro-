@@ -1,12 +1,18 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { usuarioService } from '../services/usuarioService';
 import { UpdatePerfilRequest, AlterarSenhaRequest } from '../types/api.types';
+import { ClassifiedError } from '../services/api';
 import { showToast } from '../components/Toast';
 import { useAuthStore } from '../store/authStore';
 
 export const usePerfil = () => {
   const queryClient = useQueryClient();
   const updateUser = useAuthStore((state) => state.updateUser);
+
+  const getErrorMessage = (error: unknown, fallback: string) => {
+    const err = error as Partial<ClassifiedError> | Error;
+    return 'message' in err && typeof err.message === 'string' ? err.message : fallback;
+  };
 
   const atualizarPerfilMutation = useMutation({
     mutationFn: (data: UpdatePerfilRequest) => usuarioService.atualizarPerfil(data),
@@ -17,8 +23,18 @@ export const usePerfil = () => {
       showToast.success('Perfil atualizado', 'Seus dados foram salvos com sucesso.');
     },
     onError: (error) => {
-      const message = error instanceof Error ? error.message : undefined;
-      showToast.error('Erro ao atualizar', message || 'Verifique os dados e tente novamente.');
+      showToast.error('Nao foi possivel salvar', getErrorMessage(error, 'Revise os dados e tente novamente.'));
+    },
+  });
+
+  const atualizarFotoMutation = useMutation({
+    mutationFn: (fotoUrl: string) => usuarioService.atualizarFoto(fotoUrl),
+    onSuccess: (_, fotoUrl) => {
+      updateUser({ fotoUrl });
+      showToast.success('Foto atualizada', 'Sua foto de perfil foi salva.');
+    },
+    onError: (error) => {
+      showToast.error('Nao foi possivel salvar a foto', getErrorMessage(error, 'Escolha outra imagem e tente novamente.'));
     },
   });
 
@@ -28,14 +44,15 @@ export const usePerfil = () => {
       showToast.success('Senha alterada', 'Sua senha foi atualizada com sucesso.');
     },
     onError: (error) => {
-      const message = error instanceof Error ? error.message : undefined;
-      showToast.error('Erro ao alterar senha', message || 'Verifique sua senha atual.');
+      showToast.error('Erro ao alterar senha', getErrorMessage(error, 'Verifique sua senha atual.'));
     },
   });
 
   return {
     atualizarPerfil: atualizarPerfilMutation.mutateAsync,
     isAtualizando: atualizarPerfilMutation.isPending,
+    atualizarFoto: atualizarFotoMutation.mutateAsync,
+    isAtualizandoFoto: atualizarFotoMutation.isPending,
     alterarSenha: alterarSenhaMutation.mutateAsync,
     isAlterandoSenha: alterarSenhaMutation.isPending,
   };

@@ -14,7 +14,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   splash: {
     image: './assets/splash-icon.png',
     resizeMode: 'contain',
-    backgroundColor: '#198754',
+    backgroundColor: '#F7F1E3',
   },
   assetBundlePatterns: ['**/*'],
   ios: {
@@ -28,7 +28,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
-      backgroundColor: '#ffffff',
+      backgroundColor: '#F7F1E3',
     },
     package: 'com.cedro.app',
     permissions: [
@@ -41,6 +41,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     favicon: './assets/favicon.png',
   },
   plugins: [
+    'expo-font',
+    [
+      'expo-image-picker',
+      {
+        photosPermission: 'Permita escolher uma imagem para atualizar sua foto de perfil.',
+      },
+    ],
     [
       'expo-secure-store',
       {

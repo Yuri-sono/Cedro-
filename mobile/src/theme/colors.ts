@@ -10,16 +10,22 @@ export const colors = {
   primaryHover: '#20c997',
   primaryDark: '#146c43',
   primaryLight: '#75b798',
+  forest: '#264D34',
+  leaf: '#8DBA65',
+  mint: '#DDEEE2',
+  cream: '#F7F1E3',
+  sand: '#EEE4D0',
 
   // ── Fundos ──
-  background: '#FFFFFF',
-  backgroundSecondary: '#F8F9FA',
-  backgroundTertiary: '#EEF3F0',
+  background: '#FFFDF8',
+  backgroundSecondary: '#F7F1E3',
+  backgroundTertiary: '#E8F3EA',
   surface: '#FFFFFF',
+  surfaceWarm: '#FFFBF2',
 
   // ── Textos ──
-  textPrimary: '#212529',
-  textSecondary: '#6C757D',
+  textPrimary: '#1F2E24',
+  textSecondary: '#69756C',
   textInverse: '#FFFFFF',
 
   // ── Bordas & Sombras ──
