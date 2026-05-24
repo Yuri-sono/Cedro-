@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet, Text } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors, spacing, borderRadius, typography } from '../theme';
 
 interface Props {
@@ -17,6 +18,8 @@ export const ChatInput = ({ onSend, disabled }: Props) => {
     }
   };
 
+  const canSend = Boolean(text.trim()) && !disabled;
+
   return (
     <View style={styles.container}>
       <TextInput
@@ -29,12 +32,12 @@ export const ChatInput = ({ onSend, disabled }: Props) => {
         maxLength={1000}
         editable={!disabled}
       />
-      <TouchableOpacity 
-        style={[styles.sendButton, (!text.trim() || disabled) && styles.sendButtonDisabled]} 
+      <TouchableOpacity
+        style={[styles.sendButton, !canSend && styles.sendButtonDisabled]}
         onPress={handleSend}
-        disabled={!text.trim() || disabled}
+        disabled={!canSend}
       >
-        <Text style={styles.sendIcon}>➤</Text>
+        <Ionicons name="send" size={18} color={colors.white} />
       </TouchableOpacity>
     </View>
   );
@@ -70,14 +73,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: spacing.sm,
-    marginBottom: 2, // alinha com a base do input
+    marginBottom: 2,
   },
   sendButtonDisabled: {
     backgroundColor: colors.border,
-  },
-  sendIcon: {
-    color: colors.white,
-    fontSize: 18,
-    marginLeft: 2, // ajuste visual do ícone
   },
 });

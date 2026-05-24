@@ -1,12 +1,21 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, FlatList, KeyboardAvoidingView, Platform, ActivityIndicator, TouchableOpacity, Text } from 'react-native';
-import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
+import {
+  ActivityIndicator,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { RootStackParamList, ChatStackParamList } from '../../types/navigation.types';
 import { useChat } from '../../hooks/useChat';
 import { MessageBubble } from '../../components/MessageBubble';
 import { ChatInput } from '../../components/ChatInput';
-import { colors, spacing } from '../../theme';
+import { borderRadius, colors, spacing } from '../../theme';
 import { useAuthStore } from '../../store/authStore';
 
 type ChatRouteProp = RouteProp<ChatStackParamList, 'Chat'>;
@@ -16,29 +25,28 @@ export const ChatScreen = () => {
   const route = useRoute<ChatRouteProp>();
   const navigation = useNavigation<ChatNavigationProp>();
   const currentUserId = useAuthStore((state) => state.user?.id);
-  
+
   const { userId, userName } = route.params;
   const channelName = currentUserId
     ? `chat-${Math.min(currentUserId, userId)}-${Math.max(currentUserId, userId)}`
     : `chat-${userId}`;
 
-  // Atualiza o título e adiciona botões de chamada no header
   useEffect(() => {
-    navigation.setOptions({ 
+    navigation.setOptions({
       title: userName,
       headerRight: () => (
         <View style={styles.headerButtons}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.headerButton}
             onPress={() => navigation.navigate('VoiceCall', { channelName, userName })}
           >
-            <Text style={styles.headerIcon}>📞</Text>
+            <Ionicons name="call-outline" size={19} color={colors.primaryDark} />
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.headerButton}
             onPress={() => navigation.navigate('VideoCall', { channelName, userName })}
           >
-            <Text style={styles.headerIcon}>📹</Text>
+            <Ionicons name="videocam-outline" size={21} color={colors.primaryDark} />
           </TouchableOpacity>
         </View>
       ),
@@ -69,7 +77,7 @@ export const ChatScreen = () => {
       <FlatList
         ref={flatListRef}
         data={mensagens}
-        keyExtractor={(item, index) => item.id ? item.id.toString() : `temp-${index}`}
+        keyExtractor={(item, index) => (item.id ? item.id.toString() : `temp-${index}`)}
         renderItem={({ item }) => <MessageBubble mensagem={item} />}
         contentContainerStyle={styles.listContent}
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
@@ -96,12 +104,14 @@ const styles = StyleSheet.create({
   },
   headerButtons: {
     flexDirection: 'row',
-    gap: spacing.md,
+    gap: spacing.sm,
   },
   headerButton: {
-    padding: spacing.xs,
-  },
-  headerIcon: {
-    fontSize: 20,
+    width: 36,
+    height: 36,
+    borderRadius: borderRadius.full,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.backgroundTertiary,
   },
 });

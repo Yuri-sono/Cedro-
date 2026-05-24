@@ -1,45 +1,71 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ChatStackParamList } from '../../types/navigation.types';
 import { useConversas } from '../../hooks/useConversas';
 import { ConversaResumo } from '../../types/api.types';
 import { Avatar } from '../../components/Avatar';
-import { colors, spacing, typography, borderRadius } from '../../theme';
+import { borderRadius, colors, spacing, typography } from '../../theme';
 
 type NavigationProp = NativeStackNavigationProp<ChatStackParamList, 'Conversas'>;
+
+const formatarHorario = (iso?: string) => {
+  if (!iso) return '';
+  const data = new Date(iso);
+  const hoje = new Date();
+  const ontem = new Date();
+  ontem.setDate(hoje.getDate() - 1);
+
+  const isMesmoDia = data.toDateString() === hoje.toDateString();
+  const isOntem = data.toDateString() === ontem.toDateString();
+
+  if (isMesmoDia) {
+    return data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  }
+  if (isOntem) return 'Ontem';
+  return data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+};
 
 export const ConversasScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { conversas, isLoading, isFetching, refetch } = useConversas();
 
   const renderItem = ({ item }: { item: ConversaResumo }) => {
-    // Formatar data (simplificado)
-    const dataObj = new Date(item.dataUltimaMensagem);
-    const timeString = dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-
     return (
       <TouchableOpacity
         style={styles.conversaCard}
-        onPress={() => navigation.navigate('Chat', { userId: item.userId, userName: item.nome, avatarUrl: item.fotoUrl || undefined })}
+        onPress={() =>
+          navigation.navigate('Chat', {
+            userId: item.userId,
+            userName: item.nome,
+            avatarUrl: item.fotoUrl || undefined,
+          })
+        }
       >
         <Avatar url={item.fotoUrl} size={50} />
         <View style={styles.conversaInfo}>
           <View style={styles.conversaHeader}>
-            <Text style={styles.nome} numberOfLines={1}>{item.nome}</Text>
-            <Text style={styles.hora}>{timeString}</Text>
+            <Text style={styles.nome} numberOfLines={1}>
+              {item.nome}
+            </Text>
+            <Text style={styles.hora}>{formatarHorario(item.dataUltimaMensagem)}</Text>
           </View>
           <View style={styles.conversaFooter}>
-            <Text 
-              style={[styles.mensagem, item.naoLidas > 0 && styles.mensagemNaoLida]} 
-              numberOfLines={1}
-            >
+            <Text style={[styles.mensagem, item.naoLidas > 0 && styles.mensagemNaoLida]} numberOfLines={1}>
               {item.ultimaMensagem}
             </Text>
             {item.naoLidas > 0 && (
               <View style={styles.badge}>
-                <Text style={styles.badgeText}>{item.naoLidas}</Text>
+                <Text style={styles.badgeText}>{item.naoLidas > 99 ? '99+' : item.naoLidas}</Text>
               </View>
             )}
           </View>
@@ -58,6 +84,7 @@ export const ConversasScreen = () => {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.brandText}>CEDRO APOIO PSICOLOGICO E SAUDE</Text>
       <FlatList
         data={conversas}
         keyExtractor={(item) => item.userId.toString()}
@@ -67,7 +94,8 @@ export const ConversasScreen = () => {
         refreshing={isFetching}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Você ainda não possui conversas.</Text>
+            <Ionicons name="chatbubbles-outline" size={34} color={colors.textSecondary} />
+            <Text style={styles.emptyText}>Voce ainda nao possui conversas.</Text>
           </View>
         }
       />
@@ -79,6 +107,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  brandText: {
+    fontSize: typography.size.xs,
+    color: colors.primaryDark,
+    fontWeight: typography.weight.bold,
+    letterSpacing: 0.4,
+    paddingHorizontal: spacing.base,
+    paddingTop: spacing.base,
+    paddingBottom: spacing.sm,
   },
   center: {
     flex: 1,
@@ -153,6 +190,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: spacing['2xl'],
     marginTop: 100,
+    gap: spacing.sm,
   },
   emptyText: {
     color: colors.textSecondary,

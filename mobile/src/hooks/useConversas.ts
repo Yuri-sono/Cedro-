@@ -14,7 +14,8 @@ export const useConversas = () => {
       return response.data;
     },
     enabled: isAuthenticated,
-    refetchInterval: 3000, // Polling a cada 3 segundos
+    staleTime: 2000,
+    refetchInterval: 4000,
   });
 
   return {
