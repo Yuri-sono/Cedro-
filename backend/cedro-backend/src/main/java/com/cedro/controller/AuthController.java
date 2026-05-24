@@ -91,8 +91,11 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Map.of("error", "Informe o email"));
         }
         
-        authService.recuperarSenha(email);
-        return ResponseEntity.ok(Map.of("message", "Nova senha enviada (verifique o console)"));
+        String senhaTemporaria = authService.recuperarSenha(email);
+        return ResponseEntity.ok(Map.of(
+                "message", "Senha temporaria gerada com sucesso",
+                "senhaTemporaria", senhaTemporaria
+        ));
     }
     
     @PutMapping("/foto-perfil")

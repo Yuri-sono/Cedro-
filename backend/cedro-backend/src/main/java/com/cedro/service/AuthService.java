@@ -1,7 +1,12 @@
 package com.cedro.service;
 
-import com.cedro.model.dto.*;
 import com.cedro.model.TipoUsuario;
+import com.cedro.model.dto.AlterarSenhaRequest;
+import com.cedro.model.dto.LoginRequest;
+import com.cedro.model.dto.LoginResponse;
+import com.cedro.model.dto.RegisterRequest;
+import com.cedro.model.dto.UpdatePerfilRequest;
+import com.cedro.model.dto.UsuarioResponse;
 import com.cedro.model.entity.Usuario;
 import com.cedro.repository.MensagemRepository;
 import com.cedro.repository.SessaoRepository;
@@ -12,16 +17,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 @Service
 public class AuthService {
-    
+
     @Autowired
     private UsuarioRepository usuarioRepository;
-    
+
     @Autowired
     private SessaoRepository sessaoRepository;
-    
+
     @Autowired
     private MensagemRepository mensagemRepository;
 
@@ -30,21 +34,50 @@ public class AuthService {
 
     @Autowired
     private JwtUtil jwtUtil;
-    
+
+    private String normalizeEmail(String email) {
+        return email == null ? "" : email.trim().toLowerCase();
+    }
+
+    private boolean isBcryptHash(String hash) {
+        return hash != null && (hash.startsWith("$2a$") || hash.startsWith("$2b$") || hash.startsWith("$2y$"));
+    }
+
+    private boolean validarSenha(Usuario usuario, String senhaInformada) {
+        String senhaHash = usuario.getSenhaHash();
+        if (senhaHash == null || senhaHash.isBlank()) {
+            return false;
+        }
+
+        if (isBcryptHash(senhaHash)) {
+            return passwordEncoder.matches(senhaInformada, senhaHash);
+        }
+
+        // Compatibilidade com contas antigas salvas em texto puro.
+        if (senhaInformada.equals(senhaHash)) {
+            usuario.setSenhaHash(passwordEncoder.encode(senhaInformada));
+            usuarioRepository.save(usuario);
+            return true;
+        }
+
+        return false;
+    }
+
     public LoginResponse login(LoginRequest request) {
-        Usuario usuario = usuarioRepository.findByEmailAndAtivoTrue(request.getEmail())
+        String email = normalizeEmail(request.getEmail());
+        Usuario usuario = usuarioRepository.findByEmailIgnoreCaseAndAtivoTrue(email)
                 .orElseThrow(() -> new RuntimeException("Email ou senha incorretos"));
-        
-        if (!passwordEncoder.matches(request.getSenha(), usuario.getSenhaHash())) {
+
+        if (!validarSenha(usuario, request.getSenha())) {
             throw new RuntimeException("Email ou senha incorretos");
         }
-        
+
         String token = jwtUtil.generateToken(
-                usuario.getId(), 
-                usuario.getEmail(), 
+                usuario.getId(),
+                usuario.getEmail(),
                 usuario.getTipoUsuario().name()
         );
-        
+
         UsuarioResponse usuarioResponse = new UsuarioResponse(
                 usuario.getId(),
                 usuario.getNome(),
@@ -60,42 +93,43 @@ public class AuthService {
                 usuario.getCrp(),
                 usuario.getPrecoSessao()
         );
-        
+
         return new LoginResponse(token, usuarioResponse);
     }
-    
+
     public void register(RegisterRequest request) {
-        if (usuarioRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Esse email já tá em uso");
+        String email = normalizeEmail(request.getEmail());
+        if (usuarioRepository.existsByEmailIgnoreCase(email)) {
+            throw new RuntimeException("Esse email ja ta em uso");
         }
-        
+
         String senha = request.getSenha();
         if (senha.length() < 6) {
-            throw new RuntimeException("Senha muito curta (mín. 6 caracteres)");
+            throw new RuntimeException("Senha muito curta (min. 6 caracteres)");
         }
         if (!senha.matches(".*\\d.*")) {
-            throw new RuntimeException("Precisa ter pelo menos 1 número");
+            throw new RuntimeException("Precisa ter pelo menos 1 numero");
         }
         if (!senha.matches(".*[!@#$%^&*(),.?\":{}|<>].*")) {
             throw new RuntimeException("Precisa ter pelo menos 1 caractere especial");
         }
-        
+
         Usuario usuario = new Usuario();
         usuario.setNome(request.getNome());
-        usuario.setEmail(request.getEmail());
+        usuario.setEmail(email);
         usuario.setSenhaHash(passwordEncoder.encode(request.getSenha()));
         usuario.setDataNascimento(request.getDataNascimento());
         usuario.setGenero(request.getGenero());
         usuario.setTelefone(request.getTelefone());
-        
-        // SEGURANÇA: Bloquear registro como admin via API pública
+
+        // Bloquear registro como admin pela API publica.
         TipoUsuario tipo = request.getTipoUsuario();
         if (tipo == null || tipo == TipoUsuario.admin) {
             usuario.setTipoUsuario(TipoUsuario.paciente);
         } else {
             usuario.setTipoUsuario(tipo);
         }
-        
+
         if (request.getEspecialidade() != null) {
             usuario.setEspecialidade(request.getEspecialidade());
         }
@@ -105,27 +139,28 @@ public class AuthService {
         if (request.getCrp() != null) {
             usuario.setCrp(request.getCrp());
         }
-        
+
         usuarioRepository.save(usuario);
     }
-    
+
     public LoginResponse googleLogin(String email, String nome) {
-        Usuario usuario = usuarioRepository.findByEmailAndAtivoTrue(email)
+        String normalizedEmail = normalizeEmail(email);
+        Usuario usuario = usuarioRepository.findByEmailIgnoreCaseAndAtivoTrue(normalizedEmail)
                 .orElseGet(() -> {
                     Usuario novoUsuario = new Usuario();
                     novoUsuario.setNome(nome);
-                    novoUsuario.setEmail(email);
+                    novoUsuario.setEmail(normalizedEmail);
                     novoUsuario.setSenhaHash(passwordEncoder.encode("google_oauth_" + System.currentTimeMillis()));
                     novoUsuario.setTipoUsuario(TipoUsuario.paciente);
                     return usuarioRepository.save(novoUsuario);
                 });
-        
+
         String token = jwtUtil.generateToken(
                 usuario.getId(),
                 usuario.getEmail(),
                 usuario.getTipoUsuario().name()
         );
-        
+
         UsuarioResponse usuarioResponse = new UsuarioResponse(
                 usuario.getId(),
                 usuario.getNome(),
@@ -141,65 +176,58 @@ public class AuthService {
                 usuario.getCrp(),
                 usuario.getPrecoSessao()
         );
-        
+
         return new LoginResponse(token, usuarioResponse);
     }
-    
+
     /**
      * Valida o ID token do Google server-side antes de autenticar.
-     * Decodifica o JWT do Google, verifica issuer e audience, 
-     * e só então permite o login/registro.
      */
     public LoginResponse googleLoginWithToken(String idToken) {
         try {
-            // Decodificar o payload do JWT do Google
             String[] parts = idToken.split("\\.");
             if (parts.length != 3) {
-                throw new RuntimeException("Token do Google inválido");
+                throw new RuntimeException("Token do Google invalido");
             }
-            
+
             String payload = new String(java.util.Base64.getUrlDecoder().decode(parts[1]));
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
             com.fasterxml.jackson.databind.JsonNode claims = mapper.readTree(payload);
-            
-            // Verificar issuer (deve ser accounts.google.com)
+
             String issuer = claims.has("iss") ? claims.get("iss").asText() : "";
             if (!"accounts.google.com".equals(issuer) && !"https://accounts.google.com".equals(issuer)) {
-                throw new RuntimeException("Token do Google com issuer inválido");
+                throw new RuntimeException("Token do Google com issuer invalido");
             }
-            
-            // Verificar expiração
+
             long exp = claims.has("exp") ? claims.get("exp").asLong() : 0;
             if (exp * 1000 < System.currentTimeMillis()) {
                 throw new RuntimeException("Token do Google expirado");
             }
-            
-            // Extrair dados do usuário
+
             String email = claims.has("email") ? claims.get("email").asText() : null;
             String nome = claims.has("name") ? claims.get("name").asText() : null;
             boolean emailVerified = claims.has("email_verified") && claims.get("email_verified").asBoolean();
-            
+
             if (email == null || email.isEmpty()) {
-                throw new RuntimeException("Email não encontrado no token do Google");
+                throw new RuntimeException("Email nao encontrado no token do Google");
             }
-            
+
             if (!emailVerified) {
-                throw new RuntimeException("Email do Google não verificado");
+                throw new RuntimeException("Email do Google nao verificado");
             }
-            
+
             return googleLogin(email, nome != null ? nome : email);
-            
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException("Erro ao validar token do Google: " + e.getMessage());
         }
     }
-    
+
     public void updatePerfil(Integer userId, UpdatePerfilRequest request) {
         Usuario usuario = usuarioRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-        
+                .orElseThrow(() -> new RuntimeException("Usuario nao encontrado"));
+
         if (request.getNome() != null) usuario.setNome(request.getNome());
         if (request.getTelefone() != null) usuario.setTelefone(request.getTelefone());
         if (request.getDataNascimento() != null) usuario.setDataNascimento(request.getDataNascimento());
@@ -209,37 +237,37 @@ public class AuthService {
         if (request.getEspecialidade() != null) usuario.setEspecialidade(request.getEspecialidade());
         if (request.getCrp() != null) usuario.setCrp(request.getCrp());
         if (request.getPrecoSessao() != null) usuario.setPrecoSessao(request.getPrecoSessao());
-        
+
         usuarioRepository.save(usuario);
     }
-    
+
     public void alterarSenha(Integer userId, AlterarSenhaRequest request) {
         Usuario usuario = usuarioRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-        
-        if (!passwordEncoder.matches(request.getSenhaAtual(), usuario.getSenhaHash())) {
-            throw new RuntimeException("Senha atual tá errada");
+                .orElseThrow(() -> new RuntimeException("Usuario nao encontrado"));
+
+        if (!validarSenha(usuario, request.getSenhaAtual())) {
+            throw new RuntimeException("Senha atual ta errada");
         }
-        
+
         String novaSenha = request.getNovaSenha();
         if (novaSenha.length() < 6) {
-            throw new RuntimeException("Senha muito curta (mín. 6 caracteres)");
+            throw new RuntimeException("Senha muito curta (min. 6 caracteres)");
         }
         if (!novaSenha.matches(".*\\d.*")) {
-            throw new RuntimeException("Precisa ter pelo menos 1 número");
+            throw new RuntimeException("Precisa ter pelo menos 1 numero");
         }
         if (!novaSenha.matches(".*[!@#$%^&*(),.?\":{}|<>].*")) {
             throw new RuntimeException("Precisa ter pelo menos 1 caractere especial");
         }
-        
+
         usuario.setSenhaHash(passwordEncoder.encode(request.getNovaSenha()));
         usuarioRepository.save(usuario);
     }
-    
+
     @Transactional
     public void excluirConta(Integer userId) {
         Usuario usuario = usuarioRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new RuntimeException("Usuario nao encontrado"));
 
         sessaoRepository.deleteByPacienteId(userId);
         sessaoRepository.deleteByPsicologoId(userId);
@@ -247,25 +275,22 @@ public class AuthService {
         mensagemRepository.deleteByDestinatarioId(userId);
         usuarioRepository.delete(usuario);
     }
-    
-    public void recuperarSenha(String email) {
-        Usuario usuario = usuarioRepository.findByEmailAndAtivoTrue(email)
-                .orElseThrow(() -> new RuntimeException("Email não cadastrado"));
-        // TODO: integrar envio de email (ex: SendGrid, JavaMailSender)
-        // Quando o envio de email estiver implementado, gerar e enviar a senha temporária:
-        // String senhaTemporaria = "Temp@" + System.currentTimeMillis() % 10000;
-        // usuario.setSenhaHash(passwordEncoder.encode(senhaTemporaria));
-        // usuarioRepository.save(usuario);
-        // emailService.enviarSenhaTemporaria(email, senhaTemporaria);
-        
-        // Por enquanto, apenas valida que o email existe.
-        // A recuperação real deve ser feita via suporte.
+
+    public String recuperarSenha(String email) {
+        Usuario usuario = usuarioRepository.findByEmailIgnoreCaseAndAtivoTrue(normalizeEmail(email))
+                .orElseThrow(() -> new RuntimeException("Email nao cadastrado"));
+
+        String sufixo = String.valueOf(System.currentTimeMillis() % 100000);
+        String senhaTemporaria = "Cedro@" + sufixo;
+        usuario.setSenhaHash(passwordEncoder.encode(senhaTemporaria));
+        usuarioRepository.save(usuario);
+        return senhaTemporaria;
     }
-    
+
     public void updateFotoPerfil(Integer userId, String fotoUrl) {
         Usuario usuario = usuarioRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-        
+                .orElseThrow(() -> new RuntimeException("Usuario nao encontrado"));
+
         usuario.setFotoUrl(fotoUrl);
         usuarioRepository.save(usuario);
     }
