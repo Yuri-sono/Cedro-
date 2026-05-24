@@ -146,6 +146,7 @@ export interface AlterarSenhaRequest {
 // ── Respostas genéricas do backend ──
 export interface ApiMessage {
   message: string;
+  senhaTemporaria?: string;
 }
 
 export interface ApiError {

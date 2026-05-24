@@ -77,14 +77,15 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderWidth: 1,
+    backgroundColor: colors.backgroundSecondary,
+    borderWidth: 2,
     borderColor: colors.border,
     borderRadius: borderRadius.md,
     minHeight: 48,
   },
   inputContainerFocused: {
     borderColor: colors.primary,
+    backgroundColor: colors.surface,
   },
   inputContainerError: {
     borderColor: colors.error,

@@ -6,6 +6,7 @@
 export const colors = {
   // ── Verde Cedro (identidade visual) ──
   primary: '#198754',
+  primaryAccent: '#20c997',
   primaryHover: '#20c997',
   primaryDark: '#146c43',
   primaryLight: '#75b798',
@@ -13,6 +14,7 @@ export const colors = {
   // ── Fundos ──
   background: '#FFFFFF',
   backgroundSecondary: '#F8F9FA',
+  backgroundTertiary: '#EEF3F0',
   surface: '#FFFFFF',
 
   // ── Textos ──

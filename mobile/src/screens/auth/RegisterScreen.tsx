@@ -1,21 +1,15 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../types/navigation.types';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
-import { colors, typography, spacing } from '../../theme';
+import { colors, spacing, typography } from '../../theme';
 import { useAuth } from '../../hooks/useAuth';
 import { TipoUsuario } from '../../types/api.types';
 import { showToast } from '../../components/Toast';
+import { AuthScreenLayout } from '../../components/AuthScreenLayout';
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Register'>;
 
@@ -41,16 +35,16 @@ export const RegisterScreen = () => {
 
   const handleRegister = async () => {
     if (!nome || !email || !senha) return;
-    
+
     if (senha !== confirmarSenha) {
-      showToast.error('Erro de validação', 'As senhas não coincidem.');
+      showToast.error('Erro de validacao', 'As senhas nao coincidem.');
       return;
     }
 
     if (!senhaValida) {
       showToast.error(
-        'Senha inválida',
-        'Use 6+ caracteres, 1 número e 1 caractere especial.',
+        'Senha invalida',
+        'Use 6+ caracteres, 1 numero e 1 caractere especial.',
       );
       return;
     }
@@ -59,7 +53,7 @@ export const RegisterScreen = () => {
       nome: nome.trim(),
       email: email.trim(),
       senha,
-      tipoUsuario: TipoUsuario.paciente, // Padrão: registro pelo app é sempre paciente
+      tipoUsuario: TipoUsuario.paciente,
     });
 
     if (success) {
@@ -68,135 +62,101 @@ export const RegisterScreen = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Criar Conta</Text>
-          <Text style={styles.subtitle}>Preencha seus dados para começar</Text>
-        </View>
-
-        <View style={styles.form}>
-          <Input
-            label="Nome Completo"
-            placeholder="Digite seu nome"
-            autoCapitalize="words"
-            value={nome}
-            onChangeText={setNome}
-          />
-          <Input
-            label="E-mail"
-            placeholder="Digite seu e-mail"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-          />
-          <Input
-            label="Senha"
-            placeholder="Crie uma senha"
-            isPassword
-            value={senha}
-            onChangeText={setSenha}
-          />
-          {senha ? (
-            <View style={styles.passwordRules}>
-              <Text
-                style={[
-                  styles.passwordRule,
-                  senhaValidacao.minLength ? styles.passwordRuleValid : styles.passwordRuleInvalid,
-                ]}
-              >
-                6+ caracteres
-              </Text>
-              <Text
-                style={[
-                  styles.passwordRule,
-                  senhaValidacao.hasNumber ? styles.passwordRuleValid : styles.passwordRuleInvalid,
-                ]}
-              >
-                1 número
-              </Text>
-              <Text
-                style={[
-                  styles.passwordRule,
-                  senhaValidacao.hasSpecial ? styles.passwordRuleValid : styles.passwordRuleInvalid,
-                ]}
-              >
-                1 caractere especial
-              </Text>
-            </View>
-          ) : null}
-          <Input
-            label="Confirmar Senha"
-            placeholder="Repita sua senha"
-            isPassword
-            value={confirmarSenha}
-            onChangeText={setConfirmarSenha}
-            error={
-              confirmarSenha && senha !== confirmarSenha
-                ? 'As senhas não coincidem.'
-                : undefined
-            }
-          />
-
+    <AuthScreenLayout
+      title="Criar Conta"
+      subtitle="Cadastre-se para agendar sessoes e conversar com seu psicologo"
+      footer={
+        <View style={styles.footerRow}>
+          <Text style={styles.footerText}>Ja possui conta?</Text>
           <Button
-            title="Cadastrar"
-            onPress={handleRegister}
-            isLoading={isLoading}
-            disabled={
-              !nome ||
-              !email ||
-              !senha ||
-              !confirmarSenha ||
-              !senhaValida ||
-              senha !== confirmarSenha
-            }
-            style={styles.registerButton}
+            title="Entrar"
+            variant="text"
+            onPress={() => navigation.goBack()}
+            textStyle={styles.footerActionText}
           />
-
-          <View style={styles.loginContainer}>
-            <Text style={styles.loginText}>Já tem uma conta? </Text>
-            <Button
-              title="Faça login"
-              variant="text"
-              onPress={() => navigation.goBack()}
-            />
-          </View>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      }
+    >
+      <Input
+        label="Nome completo"
+        placeholder="Digite seu nome"
+        autoCapitalize="words"
+        value={nome}
+        onChangeText={setNome}
+      />
+      <Input
+        label="E-mail"
+        placeholder="Digite seu e-mail"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <Input
+        label="Senha"
+        placeholder="Crie uma senha"
+        isPassword
+        value={senha}
+        onChangeText={setSenha}
+      />
+
+      {senha ? (
+        <View style={styles.passwordRules}>
+          <Text
+            style={[
+              styles.passwordRule,
+              senhaValidacao.minLength ? styles.passwordRuleValid : styles.passwordRuleInvalid,
+            ]}
+          >
+            6+ caracteres
+          </Text>
+          <Text
+            style={[
+              styles.passwordRule,
+              senhaValidacao.hasNumber ? styles.passwordRuleValid : styles.passwordRuleInvalid,
+            ]}
+          >
+            1 numero
+          </Text>
+          <Text
+            style={[
+              styles.passwordRule,
+              senhaValidacao.hasSpecial ? styles.passwordRuleValid : styles.passwordRuleInvalid,
+            ]}
+          >
+            1 caractere especial
+          </Text>
+        </View>
+      ) : null}
+
+      <Input
+        label="Confirmar senha"
+        placeholder="Repita sua senha"
+        isPassword
+        value={confirmarSenha}
+        onChangeText={setConfirmarSenha}
+        error={confirmarSenha && senha !== confirmarSenha ? 'As senhas nao coincidem.' : undefined}
+      />
+
+      <Button
+        title="Cadastrar"
+        onPress={handleRegister}
+        isLoading={isLoading}
+        disabled={
+          !nome ||
+          !email ||
+          !senha ||
+          !confirmarSenha ||
+          !senhaValida ||
+          senha !== confirmarSenha
+        }
+        style={styles.registerButton}
+      />
+    </AuthScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    padding: spacing.xl,
-    justifyContent: 'center',
-  },
-  header: {
-    marginBottom: spacing['2xl'],
-  },
-  title: {
-    fontSize: typography.size['2xl'],
-    fontWeight: typography.weight.bold,
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
-  },
-  subtitle: {
-    fontSize: typography.size.base,
-    color: colors.textSecondary,
-  },
-  form: {
-    width: '100%',
-  },
   passwordRules: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -216,14 +176,19 @@ const styles = StyleSheet.create({
   },
   registerButton: {
     marginTop: spacing.md,
-    marginBottom: spacing.xl,
   },
-  loginContainer: {
+  footerRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  loginText: {
+  footerText: {
     color: colors.textSecondary,
+    fontSize: typography.size.sm,
+    marginRight: spacing.xs,
+  },
+  footerActionText: {
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.semibold,
   },
 });

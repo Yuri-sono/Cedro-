@@ -15,6 +15,13 @@ import { API_BASE_URL } from '../config/environment';
 
 const SECURE_STORE_TOKEN_KEY = 'cedro_jwt_token';
 const RETRYABLE_METHODS = new Set(['get', 'head', 'options']);
+const PUBLIC_AUTH_ENDPOINTS = new Set([
+  '/api/auth/login',
+  '/api/auth/register',
+  '/api/auth/google',
+  '/api/auth/health',
+  '/api/auth/recuperar-senha',
+]);
 
 // ── Classificação de erros ──
 export enum ApiErrorType {
@@ -79,6 +86,26 @@ function classifyError(error: AxiosError): ClassifiedError {
   return { type: ApiErrorType.UNKNOWN, message: 'Erro inesperado.', status };
 }
 
+function normalizePath(url?: string): string {
+  if (!url) return '';
+  const noQuery = url.split('?')[0];
+  const match = noQuery.match(/\/api\/auth\/[^/]+$/);
+  return match ? match[0] : noQuery;
+}
+
+function isPublicEndpoint(config: InternalAxiosRequestConfig): boolean {
+  const method = config.method?.toLowerCase();
+  const normalizedPath = normalizePath(config.url);
+
+  if (PUBLIC_AUTH_ENDPOINTS.has(normalizedPath)) {
+    return true;
+  }
+
+  // Requests sem metodo definido sao tratadas como protegidas por padrao.
+  if (!method) return false;
+  return false;
+}
+
 // ── Criar instância ──
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -92,8 +119,7 @@ const api: AxiosInstance = axios.create({
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     try {
-      const isPublicAuthEndpoint = config.url?.startsWith('/api/auth/');
-      if (isPublicAuthEndpoint) {
+      if (isPublicEndpoint(config)) {
         return config;
       }
 

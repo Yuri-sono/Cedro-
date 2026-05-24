@@ -48,7 +48,13 @@ export const useAuth = () => {
     try {
       setIsLoading(true);
       const response = await authService.recuperarSenha(email);
-      showToast.success('E-mail enviado', response.message || 'Verifique sua caixa de entrada.');
+      const detalheSenha = response.senhaTemporaria
+        ? `Senha temporaria: ${response.senhaTemporaria}`
+        : undefined;
+      showToast.success(
+        'Recuperacao concluida',
+        detalheSenha || response.message || 'Verifique sua caixa de entrada.',
+      );
       return true;
     } catch (error) {
       const err = error as ClassifiedError;

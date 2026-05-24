@@ -28,6 +28,7 @@ export const HomeScreen = () => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Text style={styles.brandText}>CEDRO APOIO PSICOLOGICO E SAUDE</Text>
       <View style={styles.header}>
         <View>
           <Text style={styles.greeting}>Olá, {user?.nome?.split(' ')[0]} 👋</Text>
@@ -84,6 +85,13 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.base,
     paddingTop: spacing.xl,
+  },
+  brandText: {
+    fontSize: typography.size.xs,
+    color: colors.primaryDark,
+    fontWeight: typography.weight.bold,
+    letterSpacing: 0.4,
+    marginBottom: spacing.sm,
   },
   header: {
     flexDirection: 'row',

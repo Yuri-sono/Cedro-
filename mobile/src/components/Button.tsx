@@ -90,6 +90,13 @@ const styles = StyleSheet.create({
   },
   primary: {
     backgroundColor: colors.primary,
+    borderWidth: 1,
+    borderColor: colors.primaryDark,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
   },
   secondary: {
     backgroundColor: colors.backgroundSecondary,
@@ -112,6 +119,6 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.semibold,
   },
   textUnderline: {
-    textDecorationLine: 'underline',
+    textDecorationLine: 'none',
   },
 });
