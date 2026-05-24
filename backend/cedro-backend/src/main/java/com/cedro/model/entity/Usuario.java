@@ -65,7 +65,7 @@ public class Usuario {
     @Column(precision = 3, scale = 2)
     private BigDecimal avaliacao = BigDecimal.valueOf(5.0);
     
-    @Column(name = "foto_url")
+    @Column(name = "foto_url", columnDefinition = "VARCHAR(MAX)")
     private String fotoUrl;
     
     @Column(nullable = false)
