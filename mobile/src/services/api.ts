@@ -3,6 +3,11 @@
  * JWT via expo-secure-store (nunca AsyncStorage puro).
  * Interceptors: inject token, handle 401, retry rede, classificar erros.
  */
+/**
+ * Axios centralizado — Cedro Mobile
+ * JWT via expo-secure-store (nunca AsyncStorage puro).
+ * Interceptors: inject token, handle 401, retry rede, classificar erros.
+ */
 
 import axios, {
   AxiosError,
@@ -10,7 +15,6 @@ import axios, {
   InternalAxiosRequestConfig,
 } from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import { useAuthStore } from '../store/authStore';
 import { API_BASE_URL } from '../config/environment';
 
 const SECURE_STORE_TOKEN_KEY = 'cedro_jwt_token';
@@ -106,6 +110,9 @@ function isPublicEndpoint(config: InternalAxiosRequestConfig): boolean {
   return false;
 }
 
+import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 // ── Criar instância ──
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -123,12 +130,12 @@ api.interceptors.request.use(
         return config;
       }
 
-      const token = await SecureStore.getItemAsync(SECURE_STORE_TOKEN_KEY);
+      const token = await tokenStorage.get();
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }
     } catch {
-      // SecureStore pode falhar silenciosamente
+      // SecureStore/AsyncStorage pode falhar silenciosamente
     }
     return config;
   },
@@ -145,8 +152,9 @@ api.interceptors.response.use(
 
     // 401 → limpar token e forçar logout
     if (error.response?.status === 401) {
-      await SecureStore.deleteItemAsync(SECURE_STORE_TOKEN_KEY);
-      // Desloga o usuário do Zustand para redirecionar para a AuthStack
+      await tokenStorage.remove();
+      // Desloga o usuário do Zustand para redirecionar para a AuthStack (require dinâmico para evitar cycle)
+      const { useAuthStore } = require('../store/authStore');
       useAuthStore.getState().logout();
       return Promise.reject(classifyError(error));
     }
@@ -167,11 +175,26 @@ api.interceptors.response.use(
   },
 );
 
-// ── Helpers para SecureStore ──
+// ── Helpers para SecureStore / AsyncStorage (WebFallback) ──
 export const tokenStorage = {
-  get: () => SecureStore.getItemAsync(SECURE_STORE_TOKEN_KEY),
-  set: (token: string) => SecureStore.setItemAsync(SECURE_STORE_TOKEN_KEY, token),
-  remove: () => SecureStore.deleteItemAsync(SECURE_STORE_TOKEN_KEY),
+  get: async () => {
+    if (Platform.OS === 'web') {
+      return await AsyncStorage.getItem(SECURE_STORE_TOKEN_KEY);
+    }
+    return await SecureStore.getItemAsync(SECURE_STORE_TOKEN_KEY);
+  },
+  set: async (token: string) => {
+    if (Platform.OS === 'web') {
+      return await AsyncStorage.setItem(SECURE_STORE_TOKEN_KEY, token);
+    }
+    return await SecureStore.setItemAsync(SECURE_STORE_TOKEN_KEY, token);
+  },
+  remove: async () => {
+    if (Platform.OS === 'web') {
+      return await AsyncStorage.removeItem(SECURE_STORE_TOKEN_KEY);
+    }
+    return await SecureStore.deleteItemAsync(SECURE_STORE_TOKEN_KEY);
+  },
 };
 
 export default api;

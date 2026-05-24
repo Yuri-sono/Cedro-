@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { subscriptionService } from '../services/subscriptionService';
 import { useAuthStore } from '../store/authStore';
-import { PurchasesPackage } from 'react-native-purchases';
+import type { PurchasesPackage } from 'react-native-purchases';
 import { showToast } from '../components/Toast';
 
 export const useSubscription = () => {

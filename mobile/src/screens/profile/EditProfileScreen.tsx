@@ -19,14 +19,64 @@ import { colors, spacing, typography } from '../../theme';
 import { useNavigation } from '@react-navigation/native';
 import { TipoUsuario, UpdatePerfilRequest } from '../../types/api.types';
 
+function formatDateForDisplay(dateStr: string | undefined): string {
+  if (!dateStr) return '';
+  if (dateStr.includes('-')) {
+    const parts = dateStr.split('T')[0].split('-');
+    if (parts.length === 3) {
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+  }
+  return dateStr;
+}
+
+function formatDateForApi(dateStr: string | undefined): string | undefined {
+  if (!dateStr) return undefined;
+  const clean = dateStr.trim();
+  if (clean.includes('/')) {
+    const parts = clean.split('/');
+    if (parts.length === 3) {
+      return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+  }
+  return clean || undefined;
+}
+
+function formatDateMask(text: string): string {
+  const cleaned = text.replace(/\D/g, '');
+  let formatted = cleaned;
+  if (formatted.length > 2) {
+    formatted = `${formatted.slice(0, 2)}/${formatted.slice(2)}`;
+  }
+  if (formatted.length > 5) {
+    formatted = `${formatted.slice(0, 5)}/${formatted.slice(5, 9)}`;
+  }
+  return formatted;
+}
+
+function formatPhoneMask(text: string): string {
+  const cleaned = text.replace(/\D/g, '');
+  let formatted = cleaned;
+  if (formatted.length > 0) {
+    formatted = `(${formatted.slice(0, 2)}`;
+  }
+  if (cleaned.length > 2) {
+    formatted = `${formatted}) ${cleaned.slice(2, 7)}`;
+  }
+  if (cleaned.length > 7) {
+    formatted = `${formatted}-${cleaned.slice(7, 11)}`;
+  }
+  return formatted;
+}
+
 export const EditProfileScreen = () => {
   const user = useAuthStore((state) => state.user);
   const { atualizarPerfil, atualizarFoto, isAtualizando, isAtualizandoFoto } = usePerfil();
   const navigation = useNavigation();
 
   const [nome, setNome] = useState(user?.nome || '');
-  const [telefone, setTelefone] = useState(user?.telefone || '');
-  const [dataNascimento, setDataNascimento] = useState(user?.dataNascimento || '');
+  const [telefone, setTelefone] = useState(formatPhoneMask(user?.telefone || ''));
+  const [dataNascimento, setDataNascimento] = useState(formatDateMask(formatDateForDisplay(user?.dataNascimento)));
   const [genero, setGenero] = useState(user?.genero || '');
   const [endereco, setEndereco] = useState(user?.endereco || '');
   const [bio, setBio] = useState(user?.bio || '');
@@ -44,7 +94,7 @@ export const EditProfileScreen = () => {
   const handleChangePhoto = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert('Permissao necessaria', 'Autorize o acesso as fotos para alterar sua imagem de perfil.');
+      Alert.alert('Permissão necessária', 'Autorize o acesso às fotos para alterar sua imagem de perfil.');
       return;
     }
 
@@ -52,7 +102,7 @@ export const EditProfileScreen = () => {
       mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.45,
+      quality: 0.2,
       base64: true,
     });
 
@@ -60,13 +110,13 @@ export const EditProfileScreen = () => {
 
     const asset = result.assets[0];
     if (!asset.base64) {
-      Alert.alert('Imagem invalida', 'Nao foi possivel processar essa imagem.');
+      Alert.alert('Imagem inválida', 'Não foi possível processar essa imagem.');
       return;
     }
 
     const dataUri = `data:${asset.mimeType || 'image/jpeg'};base64,${asset.base64}`;
-    if (dataUri.length > 1_900_000) {
-      Alert.alert('Imagem muito grande', 'Escolha uma imagem menor para usar no perfil.');
+    if (dataUri.length > 2_000_000) {
+      Alert.alert('Imagem muito grande', 'A imagem selecionada é muito grande, tente outra.');
       return;
     }
 
@@ -78,7 +128,7 @@ export const EditProfileScreen = () => {
     const data: UpdatePerfilRequest = {
       nome: nome.trim(),
       telefone: telefone.trim(),
-      dataNascimento: dataNascimento.trim() || undefined,
+      dataNascimento: formatDateForApi(dataNascimento),
       genero: genero.trim() || undefined,
       endereco: endereco.trim() || undefined,
       bio: bio.trim() || undefined,
@@ -88,7 +138,7 @@ export const EditProfileScreen = () => {
     if (isPsicologo) {
       data.especialidade = especialidade.trim() || undefined;
       data.crp = crp.trim() || undefined;
-      data.precoSessao = precoSessao ? parseFloat(precoSessao) : undefined;
+      data.precoSessao = precoSessao ? parseFloat(precoSessao.replace(',', '.')) : undefined;
     }
 
     try {
@@ -137,17 +187,19 @@ export const EditProfileScreen = () => {
         <Input
           label="Telefone"
           value={telefone}
-          onChangeText={setTelefone}
+          onChangeText={(text) => setTelefone(formatPhoneMask(text))}
           placeholder="(11) 99999-9999"
           keyboardType="phone-pad"
+          maxLength={15}
         />
 
         <Input
           label="Data de Nascimento"
           value={dataNascimento}
-          onChangeText={setDataNascimento}
+          onChangeText={(text) => setDataNascimento(formatDateMask(text))}
           placeholder="DD/MM/AAAA"
           keyboardType="numeric"
+          maxLength={10}
         />
 
         <Input

@@ -56,6 +56,7 @@ public class SecurityConfig {
             "http://localhost:3000",
             "http://localhost:5173",
             "http://localhost:5174",
+            "http://localhost:8081",
             "https://cedro-eight.vercel.app",
             "https://cedro-blush.vercel.app"
         ));
