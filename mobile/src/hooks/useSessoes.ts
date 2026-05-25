@@ -2,19 +2,29 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { sessaoService } from '../services/sessaoService';
 import { SessaoRequest } from '../types/api.types';
 import { showToast } from '../components/Toast';
+import { useAuthStore } from '../store/authStore';
+import { TipoUsuario } from '../types/api.types';
 
 export const useSessoes = () => {
   const queryClient = useQueryClient();
+  const user = useAuthStore((state) => state.user);
+  const isPsicologo = user?.tipoUsuario === TipoUsuario.psicologo;
 
   const minhasSessoesQuery = useQuery({
-    queryKey: ['sessoes', 'minhas'],
-    queryFn: () => sessaoService.minhasSessoes(),
+    queryKey: ['sessoes', isPsicologo ? 'psicologo' : 'paciente', user?.id],
+    queryFn: () => {
+      if (!user) return [];
+      return isPsicologo
+        ? sessaoService.sessoesDoPsicologo(user.id)
+        : sessaoService.minhasSessoes();
+    },
+    enabled: Boolean(user?.id),
   });
 
   const criarSessaoMutation = useMutation({
     mutationFn: (data: SessaoRequest) => sessaoService.criar(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sessoes', 'minhas'] });
+      queryClient.invalidateQueries({ queryKey: ['sessoes'] });
       showToast.success('Sessao agendada', 'Sua consulta foi agendada com sucesso.');
     },
     onError: (error) => {
@@ -26,7 +36,7 @@ export const useSessoes = () => {
   const cancelarSessaoMutation = useMutation({
     mutationFn: (id: number) => sessaoService.deletar(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sessoes', 'minhas'] });
+      queryClient.invalidateQueries({ queryKey: ['sessoes'] });
       showToast.success('Sessao cancelada', 'Consulta cancelada com sucesso.');
     },
     onError: (error) => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
 import { useAuthStore } from '../../store/authStore';
 import { useAuth } from '../../hooks/useAuth';
 import { colors, typography, spacing, borderRadius } from '../../theme';
@@ -8,6 +8,8 @@ import { Button } from '../../components/Button';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ProfileStackParamList } from '../../types/navigation.types';
+import { TipoUsuario } from '../../types/api.types';
+import { formatAgendaSummary } from '../../utils/psychologistAgenda';
 
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'Profile'>;
 
@@ -15,8 +17,17 @@ export const ProfileScreen = () => {
   const user = useAuthStore((state) => state.user);
   const { logout } = useAuth();
   const navigation = useNavigation<NavigationProp>();
+  const isPsicologo = user?.tipoUsuario === TipoUsuario.psicologo;
 
   const confirmLogout = () => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      const confirmed = window.confirm('Tem certeza que deseja sair da sua conta?');
+      if (confirmed) {
+        logout();
+      }
+      return;
+    }
+
     Alert.alert('Sair', 'Tem certeza que deseja sair da sua conta?', [
       { text: 'Cancelar', style: 'cancel' },
       { text: 'Sair', style: 'destructive', onPress: logout },
@@ -40,6 +51,12 @@ export const ProfileScreen = () => {
         <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('EditProfile')}>
           <Text style={styles.menuItemText}>Editar Perfil</Text>
         </TouchableOpacity>
+
+        {isPsicologo && (
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PsychologistSettings')}>
+            <Text style={styles.menuItemText}>Configurar Atendimento</Text>
+          </TouchableOpacity>
+        )}
         
         <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('MySessions')}>
           <Text style={styles.menuItemText}>Minhas Sessões</Text>
@@ -55,6 +72,21 @@ export const ProfileScreen = () => {
           <Text style={styles.menuItemText}>Alterar Senha</Text>
         </TouchableOpacity>
       </View>
+
+      {isPsicologo && (
+        <View style={styles.professionalCard}>
+          <Text style={styles.professionalTitle}>Atendimento</Text>
+          <Text style={styles.professionalText}>
+            {user.especialidade || 'Especialidade ainda nao informada'}
+          </Text>
+          <Text style={styles.professionalText}>
+            {user.precoSessao != null ? `Consulta: R$ ${user.precoSessao.toFixed(2)}` : 'Valor da consulta nao definido'}
+          </Text>
+          <Text style={styles.professionalText}>
+            {formatAgendaSummary(user.diasAtendimento, user.horariosAtendimento)}
+          </Text>
+        </View>
+      )}
 
       <View style={styles.footer}>
         <Button
@@ -132,6 +164,25 @@ const styles = StyleSheet.create({
   footer: {
     padding: spacing.xl,
     marginTop: spacing.xl,
+  },
+  professionalCard: {
+    backgroundColor: colors.surfaceWarm,
+    marginHorizontal: spacing.base,
+    marginTop: spacing.base,
+    padding: spacing.base,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: '#E7DCC6',
+    gap: spacing.xs,
+  },
+  professionalTitle: {
+    fontSize: typography.size.base,
+    fontWeight: typography.weight.bold,
+    color: colors.textPrimary,
+  },
+  professionalText: {
+    fontSize: typography.size.sm,
+    color: colors.textSecondary,
   },
   logoutButton: {
     borderColor: colors.error,

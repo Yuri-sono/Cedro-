@@ -13,6 +13,11 @@ export const sessaoService = {
     return response.data;
   },
 
+  sessoesDoPsicologo: async (psicologoId: number): Promise<Sessao[]> => {
+    const response = await api.get<Sessao[]>(API_ENDPOINTS.SESSOES.POR_PSICOLOGO(psicologoId));
+    return response.data;
+  },
+
   buscarPorId: async (id: number): Promise<Sessao> => {
     const response = await api.get<Sessao>(API_ENDPOINTS.SESSOES.POR_ID(id));
     return response.data;

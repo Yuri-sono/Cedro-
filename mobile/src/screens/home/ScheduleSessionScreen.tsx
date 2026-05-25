@@ -9,21 +9,19 @@ import {
 } from 'react-native';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { HomeStackParamList } from '../../types/navigation.types';
-import { usePsicologoDetail } from '../../hooks/usePsicologos';
-import { useDisponibilidade, useSessoes } from '../../hooks/useSessoes';
-import { colors, typography, spacing, borderRadius } from '../../theme';
 import { Avatar } from '../../components/Avatar';
 import { Button } from '../../components/Button';
+import { usePsicologoDetail } from '../../hooks/usePsicologos';
+import { useDisponibilidade, useSessoes } from '../../hooks/useSessoes';
+import { borderRadius, colors, spacing, typography } from '../../theme';
+import { HomeStackParamList } from '../../types/navigation.types';
+import {
+  getNextAvailableDates,
+  normalizeTimeSlots,
+} from '../../utils/psychologistAgenda';
 
 type ScheduleSessionRouteProp = RouteProp<HomeStackParamList, 'ScheduleSession'>;
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'ScheduleSession'>;
-
-// Horários disponíveis (em produção, viriam do backend)
-const HORARIOS_DISPONIVEIS = [
-  '08:00', '09:00', '10:00', '11:00',
-  '14:00', '15:00', '16:00', '17:00', '18:00',
-];
 
 const formatarDataApi = (data: Date) => {
   const ano = data.getFullYear();
@@ -44,34 +42,19 @@ export const ScheduleSessionScreen = () => {
   const [horarioSelecionado, setHorarioSelecionado] = useState<string | null>(null);
   const dataApi = dataSelecionada ? formatarDataApi(dataSelecionada) : undefined;
   const { disponibilidade, isLoadingDisponibilidade } = useDisponibilidade(psicologoId, dataApi);
-  const horariosDisponiveis = disponibilidade?.horariosDisponiveis || HORARIOS_DISPONIVEIS;
 
-  // Gera próximos 7 dias úteis
-  const getProximosDias = () => {
-    const dias: Date[] = [];
-    const hoje = new Date();
-    
-    for (let i = 1; i <= 10; i++) {
-      const dia = new Date(hoje);
-      dia.setDate(hoje.getDate() + i);
-      
-      // Pula finais de semana (0 = domingo, 6 = sábado)
-      if (dia.getDay() !== 0 && dia.getDay() !== 6) {
-        dias.push(dia);
-      }
-      
-      if (dias.length === 7) break;
-    }
-    
-    return dias;
-  };
-
-  const proximosDias = getProximosDias();
+  const proximosDias = getNextAvailableDates(psicologo?.diasAtendimento);
+  const horariosConfigurados = normalizeTimeSlots(psicologo?.horariosAtendimento);
+  const horariosDisponiveis = disponibilidade?.horariosDisponiveis?.length
+    ? disponibilidade.horariosDisponiveis.filter(
+        (horario) => !horariosConfigurados.length || horariosConfigurados.includes(horario),
+      )
+    : horariosConfigurados;
 
   const formatarData = (data: Date) => {
-    const dias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const dias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
     const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-    
+
     return {
       diaSemana: dias[data.getDay()],
       dia: data.getDate(),
@@ -81,14 +64,13 @@ export const ScheduleSessionScreen = () => {
 
   const handleAgendar = async () => {
     if (!dataSelecionada || !horarioSelecionado) {
-      Alert.alert('Atenção', 'Selecione uma data e horário para continuar.');
+      Alert.alert('Atencao', 'Selecione uma data e horario para continuar.');
       return;
     }
 
-    // Combina data e horário
     const [hora, minuto] = horarioSelecionado.split(':');
     const dataHora = new Date(dataSelecionada);
-    dataHora.setHours(parseInt(hora), parseInt(minuto), 0, 0);
+    dataHora.setHours(parseInt(hora, 10), parseInt(minuto, 10), 0, 0);
 
     try {
       await agendarSessao({
@@ -97,10 +79,10 @@ export const ScheduleSessionScreen = () => {
         duracao: 50,
         valor: psicologo?.precoSessao || 0,
       });
-      
+
       navigation.navigate('SessionSuccess');
-    } catch (error) {
-      // Erro já tratado pelo hook
+    } catch {
+      // O hook ja trata o erro.
     }
   };
 
@@ -108,58 +90,63 @@ export const ScheduleSessionScreen = () => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Header com info do psicólogo */}
       <View style={styles.header}>
         <Avatar url={psicologo.fotoUrl} size={60} />
         <View style={styles.headerInfo}>
           <Text style={styles.nome}>{psicologo.nome}</Text>
-          <Text style={styles.especialidade}>{psicologo.especialidade}</Text>
+          <Text style={styles.especialidade}>
+            {psicologo.especialidade || 'Psicologia clinica'}
+          </Text>
           <Text style={styles.preco}>
-            {psicologo.precoSessao ? `R$ ${psicologo.precoSessao.toFixed(2)}` : 'A combinar'}
+            {psicologo.precoSessao != null ? `R$ ${psicologo.precoSessao.toFixed(2)}` : 'A combinar'}
           </Text>
         </View>
       </View>
 
-      {/* Seleção de Data */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Escolha o dia</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.datesScroll}>
-          {proximosDias.map((dia, index) => {
-            const { diaSemana, dia: diaNum, mes } = formatarData(dia);
-            const isSelected = dataSelecionada?.toDateString() === dia.toDateString();
-            
-            return (
-              <TouchableOpacity
-                key={index}
-                style={[styles.dateCard, isSelected && styles.dateCardSelected]}
-                onPress={() => {
-                  setDataSelecionada(dia);
-                  setHorarioSelecionado(null);
-                }}
-              >
-                <Text style={[styles.diaSemana, isSelected && styles.textSelected]}>
-                  {diaSemana}
-                </Text>
-                <Text style={[styles.diaNum, isSelected && styles.textSelected]}>
-                  {diaNum}
-                </Text>
-                <Text style={[styles.mes, isSelected && styles.textSelected]}>
-                  {mes}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
+        {proximosDias.length > 0 ? (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.datesScroll}>
+            {proximosDias.map((dia, index) => {
+              const { diaSemana, dia: diaNum, mes } = formatarData(dia);
+              const isSelected = dataSelecionada?.toDateString() === dia.toDateString();
+
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={[styles.dateCard, isSelected && styles.dateCardSelected]}
+                  onPress={() => {
+                    setDataSelecionada(dia);
+                    setHorarioSelecionado(null);
+                  }}
+                >
+                  <Text style={[styles.diaSemana, isSelected && styles.textSelected]}>
+                    {diaSemana}
+                  </Text>
+                  <Text style={[styles.diaNum, isSelected && styles.textSelected]}>
+                    {diaNum}
+                  </Text>
+                  <Text style={[styles.mes, isSelected && styles.textSelected]}>
+                    {mes}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        ) : (
+          <Text style={styles.emptyText}>
+            Este psicologo ainda nao configurou dias de atendimento.
+          </Text>
+        )}
       </View>
 
-      {/* Seleção de Horário */}
       {dataSelecionada && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Escolha o horário</Text>
+          <Text style={styles.sectionTitle}>Escolha o horario</Text>
           <View style={styles.horariosGrid}>
             {horariosDisponiveis.map((horario) => {
               const isSelected = horarioSelecionado === horario;
-              
+
               return (
                 <TouchableOpacity
                   key={horario}
@@ -173,16 +160,15 @@ export const ScheduleSessionScreen = () => {
               );
             })}
             {!isLoadingDisponibilidade && horariosDisponiveis.length === 0 && (
-              <Text style={styles.emptyText}>Nenhum horÃ¡rio disponÃ­vel neste dia.</Text>
+              <Text style={styles.emptyText}>Nenhum horario disponivel neste dia.</Text>
             )}
           </View>
         </View>
       )}
 
-      {/* Resumo e Confirmação */}
       {dataSelecionada && horarioSelecionado && (
         <View style={styles.resumo}>
-          <Text style={styles.resumoTitle}>Resumo da Consulta</Text>
+          <Text style={styles.resumoTitle}>Resumo da consulta</Text>
           <View style={styles.resumoRow}>
             <Text style={styles.resumoLabel}>Data:</Text>
             <Text style={styles.resumoValue}>
@@ -190,25 +176,24 @@ export const ScheduleSessionScreen = () => {
             </Text>
           </View>
           <View style={styles.resumoRow}>
-            <Text style={styles.resumoLabel}>Horário:</Text>
+            <Text style={styles.resumoLabel}>Horario:</Text>
             <Text style={styles.resumoValue}>{horarioSelecionado}</Text>
           </View>
           <View style={styles.resumoRow}>
-            <Text style={styles.resumoLabel}>Duração:</Text>
+            <Text style={styles.resumoLabel}>Duracao:</Text>
             <Text style={styles.resumoValue}>50 minutos</Text>
           </View>
           <View style={styles.resumoRow}>
             <Text style={styles.resumoLabel}>Valor:</Text>
             <Text style={styles.resumoValue}>
-              {psicologo.precoSessao ? `R$ ${psicologo.precoSessao.toFixed(2)}` : 'A combinar'}
+              {psicologo.precoSessao != null ? `R$ ${psicologo.precoSessao.toFixed(2)}` : 'A combinar'}
             </Text>
           </View>
         </View>
       )}
 
-      {/* Botão de Confirmação */}
       <Button
-        title="Confirmar Agendamento"
+        title="Confirmar agendamento"
         onPress={handleAgendar}
         isLoading={isAgendando}
         disabled={!dataSelecionada || !horarioSelecionado}
@@ -216,7 +201,7 @@ export const ScheduleSessionScreen = () => {
       />
 
       <Text style={styles.disclaimer}>
-        * O pagamento será realizado diretamente com o psicólogo no dia da consulta.
+        * O pagamento sera realizado diretamente com o psicologo no dia da consulta.
       </Text>
     </ScrollView>
   );
@@ -229,6 +214,9 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing.base,
+    maxWidth: 520,
+    width: '100%',
+    alignSelf: 'center',
   },
   header: {
     flexDirection: 'row',

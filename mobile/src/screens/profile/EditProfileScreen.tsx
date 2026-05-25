@@ -10,16 +10,20 @@ import {
   Alert,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useAuthStore } from '../../store/authStore';
-import { usePerfil } from '../../hooks/usePerfil';
-import { Input } from '../../components/Input';
-import { Button } from '../../components/Button';
-import { Avatar } from '../../components/Avatar';
-import { colors, spacing, typography } from '../../theme';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Avatar } from '../../components/Avatar';
+import { Button } from '../../components/Button';
+import { Input } from '../../components/Input';
+import { usePerfil } from '../../hooks/usePerfil';
+import { useAuthStore } from '../../store/authStore';
+import { colors, spacing, typography } from '../../theme';
 import { TipoUsuario, UpdatePerfilRequest } from '../../types/api.types';
+import { ProfileStackParamList } from '../../types/navigation.types';
 
-function formatDateForDisplay(dateStr: string | undefined): string {
+type NavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'EditProfile'>;
+
+function formatDateForDisplay(dateStr?: string | null): string {
   if (!dateStr) return '';
   if (dateStr.includes('-')) {
     const parts = dateStr.split('T')[0].split('-');
@@ -30,7 +34,7 @@ function formatDateForDisplay(dateStr: string | undefined): string {
   return dateStr;
 }
 
-function formatDateForApi(dateStr: string | undefined): string | undefined {
+function formatDateForApi(dateStr?: string): string | undefined {
   if (!dateStr) return undefined;
   const clean = dateStr.trim();
   if (clean.includes('/')) {
@@ -72,29 +76,24 @@ function formatPhoneMask(text: string): string {
 export const EditProfileScreen = () => {
   const user = useAuthStore((state) => state.user);
   const { atualizarPerfil, atualizarFoto, isAtualizando, isAtualizandoFoto } = usePerfil();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
 
   const [nome, setNome] = useState(user?.nome || '');
   const [telefone, setTelefone] = useState(formatPhoneMask(user?.telefone || ''));
-  const [dataNascimento, setDataNascimento] = useState(formatDateMask(formatDateForDisplay(user?.dataNascimento)));
+  const [dataNascimento, setDataNascimento] = useState(
+    formatDateMask(formatDateForDisplay(user?.dataNascimento)),
+  );
   const [genero, setGenero] = useState(user?.genero || '');
   const [endereco, setEndereco] = useState(user?.endereco || '');
   const [bio, setBio] = useState(user?.bio || '');
-  const [fotoUrl, setFotoUrl] = useState(user?.fotoUrl || '');
-  
-  // Campos específicos para psicólogos
-  const [especialidade, setEspecialidade] = useState(user?.especialidade || '');
-  const [crp, setCrp] = useState(user?.crp || '');
-  const [precoSessao, setPrecoSessao] = useState(
-    user?.precoSessao ? String(user.precoSessao) : ''
-  );
+  const [fotoUrl, setFotoUrl] = useState<string | undefined>(user?.fotoUrl ?? undefined);
 
   const isPsicologo = user?.tipoUsuario === TipoUsuario.psicologo;
 
   const handleChangePhoto = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert('Permissão necessária', 'Autorize o acesso às fotos para alterar sua imagem de perfil.');
+      Alert.alert('Permissao necessaria', 'Autorize o acesso as fotos para alterar sua imagem.');
       return;
     }
 
@@ -109,14 +108,31 @@ export const EditProfileScreen = () => {
     if (result.canceled) return;
 
     const asset = result.assets[0];
-    if (!asset.base64) {
-      Alert.alert('Imagem inválida', 'Não foi possível processar essa imagem.');
-      return;
+    let dataUri = asset.base64
+      ? `data:${asset.mimeType || 'image/jpeg'};base64,${asset.base64}`
+      : undefined;
+
+    if (!dataUri && Platform.OS === 'web' && asset.uri) {
+      try {
+        const response = await fetch(asset.uri);
+        const blob = await response.blob();
+        dataUri = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(String(reader.result));
+          reader.onerror = () => reject(new Error('Falha ao ler imagem'));
+          reader.readAsDataURL(blob);
+        });
+      } catch {
+        dataUri = undefined;
+      }
     }
 
-    const dataUri = `data:${asset.mimeType || 'image/jpeg'};base64,${asset.base64}`;
+    if (!dataUri) {
+      Alert.alert('Imagem invalida', 'Nao foi possivel processar essa imagem.');
+      return;
+    }
     if (dataUri.length > 2_000_000) {
-      Alert.alert('Imagem muito grande', 'A imagem selecionada é muito grande, tente outra.');
+      Alert.alert('Imagem muito grande', 'Selecione uma imagem menor para a demo.');
       return;
     }
 
@@ -134,18 +150,11 @@ export const EditProfileScreen = () => {
       bio: bio.trim() || undefined,
     };
 
-    // Adiciona campos específicos de psicólogo
-    if (isPsicologo) {
-      data.especialidade = especialidade.trim() || undefined;
-      data.crp = crp.trim() || undefined;
-      data.precoSessao = precoSessao ? parseFloat(precoSessao.replace(',', '.')) : undefined;
-    }
-
     try {
       await atualizarPerfil(data);
       navigation.goBack();
-    } catch (error) {
-      // Erro já tratado pelo hook
+    } catch {
+      // O hook ja exibe o erro.
     }
   };
 
@@ -155,7 +164,6 @@ export const EditProfileScreen = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.content}>
-        {/* Avatar com botão de edição */}
         <View style={styles.avatarContainer}>
           <Avatar url={fotoUrl} size={104} />
           <TouchableOpacity style={styles.changePhotoButton} onPress={handleChangePhoto}>
@@ -165,17 +173,16 @@ export const EditProfileScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Dados Pessoais */}
-        <Text style={styles.sectionTitle}>Dados Pessoais</Text>
-        
+        <Text style={styles.sectionTitle}>Dados pessoais</Text>
+
         <Input
-          label="Nome Completo"
+          label="Nome completo"
           value={nome}
           onChangeText={setNome}
           placeholder="Seu nome"
           autoCapitalize="words"
         />
-        
+
         <Input
           label="E-mail"
           value={user?.email}
@@ -183,7 +190,7 @@ export const EditProfileScreen = () => {
           placeholder="Seu e-mail"
           style={styles.disabledInput}
         />
-        
+
         <Input
           label="Telefone"
           value={telefone}
@@ -194,7 +201,7 @@ export const EditProfileScreen = () => {
         />
 
         <Input
-          label="Data de Nascimento"
+          label="Data de nascimento"
           value={dataNascimento}
           onChangeText={(text) => setDataNascimento(formatDateMask(text))}
           placeholder="DD/MM/AAAA"
@@ -203,60 +210,43 @@ export const EditProfileScreen = () => {
         />
 
         <Input
-          label="Gênero"
+          label="Genero"
           value={genero}
           onChangeText={setGenero}
-          placeholder="Ex: Masculino, Feminino, Outro"
+          placeholder="Ex: Feminino, Masculino, Outro"
         />
 
         <Input
-          label="Endereço"
+          label="Endereco"
           value={endereco}
           onChangeText={setEndereco}
           placeholder="Cidade, Estado"
         />
-        
+
         <Input
           label="Biografia"
           value={bio}
           onChangeText={setBio}
-          placeholder="Fale um pouco sobre você"
+          placeholder="Fale um pouco sobre voce"
           multiline
           numberOfLines={4}
           style={styles.textArea}
         />
 
-        {/* Campos específicos para Psicólogos */}
         {isPsicologo && (
-          <>
-            <Text style={styles.sectionTitle}>Dados Profissionais</Text>
-            
-            <Input
-              label="Especialidade"
-              value={especialidade}
-              onChangeText={setEspecialidade}
-              placeholder="Ex: Terapia Cognitivo-Comportamental"
-            />
-
-            <Input
-              label="CRP (Conselho Regional de Psicologia)"
-              value={crp}
-              onChangeText={setCrp}
-              placeholder="Ex: CRP 06/123456"
-            />
-
-            <Input
-              label="Preço da Sessão (R$)"
-              value={precoSessao}
-              onChangeText={setPrecoSessao}
-              placeholder="Ex: 150.00"
-              keyboardType="decimal-pad"
-            />
-          </>
+          <TouchableOpacity
+            style={styles.psychologistCta}
+            onPress={() => navigation.navigate('PsychologistSettings')}
+          >
+            <Text style={styles.psychologistCtaTitle}>Configurar atendimento</Text>
+            <Text style={styles.psychologistCtaText}>
+              Ajuste valor da consulta, disponibilidade e dados profissionais em uma tela dedicada.
+            </Text>
+          </TouchableOpacity>
         )}
 
         <Button
-          title="Salvar Alterações"
+          title="Salvar alteracoes"
           onPress={handleSave}
           isLoading={isAtualizando}
           disabled={!nome.trim() || isAtualizandoFoto}
@@ -310,6 +300,24 @@ const styles = StyleSheet.create({
     height: 100,
     textAlignVertical: 'top',
     paddingTop: spacing.sm,
+  },
+  psychologistCta: {
+    backgroundColor: colors.surfaceWarm,
+    borderRadius: 20,
+    padding: spacing.base,
+    borderWidth: 1,
+    borderColor: '#E7DCC6',
+    marginTop: spacing.sm,
+  },
+  psychologistCtaTitle: {
+    color: colors.textPrimary,
+    fontSize: typography.size.base,
+    fontWeight: typography.weight.bold,
+  },
+  psychologistCtaText: {
+    color: colors.textSecondary,
+    fontSize: typography.size.sm,
+    marginTop: spacing.xs,
   },
   saveButton: {
     marginTop: spacing.xl,

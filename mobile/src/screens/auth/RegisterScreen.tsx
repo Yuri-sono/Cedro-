@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../types/navigation.types';
@@ -21,6 +21,7 @@ export const RegisterScreen = () => {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [tipoUsuario, setTipoUsuario] = useState<TipoUsuario>(TipoUsuario.paciente);
 
   const senhaValidacao = {
     minLength: senha.length >= 6,
@@ -53,7 +54,7 @@ export const RegisterScreen = () => {
       nome: nome.trim(),
       email: email.trim(),
       senha,
-      tipoUsuario: TipoUsuario.paciente,
+      tipoUsuario,
     });
 
     if (success) {
@@ -92,6 +93,33 @@ export const RegisterScreen = () => {
         value={email}
         onChangeText={setEmail}
       />
+
+      <View style={styles.roleSection}>
+        <Text style={styles.roleLabel}>Perfil da conta</Text>
+        <View style={styles.roleOptions}>
+          <TouchableOpacity
+            style={[styles.roleChip, tipoUsuario === TipoUsuario.paciente && styles.roleChipSelected]}
+            onPress={() => setTipoUsuario(TipoUsuario.paciente)}
+          >
+            <Text
+              style={[styles.roleChipText, tipoUsuario === TipoUsuario.paciente && styles.roleChipTextSelected]}
+            >
+              Paciente
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.roleChip, tipoUsuario === TipoUsuario.psicologo && styles.roleChipSelected]}
+            onPress={() => setTipoUsuario(TipoUsuario.psicologo)}
+          >
+            <Text
+              style={[styles.roleChipText, tipoUsuario === TipoUsuario.psicologo && styles.roleChipTextSelected]}
+            >
+              Psicologo
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       <Input
         label="Senha"
         placeholder="Crie uma senha"
@@ -176,6 +204,43 @@ const styles = StyleSheet.create({
   },
   registerButton: {
     marginTop: spacing.md,
+  },
+  roleSection: {
+    marginBottom: spacing.base,
+  },
+  roleLabel: {
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.medium,
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
+    marginLeft: spacing.xs,
+  },
+  roleOptions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  roleChip: {
+    flex: 1,
+    minHeight: 48,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E6DDC8',
+    backgroundColor: colors.surfaceWarm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.base,
+  },
+  roleChipSelected: {
+    backgroundColor: colors.forest,
+    borderColor: colors.primaryDark,
+  },
+  roleChipText: {
+    color: colors.textPrimary,
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.semibold,
+  },
+  roleChipTextSelected: {
+    color: colors.white,
   },
   footerRow: {
     flexDirection: 'row',

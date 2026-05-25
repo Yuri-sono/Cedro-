@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ProfileStackParamList } from '../types/navigation.types';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import { EditProfileScreen } from '../screens/profile/EditProfileScreen';
+import { PsychologistSettingsScreen } from '../screens/profile/PsychologistSettingsScreen';
 import { ChangePasswordScreen } from '../screens/profile/ChangePasswordScreen';
 import { SessionsScreen } from '../screens/sessions/SessionsScreen';
 import { PaywallScreen } from '../screens/subscription/PaywallScreen';
@@ -21,6 +22,11 @@ export const ProfileStack = () => {
         name="EditProfile" 
         component={EditProfileScreen} 
         options={{ title: 'Editar Perfil' }} 
+      />
+      <Stack.Screen
+        name="PsychologistSettings"
+        component={PsychologistSettingsScreen}
+        options={{ title: 'Atendimento' }}
       />
       <Stack.Screen 
         name="ChangePassword" 

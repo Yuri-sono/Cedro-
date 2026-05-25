@@ -5,12 +5,15 @@ import api from '../services/api';
 import { API_ENDPOINTS } from '../constants/api';
 import { chatService } from '../services/chatService';
 import { showToast } from '../components/Toast';
+import { demoCommunicationService } from '../services/demoCommunicationService';
 
 export const useChat = (destinatarioId: number) => {
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const currentUser = useAuthStore((state) => state.user);
   const currentUserId = useAuthStore((state) => state.user?.id);
+  const isDemoConversation = demoCommunicationService.isDemoUser(destinatarioId);
 
   const ordenarMensagens = useCallback((lista: Mensagem[]) => {
     return [...lista].sort((a, b) => {
@@ -32,6 +35,13 @@ export const useChat = (destinatarioId: number) => {
   );
 
   const carregarHistorico = useCallback(async () => {
+    if (isDemoConversation) {
+      const historico = await demoCommunicationService.getMessages(currentUser, destinatarioId);
+      setMensagens(ordenarMensagens(historico));
+      setIsLoading(false);
+      return;
+    }
+
     try {
       if (mensagens.length === 0) {
         setIsLoading(true);
@@ -44,15 +54,17 @@ export const useChat = (destinatarioId: number) => {
     } finally {
       setIsLoading(false);
     }
-  }, [destinatarioId, mensagens.length, mergeMensagens]);
+  }, [currentUser, destinatarioId, isDemoConversation, mensagens.length, mergeMensagens, ordenarMensagens]);
 
   const marcarComoLidas = useCallback(async () => {
+    if (isDemoConversation) return;
+
     try {
       await api.put(API_ENDPOINTS.MENSAGENS.MARCAR_TODAS_LIDAS(destinatarioId), {});
     } catch (error) {
       console.error('Erro ao marcar mensagens como lidas', error);
     }
-  }, [destinatarioId]);
+  }, [destinatarioId, isDemoConversation]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -73,10 +85,12 @@ export const useChat = (destinatarioId: number) => {
       }
     });
 
-    chatService.connect();
+    if (!isDemoConversation) {
+      chatService.connect();
+    }
 
     // Fallback para manter sincronia mesmo sem WebSocket.
-    const interval = setInterval(carregarHistorico, 4000);
+    const interval = setInterval(carregarHistorico, isDemoConversation ? 10000 : 4000);
 
     return () => {
       unsubscribe();
@@ -85,6 +99,7 @@ export const useChat = (destinatarioId: number) => {
   }, [
     destinatarioId,
     isAuthenticated,
+    isDemoConversation,
     carregarHistorico,
     currentUserId,
     marcarComoLidas,
@@ -94,6 +109,12 @@ export const useChat = (destinatarioId: number) => {
   const enviarMensagem = async (conteudo: string) => {
     if (!conteudo.trim()) return;
     const conteudoNormalizado = conteudo.trim();
+
+    if (isDemoConversation) {
+      const updated = await demoCommunicationService.sendMessage(currentUser, destinatarioId, conteudoNormalizado);
+      setMensagens(ordenarMensagens(updated));
+      return;
+    }
 
     const tempId = -Date.now();
     const tempMensagem: Mensagem = {

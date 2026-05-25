@@ -38,6 +38,7 @@ export type ChatStackParamList = {
 export type ProfileStackParamList = {
   Profile: undefined;
   EditProfile: undefined;
+  PsychologistSettings: undefined;
   ChangePassword: undefined;
   MySessions: undefined;
   Subscription: undefined; // Sprint 6

@@ -52,6 +52,8 @@ export interface UsuarioResponse {
   especialidade: string | null;
   crp: string | null;
   precoSessao: number | null;
+  diasAtendimento?: number[];
+  horariosAtendimento?: string[];
 }
 
 // ── PsicologoResponse (PsicologoResponse.java) ──
@@ -65,6 +67,8 @@ export interface PsicologoResponse {
   precoSessao: number | null;
   avaliacao: number | null;
   fotoUrl: string | null;
+  diasAtendimento?: number[];
+  horariosAtendimento?: string[];
 }
 
 // ── PsicologoListItem (retorno de GET /api/psicologos) ──
@@ -76,6 +80,8 @@ export interface PsicologoListItem {
   precoSessao: number | null;
   avaliacao: number | null;
   fotoUrl: string | null;
+  diasAtendimento?: number[];
+  horariosAtendimento?: string[];
 }
 
 // ── MensagemRequest (MensagemRequest.java) ──
@@ -135,6 +141,13 @@ export interface UpdatePerfilRequest {
   especialidade?: string;
   crp?: string;
   precoSessao?: number;
+}
+
+export interface PsicologoAgendaConfig {
+  psicologoId: number;
+  diasAtendimento: number[];
+  horariosAtendimento: string[];
+  precoSessao?: number | null;
 }
 
 // ── AlterarSenhaRequest (AlterarSenhaRequest.java) ──
