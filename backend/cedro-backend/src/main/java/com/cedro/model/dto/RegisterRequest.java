@@ -33,7 +33,11 @@ public class RegisterRequest {
     
     private String especialidade;
     
+    private String tipoPsicologo;
+    
     private String crp;
+
+    private String areaInteresse;
     
     @JsonProperty("precoSessao")
     private java.math.BigDecimal precoSessao;
@@ -63,9 +67,15 @@ public class RegisterRequest {
     
     public String getEspecialidade() { return especialidade; }
     public void setEspecialidade(String especialidade) { this.especialidade = especialidade; }
+
+    public String getTipoPsicologo() { return tipoPsicologo; }
+    public void setTipoPsicologo(String tipoPsicologo) { this.tipoPsicologo = tipoPsicologo; }
     
     public String getCrp() { return crp; }
     public void setCrp(String crp) { this.crp = crp; }
+
+    public String getAreaInteresse() { return areaInteresse; }
+    public void setAreaInteresse(String areaInteresse) { this.areaInteresse = areaInteresse; }
     
     public java.math.BigDecimal getPrecoSessao() { return precoSessao; }
     public void setPrecoSessao(java.math.BigDecimal precoSessao) { this.precoSessao = precoSessao; }

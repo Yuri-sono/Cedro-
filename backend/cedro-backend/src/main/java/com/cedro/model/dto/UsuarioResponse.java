@@ -27,8 +27,12 @@ public class UsuarioResponse {
     private String fotoUrl;
     
     private String especialidade;
+
+    private String tipoPsicologo;
     
     private String crp;
+
+    private String areaInteresse;
     
     @JsonProperty("precoSessao")
     private BigDecimal precoSessao;
@@ -37,7 +41,7 @@ public class UsuarioResponse {
     
     public UsuarioResponse(Integer id, String nome, String email, TipoUsuario tipoUsuario,
                           String telefone, LocalDate dataNascimento, String genero, 
-                          String endereco, String bio, String fotoUrl, String especialidade, String crp, BigDecimal precoSessao) {
+                          String endereco, String bio, String fotoUrl, String especialidade, String tipoPsicologo, String crp, String areaInteresse, BigDecimal precoSessao) {
         this.id = id;
         this.nome = nome;
         this.email = email;
@@ -49,7 +53,9 @@ public class UsuarioResponse {
         this.bio = bio;
         this.fotoUrl = fotoUrl;
         this.especialidade = especialidade;
+        this.tipoPsicologo = tipoPsicologo;
         this.crp = crp;
+        this.areaInteresse = areaInteresse;
         this.precoSessao = precoSessao;
     }
     
@@ -85,9 +91,15 @@ public class UsuarioResponse {
     
     public String getEspecialidade() { return especialidade; }
     public void setEspecialidade(String especialidade) { this.especialidade = especialidade; }
+
+    public String getTipoPsicologo() { return tipoPsicologo; }
+    public void setTipoPsicologo(String tipoPsicologo) { this.tipoPsicologo = tipoPsicologo; }
     
     public String getCrp() { return crp; }
     public void setCrp(String crp) { this.crp = crp; }
+
+    public String getAreaInteresse() { return areaInteresse; }
+    public void setAreaInteresse(String areaInteresse) { this.areaInteresse = areaInteresse; }
     
     public BigDecimal getPrecoSessao() { return precoSessao; }
     public void setPrecoSessao(BigDecimal precoSessao) { this.precoSessao = precoSessao; }

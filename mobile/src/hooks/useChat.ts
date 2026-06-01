@@ -3,7 +3,6 @@ import { Mensagem } from '../types/api.types';
 import { useAuthStore } from '../store/authStore';
 import api from '../services/api';
 import { API_ENDPOINTS } from '../constants/api';
-import { chatService } from '../services/chatService';
 import { showToast } from '../components/Toast';
 import { demoCommunicationService } from '../services/demoCommunicationService';
 
@@ -72,28 +71,9 @@ export const useChat = (destinatarioId: number) => {
     carregarHistorico();
     marcarComoLidas();
 
-    const unsubscribe = chatService.addMessageListener((novaMensagem) => {
-      const pertenceConversa =
-        (novaMensagem.remetenteId === destinatarioId && novaMensagem.destinatarioId === currentUserId) ||
-        (novaMensagem.destinatarioId === destinatarioId && novaMensagem.remetenteId === currentUserId);
-
-      if (!pertenceConversa) return;
-
-      setMensagens((prev) => mergeMensagens(prev, [novaMensagem]));
-      if (novaMensagem.remetenteId === destinatarioId) {
-        marcarComoLidas();
-      }
-    });
-
-    if (!isDemoConversation) {
-      chatService.connect();
-    }
-
-    // Fallback para manter sincronia mesmo sem WebSocket.
-    const interval = setInterval(carregarHistorico, isDemoConversation ? 10000 : 4000);
+    const interval = setInterval(carregarHistorico, isDemoConversation ? 10000 : 2500);
 
     return () => {
-      unsubscribe();
       clearInterval(interval);
     };
   }, [
@@ -138,8 +118,6 @@ export const useChat = (destinatarioId: number) => {
         const semTemp = prev.filter((msg) => msg.id !== tempId);
         return mergeMensagens(semTemp, [response.data]);
       });
-
-      chatService.sendMessage(destinatarioId, conteudoNormalizado);
     } catch (error) {
       console.error('Erro ao enviar mensagem', error);
       setMensagens((prev) => prev.filter((msg) => msg.id !== tempId));

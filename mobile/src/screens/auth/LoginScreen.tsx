@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
 import { AuthStackParamList } from '../../types/navigation.types';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
@@ -11,12 +13,29 @@ import { AuthScreenLayout } from '../../components/AuthScreenLayout';
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
+WebBrowser.maybeCompleteAuthSession();
+
 export const LoginScreen = () => {
   const navigation = useNavigation<NavigationProp>();
-  const { login, isLoading } = useAuth();
+  const { login, loginComGoogle, isLoading } = useAuth();
 
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const googleClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    webClientId: googleClientId,
+  });
+
+  useEffect(() => {
+    const authResult = response as
+      | { type?: string; authentication?: { idToken?: string }; params?: { id_token?: string } }
+      | null;
+    const idToken = authResult?.authentication?.idToken || authResult?.params?.id_token;
+    if (authResult?.type === 'success' && idToken) {
+      loginComGoogle(idToken);
+    }
+  }, [response, loginComGoogle]);
 
   const handleLogin = () => {
     if (!email || !senha) return;
@@ -64,6 +83,14 @@ export const LoginScreen = () => {
       />
 
       <Button
+        title="Entrar com Google"
+        variant="outline"
+        onPress={() => promptAsync()}
+        disabled={!request || isLoading}
+        style={styles.googleButton}
+      />
+
+      <Button
         title="Entrar"
         onPress={handleLogin}
         isLoading={isLoading}
@@ -87,6 +114,9 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     marginTop: spacing.xs,
+  },
+  googleButton: {
+    marginBottom: spacing.sm,
   },
   footerRow: {
     flexDirection: 'row',

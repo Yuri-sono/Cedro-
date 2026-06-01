@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/navigation.types';
@@ -16,11 +16,28 @@ const RootStack = createNativeStackNavigator<RootStackParamList>();
 
 export const RootNavigator = () => {
   const { isAuthenticated, isLoading } = useAuthStore();
-  
+  const [showLoginSplash, setShowLoginSplash] = useState(false);
+  const previousAuth = useRef<boolean | null>(null);
+
   // Inicializa o listener de notificações (só registra se isAuthenticated for true)
   useNotifications();
 
-  if (isLoading) {
+  useEffect(() => {
+    const wasAuthenticated = previousAuth.current;
+    previousAuth.current = isAuthenticated;
+
+    if (wasAuthenticated === false && isAuthenticated) {
+      setShowLoginSplash(true);
+      const timeout = setTimeout(() => setShowLoginSplash(false), 2600);
+      return () => clearTimeout(timeout);
+    }
+
+    if (!isAuthenticated) {
+      setShowLoginSplash(false);
+    }
+  }, [isAuthenticated]);
+
+  if (isLoading || showLoginSplash) {
     return <SplashScreen />;
   }
 
@@ -30,7 +47,7 @@ export const RootNavigator = () => {
         {isAuthenticated ? (
           <>
             <RootStack.Screen name="Main" component={MainTabs} />
-            
+
             {/* Modais Globais de Chamada */}
             <RootStack.Group screenOptions={{ presentation: 'fullScreenModal', headerShown: false }}>
               <RootStack.Screen name="VoiceCall" component={VoiceCallScreen} />

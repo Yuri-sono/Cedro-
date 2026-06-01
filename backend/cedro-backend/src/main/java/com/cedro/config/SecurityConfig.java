@@ -33,6 +33,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/assinatura/webhook").permitAll()
                 .requestMatchers("/api/psicologos").permitAll()
                 .requestMatchers("/api/psicologos/{id}").permitAll()
+                .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/", "/api/auth/health").permitAll()
                 .anyRequest().authenticated()
             )

@@ -14,7 +14,9 @@ export const API_ENDPOINTS = {
     ALTERAR_SENHA: '/api/auth/alterar-senha',
     CONTA: '/api/auth/conta',
     RECUPERAR_SENHA: '/api/auth/recuperar-senha',
+    GOOGLE: '/api/auth/google',
     FOTO_PERFIL: '/api/auth/foto-perfil',
+    FOTO_PERFIL_UPLOAD: '/api/auth/foto-perfil-upload',
   },
 
   // ── Psicólogos ──

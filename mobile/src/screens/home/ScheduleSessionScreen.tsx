@@ -80,7 +80,11 @@ export const ScheduleSessionScreen = () => {
         valor: psicologo?.precoSessao || 0,
       });
 
-      navigation.navigate('SessionSuccess');
+      navigation.navigate('SessionSuccess', {
+        psicologoId,
+        psicologoNome: psicologo?.nome || 'Psicologo',
+        avatarUrl: psicologo?.fotoUrl || undefined,
+      });
     } catch {
       // O hook ja trata o erro.
     }

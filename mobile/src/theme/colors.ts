@@ -5,36 +5,36 @@
 
 export const colors = {
   // ── Verde Cedro (identidade visual) ──
-  primary: '#198754',
-  primaryAccent: '#20c997',
-  primaryHover: '#20c997',
-  primaryDark: '#146c43',
-  primaryLight: '#75b798',
-  forest: '#264D34',
-  leaf: '#8DBA65',
-  mint: '#DDEEE2',
-  cream: '#F7F1E3',
-  sand: '#EEE4D0',
+  primary: '#24745B',
+  primaryAccent: '#5FB89A',
+  primaryHover: '#2F8E70',
+  primaryDark: '#173B2F',
+  primaryLight: '#A8D6C5',
+  forest: '#173B2F',
+  leaf: '#A6B96F',
+  mint: '#E7F2EC',
+  cream: '#F5F7F1',
+  sand: '#E8E2D2',
 
   // ── Fundos ──
-  background: '#FFFDF8',
-  backgroundSecondary: '#F7F1E3',
-  backgroundTertiary: '#E8F3EA',
+  background: '#FAFBF7',
+  backgroundSecondary: '#EEF3EB',
+  backgroundTertiary: '#E2EFE8',
   surface: '#FFFFFF',
-  surfaceWarm: '#FFFBF2',
+  surfaceWarm: '#FFFDF8',
 
   // ── Textos ──
-  textPrimary: '#1F2E24',
-  textSecondary: '#69756C',
+  textPrimary: '#18241F',
+  textSecondary: '#657268',
   textInverse: '#FFFFFF',
 
   // ── Bordas & Sombras ──
-  border: '#DEE2E6',
-  shadow: 'rgba(0, 0, 0, 0.1)',
+  border: '#DDE5DD',
+  shadow: 'rgba(23, 59, 47, 0.12)',
 
   // ── Status ──
   success: '#198754',
-  warning: '#FFC107',
+  warning: '#B9852B',
   error: '#DC3545',
   info: '#0DCAF0',
 

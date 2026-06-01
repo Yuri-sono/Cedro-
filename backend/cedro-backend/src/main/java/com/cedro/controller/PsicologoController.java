@@ -12,10 +12,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.text.Normalizer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/api/psicologos")
@@ -26,14 +29,31 @@ public class PsicologoController {
     @Autowired private SessaoRepository sessaoRepository;
 
     @GetMapping
-    public ResponseEntity<?> listarPsicologos() {
+    public ResponseEntity<?> listarPsicologos(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        String areaInteresse = null;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            try {
+                Integer requesterId = jwtUtil.extractUserId(authHeader.replace("Bearer ", ""));
+                areaInteresse = usuarioRepository.findById(requesterId)
+                        .filter(u -> u.getTipoUsuario() == TipoUsuario.paciente)
+                        .map(Usuario::getAreaInteresse)
+                        .orElse(null);
+            } catch (Exception ignored) {
+                areaInteresse = null;
+            }
+        }
+        final String interesseDoPaciente = areaInteresse;
+
         var psicologos = usuarioRepository.findByTipoUsuarioAndAtivo(TipoUsuario.psicologo, true);
         // SEGURANÇA: Retornar apenas dados públicos, não o entity completo
-        var dtos = psicologos.stream().map(p -> {
+        var dtos = psicologos.stream()
+                .filter(p -> combinaComInteresse(interesseDoPaciente, p.getTipoPsicologo()))
+                .map(p -> {
             java.util.Map<String, Object> dto = new java.util.LinkedHashMap<>();
             dto.put("id", p.getId());
             dto.put("nome", p.getNome());
             dto.put("especialidade", p.getEspecialidade());
+            dto.put("tipoPsicologo", p.getTipoPsicologo());
             dto.put("bio", p.getBio());
             dto.put("precoSessao", p.getPrecoSessao());
             dto.put("avaliacao", p.getAvaliacao());
@@ -42,6 +62,43 @@ public class PsicologoController {
             return dto;
         }).collect(java.util.stream.Collectors.toList());
         return ResponseEntity.ok(dtos);
+    }
+
+    private boolean combinaComInteresse(String areaInteresse, String tipoPsicologo) {
+        if (areaInteresse == null || areaInteresse.isBlank()) {
+            return true;
+        }
+        if (tipoPsicologo == null || tipoPsicologo.isBlank()) {
+            return true;
+        }
+
+        Set<String> interesse = normalizarTags(areaInteresse);
+        Set<String> tipos = normalizarTags(tipoPsicologo);
+
+        if (interesse.isEmpty() || tipos.isEmpty()) {
+            return true;
+        }
+
+        for (String tag : interesse) {
+            if (tipos.contains(tag)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private Set<String> normalizarTags(String texto) {
+        return Stream.of(texto.split("[,;/|]"))
+                .map(this::normalizarTexto)
+                .filter(tag -> !tag.isBlank())
+                .collect(java.util.stream.Collectors.toSet());
+    }
+
+    private String normalizarTexto(String texto) {
+        String semAcento = Normalizer.normalize(texto, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");
+        return semAcento.toLowerCase().trim();
     }
 
     @GetMapping("/{id}")
@@ -113,6 +170,7 @@ public class PsicologoController {
         if (dados.getEmail() != null) p.setEmail(dados.getEmail());
         if (dados.getTelefone() != null) p.setTelefone(dados.getTelefone());
         if (dados.getEspecialidade() != null) p.setEspecialidade(dados.getEspecialidade());
+        if (dados.getTipoPsicologo() != null) p.setTipoPsicologo(dados.getTipoPsicologo());
         if (dados.getPrecoSessao() != null) p.setPrecoSessao(dados.getPrecoSessao());
         if (dados.getBio() != null) p.setBio(dados.getBio());
         if (dados.getFotoUrl() != null) p.setFotoUrl(dados.getFotoUrl());

@@ -63,6 +63,13 @@ function extractApiMessage(data: unknown): string | undefined {
 function classifyError(error: AxiosError): ClassifiedError {
   if (!error.response) {
     if (error.code === 'ECONNABORTED') {
+      const url = error.config?.url || '';
+      if (url.includes('/api/auth/foto-perfil-upload')) {
+        return {
+          type: ApiErrorType.TIMEOUT,
+          message: 'O envio da foto demorou demais. Tente uma imagem menor ou com conexao mais estavel.',
+        };
+      }
       return { type: ApiErrorType.TIMEOUT, message: 'O servidor demorou para responder. Tente novamente em instantes.' };
     }
     return { type: ApiErrorType.NETWORK, message: 'Nao foi possivel concluir agora. Verifique sua internet e tente novamente.' };

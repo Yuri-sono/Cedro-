@@ -35,6 +35,9 @@ export const PsicologoDetailScreen = () => {
         <Avatar url={psicologo.fotoUrl} size={100} style={styles.avatar} />
         <Text style={styles.nome}>{psicologo.nome}</Text>
         <Text style={styles.especialidade}>{psicologo.especialidade || 'Psicologia Clínica'}</Text>
+        {psicologo.tipoPsicologo ? (
+          <Text style={styles.tipoPsicologo}>{psicologo.tipoPsicologo}</Text>
+        ) : null}
         
         <View style={styles.badgesRow}>
           <View style={styles.badge}>
@@ -99,6 +102,12 @@ const styles = StyleSheet.create({
   especialidade: {
     fontSize: typography.size.base,
     color: colors.textSecondary,
+    marginTop: spacing.xs,
+  },
+  tipoPsicologo: {
+    fontSize: typography.size.sm,
+    color: colors.primaryDark,
+    fontWeight: typography.weight.semibold,
     marginTop: spacing.xs,
   },
   badgesRow: {

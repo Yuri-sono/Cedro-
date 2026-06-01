@@ -42,6 +42,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   plugins: [
     'expo-font',
+    'expo-web-browser',
     [
       'expo-image-picker',
       {
@@ -60,6 +61,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   extra: {
     ...config.extra,
     apiUrl: API_URL,
+    googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
     eas: {
       ...(config.extra?.eas as Record<string, unknown> | undefined),
       projectId: '7778b28a-a4ba-4fe5-9435-d38050a80a3e',

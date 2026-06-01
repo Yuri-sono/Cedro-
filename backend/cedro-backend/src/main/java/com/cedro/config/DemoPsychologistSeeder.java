@@ -40,6 +40,7 @@ public class DemoPsychologistSeeder implements CommandLineRunner {
         psicologo.setTipoUsuario(TipoUsuario.psicologo);
         psicologo.setTelefone("(11) 99999-0000");
         psicologo.setEspecialidade("Terapia Cognitivo-Comportamental");
+        psicologo.setTipoPsicologo("Terapia Cognitivo-Comportamental");
         psicologo.setCrp("06/123456");
         psicologo.setPrecoSessao(BigDecimal.valueOf(180));
         psicologo.setBio("Psicologa de demonstracao para apresentacao do TCC. Atendimento acolhedor e objetivo.");
@@ -62,7 +63,8 @@ public class DemoPsychologistSeeder implements CommandLineRunner {
         paciente.setSenhaHash(passwordEncoder.encode("Cedro@123"));
         paciente.setTipoUsuario(TipoUsuario.paciente);
         paciente.setTelefone("(11) 98888-0000");
-        paciente.setBio("Conta paciente de demonstração para exibir chat e chamadas.");
+        paciente.setAreaInteresse("Terapia Cognitivo-Comportamental");
+        paciente.setBio("Conta paciente de demonstracao para exibir chat e chamadas.");
         paciente.setAtivo(true);
 
         usuarioRepository.save(paciente);

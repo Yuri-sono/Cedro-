@@ -33,7 +33,9 @@ export interface RegisterRequest {
   telefone?: string;
   tipoUsuario?: TipoUsuario;
   especialidade?: string;
+  tipoPsicologo?: string;
   crp?: string;
+  areaInteresse?: string;
   precoSessao?: number;
 }
 
@@ -50,7 +52,9 @@ export interface UsuarioResponse {
   bio: string | null;
   fotoUrl: string | null;
   especialidade: string | null;
+  tipoPsicologo: string | null;
   crp: string | null;
+  areaInteresse: string | null;
   precoSessao: number | null;
   diasAtendimento?: number[];
   horariosAtendimento?: string[];
@@ -64,6 +68,7 @@ export interface PsicologoResponse {
   telefone: string | null;
   bio: string | null;
   especialidade: string | null;
+  tipoPsicologo: string | null;
   precoSessao: number | null;
   avaliacao: number | null;
   fotoUrl: string | null;
@@ -76,6 +81,7 @@ export interface PsicologoListItem {
   id: number;
   nome: string;
   especialidade: string | null;
+  tipoPsicologo: string | null;
   bio: string | null;
   precoSessao: number | null;
   avaliacao: number | null;
@@ -139,7 +145,9 @@ export interface UpdatePerfilRequest {
   endereco?: string;
   bio?: string;
   especialidade?: string;
+  tipoPsicologo?: string;
   crp?: string;
+  areaInteresse?: string;
   precoSessao?: number;
 }
 
@@ -160,6 +168,7 @@ export interface AlterarSenhaRequest {
 export interface ApiMessage {
   message: string;
   senhaTemporaria?: string;
+  fotoUrl?: string;
 }
 
 export interface ApiError {

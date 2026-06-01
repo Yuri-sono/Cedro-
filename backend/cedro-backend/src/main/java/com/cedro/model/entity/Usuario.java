@@ -55,6 +55,14 @@ public class Usuario {
     
     @Size(max = 100)
     private String especialidade;
+
+    @Size(max = 200)
+    @Column(name = "tipo_psicologo")
+    private String tipoPsicologo;
+
+    @Size(max = 200)
+    @Column(name = "area_interesse")
+    private String areaInteresse;
     
     @Size(max = 20)
     private String crp;
@@ -114,6 +122,12 @@ public class Usuario {
     
     public String getEspecialidade() { return especialidade; }
     public void setEspecialidade(String especialidade) { this.especialidade = especialidade; }
+
+    public String getTipoPsicologo() { return tipoPsicologo; }
+    public void setTipoPsicologo(String tipoPsicologo) { this.tipoPsicologo = tipoPsicologo; }
+
+    public String getAreaInteresse() { return areaInteresse; }
+    public void setAreaInteresse(String areaInteresse) { this.areaInteresse = areaInteresse; }
     
     public String getCrp() { return crp; }
     public void setCrp(String crp) { this.crp = crp; }

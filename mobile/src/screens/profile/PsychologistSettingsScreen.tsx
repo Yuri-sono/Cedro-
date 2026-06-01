@@ -38,6 +38,7 @@ export const PsychologistSettingsScreen = () => {
   const { atualizarPerfil, isAtualizando } = usePerfil();
 
   const [especialidade, setEspecialidade] = useState(user?.especialidade || '');
+  const [tipoPsicologo, setTipoPsicologo] = useState(user?.tipoPsicologo || '');
   const [crp, setCrp] = useState(user?.crp || '');
   const [bio, setBio] = useState(user?.bio || '');
   const [precoSessao, setPrecoSessao] = useState(
@@ -87,6 +88,11 @@ export const PsychologistSettingsScreen = () => {
       return;
     }
 
+    if (!tipoPsicologo.trim()) {
+      showToast.error('Tipo de psicologo obrigatorio', 'Informe o tipo de psicologo.');
+      return;
+    }
+
     if (!crp.trim()) {
       showToast.error('CRP obrigatorio', 'Informe um CRP valido para a apresentacao.');
       return;
@@ -101,6 +107,7 @@ export const PsychologistSettingsScreen = () => {
       await atualizarPerfil({
         bio: bio.trim() || undefined,
         especialidade: especialidade.trim(),
+        tipoPsicologo: tipoPsicologo.trim(),
         crp: crp.trim(),
         precoSessao: hasValidPrice ? parsedPrice : undefined,
       });
@@ -115,6 +122,7 @@ export const PsychologistSettingsScreen = () => {
       await updateUser({
         bio: bio.trim() || null,
         especialidade: especialidade.trim(),
+        tipoPsicologo: tipoPsicologo.trim(),
         crp: crp.trim(),
         precoSessao: resolvedPrice,
         diasAtendimento: savedConfig.diasAtendimento,
@@ -152,6 +160,13 @@ export const PsychologistSettingsScreen = () => {
           value={especialidade}
           onChangeText={setEspecialidade}
           placeholder="Ex: Terapia Cognitivo-Comportamental"
+        />
+
+        <Input
+          label="Tipo de psicologo"
+          value={tipoPsicologo}
+          onChangeText={setTipoPsicologo}
+          placeholder="Ex: TCC, infantil, casal"
         />
 
         <Input

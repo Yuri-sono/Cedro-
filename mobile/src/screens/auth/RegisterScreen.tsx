@@ -22,6 +22,11 @@ export const RegisterScreen = () => {
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
   const [tipoUsuario, setTipoUsuario] = useState<TipoUsuario>(TipoUsuario.paciente);
+  const [tipoPsicologo, setTipoPsicologo] = useState('');
+  const [crp, setCrp] = useState('');
+  const [especialidade, setEspecialidade] = useState('');
+  const [areaInteresse, setAreaInteresse] = useState('');
+  const [precoSessao, setPrecoSessao] = useState('');
 
   const senhaValidacao = {
     minLength: senha.length >= 6,
@@ -50,11 +55,38 @@ export const RegisterScreen = () => {
       return;
     }
 
+    const isPsicologo = tipoUsuario === TipoUsuario.psicologo;
+    const parsedPrice = precoSessao
+      ? Number(precoSessao.replace(/\./g, '').replace(',', '.'))
+      : undefined;
+
+    if (isPsicologo) {
+      if (!crp.trim() || !especialidade.trim()) {
+        showToast.error('Dados profissionais', 'Informe CRP e especialidade para o cadastro.');
+        return;
+      }
+
+      if (!tipoPsicologo.trim()) {
+        showToast.error('Tipo de psicologo', 'Informe o tipo de atendimento que voce oferece.');
+        return;
+      }
+
+      if (!parsedPrice || !Number.isFinite(parsedPrice) || parsedPrice <= 0) {
+        showToast.error('Valor da consulta', 'Informe um valor valido para atendimento.');
+        return;
+      }
+    }
+
     const success = await register({
       nome: nome.trim(),
       email: email.trim(),
       senha,
       tipoUsuario,
+      tipoPsicologo: isPsicologo ? tipoPsicologo.trim() : undefined,
+      crp: isPsicologo ? crp.trim() : undefined,
+      especialidade: isPsicologo ? especialidade.trim() : undefined,
+      areaInteresse: !isPsicologo ? areaInteresse.trim() || undefined : undefined,
+      precoSessao: isPsicologo ? parsedPrice : undefined,
     });
 
     if (success) {
@@ -120,6 +152,53 @@ export const RegisterScreen = () => {
         </View>
       </View>
 
+      {tipoUsuario === TipoUsuario.psicologo && (
+        <View style={styles.professionalBlock}>
+          <Text style={styles.professionalTitle}>Dados profissionais</Text>
+          <Input
+            label="Tipo de psicologo"
+            placeholder="Ex: TCC, infantil, casal"
+            autoCapitalize="words"
+            value={tipoPsicologo}
+            onChangeText={setTipoPsicologo}
+          />
+          <Input
+            label="CRP"
+            placeholder="Ex: 06/123456"
+            autoCapitalize="characters"
+            value={crp}
+            onChangeText={setCrp}
+          />
+          <Input
+            label="Especialidade"
+            placeholder="Ex: Terapia Cognitivo-Comportamental"
+            autoCapitalize="words"
+            value={especialidade}
+            onChangeText={setEspecialidade}
+          />
+          <Input
+            label="Valor da consulta (R$)"
+            placeholder="180,00"
+            keyboardType="decimal-pad"
+            value={precoSessao}
+            onChangeText={(value) => setPrecoSessao(value.replace(/[^0-9,.-]/g, ''))}
+          />
+        </View>
+      )}
+
+      {tipoUsuario === TipoUsuario.paciente && (
+        <View style={styles.professionalBlock}>
+          <Text style={styles.professionalTitle}>Preferencias de atendimento</Text>
+          <Input
+            label="Area de interesse"
+            placeholder="Ex: TCC, ansiedade, infantil"
+            autoCapitalize="words"
+            value={areaInteresse}
+            onChangeText={setAreaInteresse}
+          />
+        </View>
+      )}
+
       <Input
         label="Senha"
         placeholder="Crie uma senha"
@@ -176,7 +255,9 @@ export const RegisterScreen = () => {
           !senha ||
           !confirmarSenha ||
           !senhaValida ||
-          senha !== confirmarSenha
+          senha !== confirmarSenha ||
+          (tipoUsuario === TipoUsuario.psicologo &&
+            (!tipoPsicologo.trim() || !crp.trim() || !especialidade.trim() || !precoSessao.trim()))
         }
         style={styles.registerButton}
       />
@@ -241,6 +322,20 @@ const styles = StyleSheet.create({
   },
   roleChipTextSelected: {
     color: colors.white,
+  },
+  professionalBlock: {
+    backgroundColor: colors.surfaceWarm,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E7DCC6',
+    padding: spacing.base,
+    marginBottom: spacing.base,
+  },
+  professionalTitle: {
+    color: colors.textPrimary,
+    fontSize: typography.size.base,
+    fontWeight: typography.weight.bold,
+    marginBottom: spacing.sm,
   },
   footerRow: {
     flexDirection: 'row',

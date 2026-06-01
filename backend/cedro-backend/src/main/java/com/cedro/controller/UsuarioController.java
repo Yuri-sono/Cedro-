@@ -63,7 +63,9 @@ public class UsuarioController {
                     // Alteração de email requer fluxo de verificação específico
                     if (dados.get("telefone") != null) usuario.setTelefone((String) dados.get("telefone"));
                     if (dados.get("especialidade") != null) usuario.setEspecialidade((String) dados.get("especialidade"));
+                    if (dados.get("tipoPsicologo") != null) usuario.setTipoPsicologo((String) dados.get("tipoPsicologo"));
                     if (dados.get("crp") != null) usuario.setCrp((String) dados.get("crp"));
+                    if (dados.get("areaInteresse") != null) usuario.setAreaInteresse((String) dados.get("areaInteresse"));
                     if (dados.get("bio") != null) usuario.setBio((String) dados.get("bio"));
                     if (dados.get("genero") != null) usuario.setGenero((String) dados.get("genero"));
                     if (dados.get("precoSessao") != null)

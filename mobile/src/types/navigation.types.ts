@@ -25,7 +25,7 @@ export type HomeStackParamList = {
   PsicologoList: undefined;
   PsicologoDetail: { psicologoId: number };
   ScheduleSession: { psicologoId: number };
-  SessionSuccess: undefined;
+  SessionSuccess: { psicologoId: number; psicologoNome: string; avatarUrl?: string };
 };
 
 // Parâmetros para a stack de Chat/Mensagens

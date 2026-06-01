@@ -1,44 +1,70 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, typography, spacing } from '../../theme';
 import { Button } from '../../components/Button';
-import { RootStackParamList } from '../../types/navigation.types';
+import { HomeStackParamList, RootStackParamList } from '../../types/navigation.types';
+import { useAuthStore } from '../../store/authStore';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type SessionSuccessRouteProp = RouteProp<HomeStackParamList, 'SessionSuccess'>;
 
 export const SessionSuccessScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const route = useRoute<SessionSuccessRouteProp>();
+  const currentUserId = useAuthStore((state) => state.user?.id);
+  const { psicologoId, psicologoNome, avatarUrl } = route.params;
+  const channelName = currentUserId
+    ? `chat-${Math.min(currentUserId, psicologoId)}-${Math.max(currentUserId, psicologoId)}`
+    : `chat-${psicologoId}`;
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.icon}>✅</Text>
-        <Text style={styles.title}>Consulta Agendada!</Text>
+        <Text style={styles.icon}>✓</Text>
+        <Text style={styles.title}>Consulta agendada</Text>
         <Text style={styles.message}>
-          Sua consulta foi agendada com sucesso. Você receberá uma notificação antes do horário marcado.
+          Sua consulta com {psicologoNome} foi confirmada. A conversa e a chamada ja estao prontas para demonstracao.
         </Text>
         <Text style={styles.info}>
-          O pagamento será realizado diretamente com o psicólogo no dia da consulta.
+          O pagamento sera realizado diretamente com o psicologo no dia da consulta.
         </Text>
       </View>
 
       <View style={styles.actions}>
         <Button
-          title="Ver Minhas Sessões"
-          onPress={() => navigation.navigate('Main', { 
-            screen: 'ProfileStack',
-            params: { screen: 'MySessions' }
+          title="Abrir conversa"
+          onPress={() => navigation.navigate('Main', {
+            screen: 'ChatStack',
+            params: {
+              screen: 'Chat',
+              params: { userId: psicologoId, userName: psicologoNome, avatarUrl },
+            },
           })}
           style={styles.button}
         />
         <Button
-          title="Voltar ao Início"
+          title="Testar videochamada"
+          variant="secondary"
+          onPress={() => navigation.navigate('VideoCall', { channelName, userName: psicologoNome })}
+          style={styles.button}
+        />
+        <Button
+          title="Ver minhas sessoes"
           variant="outline"
-          onPress={() => navigation.navigate('Main', { 
+          onPress={() => navigation.navigate('Main', {
+            screen: 'ProfileStack',
+            params: { screen: 'MySessions' },
+          })}
+          style={styles.button}
+        />
+        <Button
+          title="Voltar ao inicio"
+          variant="text"
+          onPress={() => navigation.navigate('Main', {
             screen: 'HomeStack',
-            params: { screen: 'Home' }
+            params: { screen: 'Home' },
           })}
           style={styles.button}
         />
@@ -60,7 +86,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   icon: {
-    fontSize: 80,
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    backgroundColor: colors.forest,
+    color: colors.white,
+    textAlign: 'center',
+    lineHeight: 76,
+    fontSize: 42,
+    fontWeight: typography.weight.bold,
     marginBottom: spacing.xl,
   },
   title: {
@@ -79,12 +113,12 @@ const styles = StyleSheet.create({
   },
   info: {
     fontSize: typography.size.sm,
-    color: colors.info,
+    color: colors.primary,
     textAlign: 'center',
     fontWeight: typography.weight.medium,
   },
   actions: {
-    gap: spacing.base,
+    gap: spacing.sm,
   },
   button: {
     marginBottom: spacing.sm,

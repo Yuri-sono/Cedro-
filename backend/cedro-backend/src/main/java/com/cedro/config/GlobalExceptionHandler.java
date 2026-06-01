@@ -1,6 +1,7 @@
 package com.cedro.config;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,6 +23,13 @@ public class GlobalExceptionHandler {
         });
         return ResponseEntity.badRequest().body(errors);
     }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        return ResponseEntity.badRequest().body(Map.of(
+                "error", "Nao foi possivel salvar os dados. Verifique o tamanho da imagem e tente novamente."
+        ));
+    }
     
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
@@ -40,6 +48,12 @@ public class GlobalExceptionHandler {
                 message.contains("caractere especial") ||
                 message.contains("Agora") ||
                 message.contains("Google") ||
+                message.contains("CRP") ||
+                message.contains("Especialidade") ||
+                message.contains("Tipo de psicologo") ||
+                message.contains("Valor da consulta") ||
+                message.contains("Area de interesse") ||
+                message.contains("psicologo") ||
                 message.contains("psicólogo") ||
                 message.contains("Acesso"))) {
             return ResponseEntity.badRequest().body(Map.of("error", message));

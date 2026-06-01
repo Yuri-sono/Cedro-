@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { usuarioService } from '../services/usuarioService';
+import { FotoPerfilUpload, usuarioService } from '../services/usuarioService';
 import { UpdatePerfilRequest, AlterarSenhaRequest } from '../types/api.types';
 import { ClassifiedError } from '../services/api';
 import { showToast } from '../components/Toast';
@@ -16,9 +16,10 @@ export const usePerfil = () => {
 
   const atualizarPerfilMutation = useMutation({
     mutationFn: (data: UpdatePerfilRequest) => usuarioService.atualizarPerfil(data),
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
       // Atualiza o estado global e o storage
-      updateUser(variables);
+      await updateUser(variables);
+      await queryClient.invalidateQueries({ queryKey: ['psicologos'] });
       // Opcional: invalidar query de usuário se tivermos uma
       showToast.success('Perfil atualizado', 'Seus dados foram salvos com sucesso.');
     },
@@ -28,9 +29,11 @@ export const usePerfil = () => {
   });
 
   const atualizarFotoMutation = useMutation({
-    mutationFn: (fotoUrl: string) => usuarioService.atualizarFoto(fotoUrl),
-    onSuccess: (_, fotoUrl) => {
-      updateUser({ fotoUrl });
+    mutationFn: (foto: FotoPerfilUpload) => usuarioService.uploadFoto(foto),
+    onSuccess: (response) => {
+      if (response.fotoUrl) {
+        updateUser({ fotoUrl: response.fotoUrl });
+      }
       showToast.success('Foto atualizada', 'Sua foto de perfil foi salva.');
     },
     onError: (error) => {

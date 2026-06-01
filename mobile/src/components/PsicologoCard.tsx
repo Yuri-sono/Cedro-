@@ -19,6 +19,11 @@ export const PsicologoCard = ({ psicologo, onPress }: Props) => {
           <Text style={styles.especialidade} numberOfLines={1}>
             {psicologo.especialidade || 'Psicologia clinica'}
           </Text>
+          {psicologo.tipoPsicologo ? (
+            <Text style={styles.tipoPsicologo} numberOfLines={1}>
+              {psicologo.tipoPsicologo}
+            </Text>
+          ) : null}
           <View style={styles.statsRow}>
             <Text style={styles.avaliacao} numberOfLines={1}>
               {psicologo.avaliacao ? `${psicologo.avaliacao.toFixed(1)} avaliacao` : 'Novo'}
@@ -69,6 +74,13 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
     color: colors.textSecondary,
     marginTop: spacing.xs,
+  },
+  tipoPsicologo: {
+    fontSize: typography.size.xs,
+    color: colors.primaryDark,
+    fontWeight: typography.weight.medium,
+    marginTop: spacing.xs,
+    textTransform: 'uppercase',
   },
   statsRow: {
     flexDirection: 'row',

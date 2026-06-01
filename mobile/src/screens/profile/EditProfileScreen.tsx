@@ -22,6 +22,7 @@ import { TipoUsuario, UpdatePerfilRequest } from '../../types/api.types';
 import { ProfileStackParamList } from '../../types/navigation.types';
 
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'EditProfile'>;
+const MAX_PROFILE_PHOTO_DATA_URI_LENGTH = 1_500_000;
 
 function formatDateForDisplay(dateStr?: string | null): string {
   if (!dateStr) return '';
@@ -73,6 +74,53 @@ function formatPhoneMask(text: string): string {
   return formatted;
 }
 
+async function fileToDataUri(file: Blob | File): Promise<string> {
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result;
+      if (typeof result === 'string') {
+        resolve(result);
+      } else {
+        reject(new Error('Falha ao converter imagem'));
+      }
+    };
+    reader.onerror = () => reject(new Error('Falha ao converter imagem'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function compressWebImage(uri: string): Promise<string> {
+  return await new Promise((resolve, reject) => {
+    const image = new globalThis.Image();
+    image.onload = () => {
+      const maxSide = 640;
+      const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(image.width * scale));
+      canvas.height = Math.max(1, Math.round(image.height * scale));
+
+      const context = canvas.getContext('2d');
+      if (!context) {
+        reject(new Error('Falha ao preparar imagem'));
+        return;
+      }
+
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      for (const quality of [0.72, 0.58, 0.44, 0.32]) {
+        const dataUri = canvas.toDataURL('image/jpeg', quality);
+        if (dataUri.length <= MAX_PROFILE_PHOTO_DATA_URI_LENGTH || quality === 0.32) {
+          resolve(dataUri);
+          return;
+        }
+      }
+    };
+    image.onerror = () => reject(new Error('Falha ao carregar imagem'));
+    image.src = uri;
+  });
+}
+
 export const EditProfileScreen = () => {
   const user = useAuthStore((state) => state.user);
   const { atualizarPerfil, atualizarFoto, isAtualizando, isAtualizandoFoto } = usePerfil();
@@ -86,58 +134,67 @@ export const EditProfileScreen = () => {
   const [genero, setGenero] = useState(user?.genero || '');
   const [endereco, setEndereco] = useState(user?.endereco || '');
   const [bio, setBio] = useState(user?.bio || '');
+  const [areaInteresse, setAreaInteresse] = useState(user?.areaInteresse || '');
   const [fotoUrl, setFotoUrl] = useState<string | undefined>(user?.fotoUrl ?? undefined);
 
   const isPsicologo = user?.tipoUsuario === TipoUsuario.psicologo;
 
   const handleChangePhoto = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert('Permissao necessaria', 'Autorize o acesso as fotos para alterar sua imagem.');
-      return;
-    }
+    const previousFotoUrl = fotoUrl;
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.2,
-      base64: true,
-    });
-
-    if (result.canceled) return;
-
-    const asset = result.assets[0];
-    let dataUri = asset.base64
-      ? `data:${asset.mimeType || 'image/jpeg'};base64,${asset.base64}`
-      : undefined;
-
-    if (!dataUri && Platform.OS === 'web' && asset.uri) {
-      try {
-        const response = await fetch(asset.uri);
-        const blob = await response.blob();
-        dataUri = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(String(reader.result));
-          reader.onerror = () => reject(new Error('Falha ao ler imagem'));
-          reader.readAsDataURL(blob);
-        });
-      } catch {
-        dataUri = undefined;
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('Permissao necessaria', 'Autorize o acesso as fotos para alterar sua imagem.');
+        return;
       }
-    }
 
-    if (!dataUri) {
-      Alert.alert('Imagem invalida', 'Nao foi possivel processar essa imagem.');
-      return;
-    }
-    if (dataUri.length > 2_000_000) {
-      Alert.alert('Imagem muito grande', 'Selecione uma imagem menor para a demo.');
-      return;
-    }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.25,
+        base64: true,
+      });
 
-    await atualizarFoto(dataUri);
-    setFotoUrl(dataUri);
+      if (result.canceled) return;
+
+      const asset = result.assets[0];
+      if (!asset?.uri) {
+        Alert.alert('Imagem invalida', 'Nao foi possivel processar essa imagem.');
+        return;
+      }
+
+      setFotoUrl(asset.uri);
+
+      const dataUri =
+        Platform.OS === 'web'
+          ? await compressWebImage(asset.uri)
+          : asset.base64
+            ? `data:${asset.mimeType || 'image/jpeg'};base64,${asset.base64}`
+            : undefined;
+
+      if (!dataUri) {
+        Alert.alert('Imagem invalida', 'Nao foi possivel processar essa imagem.');
+        return;
+      }
+
+      if (dataUri.length > MAX_PROFILE_PHOTO_DATA_URI_LENGTH) {
+        Alert.alert('Imagem muito grande', 'Selecione uma imagem menor ou com menos detalhes.');
+        return;
+      }
+
+      const response = await atualizarFoto({
+        uri: asset.uri,
+        fileName: asset.fileName || `perfil-${Date.now()}.jpg`,
+        dataUri,
+      });
+
+      setFotoUrl(response.fotoUrl || asset.uri);
+    } catch {
+      setFotoUrl(previousFotoUrl);
+      Alert.alert('Foto nao salva', 'Nao foi possivel enviar a imagem. Tente outra foto.');
+    }
   };
 
   const handleSave = async () => {
@@ -148,6 +205,7 @@ export const EditProfileScreen = () => {
       genero: genero.trim() || undefined,
       endereco: endereco.trim() || undefined,
       bio: bio.trim() || undefined,
+      areaInteresse: !isPsicologo ? areaInteresse.trim() || undefined : undefined,
     };
 
     try {
@@ -232,6 +290,15 @@ export const EditProfileScreen = () => {
           numberOfLines={4}
           style={styles.textArea}
         />
+
+        {!isPsicologo && (
+          <Input
+            label="Area de interesse"
+            value={areaInteresse}
+            onChangeText={setAreaInteresse}
+            placeholder="Ex: TCC, ansiedade, infantil"
+          />
+        )}
 
         {isPsicologo && (
           <TouchableOpacity

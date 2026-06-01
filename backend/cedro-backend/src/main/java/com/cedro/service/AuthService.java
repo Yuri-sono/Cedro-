@@ -90,7 +90,9 @@ public class AuthService {
                 usuario.getBio(),
                 usuario.getFotoUrl(),
                 usuario.getEspecialidade(),
+                usuario.getTipoPsicologo(),
                 usuario.getCrp(),
+                usuario.getAreaInteresse(),
                 usuario.getPrecoSessao()
         );
 
@@ -130,14 +132,41 @@ public class AuthService {
             usuario.setTipoUsuario(tipo);
         }
 
+        if (usuario.getTipoUsuario() == TipoUsuario.psicologo) {
+            if (request.getCrp() == null || request.getCrp().isBlank()) {
+                throw new RuntimeException("CRP obrigatorio para psicologo");
+            }
+            if (!request.getCrp().matches("\\d{2}/\\d{5,6}")) {
+                throw new RuntimeException("CRP invalido. Use o formato 06/123456");
+            }
+            if (usuarioRepository.existsByCrp(request.getCrp())) {
+                throw new RuntimeException("Este CRP ja esta cadastrado");
+            }
+            if (request.getEspecialidade() == null || request.getEspecialidade().isBlank()) {
+                throw new RuntimeException("Especialidade obrigatoria para psicologo");
+            }
+            if (request.getTipoPsicologo() == null || request.getTipoPsicologo().isBlank()) {
+                throw new RuntimeException("Tipo de psicologo obrigatorio para psicologo");
+            }
+            if (request.getPrecoSessao() == null || request.getPrecoSessao().signum() <= 0) {
+                throw new RuntimeException("Valor da consulta obrigatorio para psicologo");
+            }
+        }
+
         if (request.getEspecialidade() != null) {
             usuario.setEspecialidade(request.getEspecialidade());
+        }
+        if (request.getTipoPsicologo() != null) {
+            usuario.setTipoPsicologo(request.getTipoPsicologo());
         }
         if (request.getPrecoSessao() != null) {
             usuario.setPrecoSessao(request.getPrecoSessao());
         }
         if (request.getCrp() != null) {
             usuario.setCrp(request.getCrp());
+        }
+        if (request.getAreaInteresse() != null) {
+            usuario.setAreaInteresse(request.getAreaInteresse());
         }
 
         usuarioRepository.save(usuario);
@@ -173,7 +202,9 @@ public class AuthService {
                 usuario.getBio(),
                 usuario.getFotoUrl(),
                 usuario.getEspecialidade(),
+                usuario.getTipoPsicologo(),
                 usuario.getCrp(),
+                usuario.getAreaInteresse(),
                 usuario.getPrecoSessao()
         );
 
@@ -235,7 +266,9 @@ public class AuthService {
         if (request.getEndereco() != null) usuario.setEndereco(request.getEndereco());
         if (request.getBio() != null) usuario.setBio(request.getBio());
         if (request.getEspecialidade() != null) usuario.setEspecialidade(request.getEspecialidade());
+        if (request.getTipoPsicologo() != null) usuario.setTipoPsicologo(request.getTipoPsicologo());
         if (request.getCrp() != null) usuario.setCrp(request.getCrp());
+        if (request.getAreaInteresse() != null) usuario.setAreaInteresse(request.getAreaInteresse());
         if (request.getPrecoSessao() != null) usuario.setPrecoSessao(request.getPrecoSessao());
 
         usuarioRepository.save(usuario);

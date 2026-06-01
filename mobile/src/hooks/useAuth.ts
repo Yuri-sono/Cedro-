@@ -44,6 +44,22 @@ export const useAuth = () => {
     }
   };
 
+  const handleGoogleLogin = async (credential: string) => {
+    try {
+      setIsLoading(true);
+      const response = await authService.googleLogin(credential);
+      await authStore.login(response.usuario, response.token);
+      showToast.success('Bem-vindo!', `Olá, ${response.usuario.nome}.`);
+      return true;
+    } catch (error) {
+      const err = error as ClassifiedError;
+      showAuthError('Erro no Login Google', err.message || 'Nao foi possivel entrar com Google.');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleRecuperarSenha = async (email: string) => {
     try {
       setIsLoading(true);
@@ -72,6 +88,7 @@ export const useAuth = () => {
   return {
     isLoading,
     login: handleLogin,
+    loginComGoogle: handleGoogleLogin,
     register: handleRegister,
     recuperarSenha: handleRecuperarSenha,
     logout: handleLogout,

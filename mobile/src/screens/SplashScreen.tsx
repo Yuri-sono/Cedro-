@@ -1,16 +1,17 @@
 import React from 'react';
-import { View, StyleSheet, ActivityIndicator, Image, Text } from 'react-native';
+import { View, StyleSheet, Image, Text } from 'react-native';
 import { colors, spacing, typography } from '../theme';
 
 export const SplashScreen = () => {
   return (
     <View style={styles.container}>
+      <View style={styles.cornerLeafTop} />
+      <View style={styles.cornerLeafBottom} />
       <View style={styles.logoShell}>
-        <Image source={require('../../assets/splash-icon.png')} style={styles.logo} resizeMode="contain" />
+        <Image source={require('../../assets/cedro-logo.png')} style={styles.logo} resizeMode="contain" />
       </View>
       <Text style={styles.brand}>CEDRO</Text>
-      <Text style={styles.subtitle}>Apoio psicologico e saude</Text>
-      <ActivityIndicator size="small" color={colors.forest} style={styles.loader} />
+      <Text style={styles.subtitle}>conecta • cuida • preserva</Text>
     </View>
   );
 };
@@ -24,13 +25,13 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
   },
   logo: {
-    width: 172,
-    height: 172,
+    width: 186,
+    height: 186,
   },
   logoShell: {
-    width: 196,
-    height: 196,
-    borderRadius: 98,
+    width: 214,
+    height: 214,
+    borderRadius: 107,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.surfaceWarm,
@@ -47,15 +48,33 @@ const styles = StyleSheet.create({
     color: colors.forest,
     fontSize: typography.size['3xl'],
     fontWeight: typography.weight.bold,
+    letterSpacing: 2,
+    marginTop: spacing.lg,
   },
   subtitle: {
     color: colors.textSecondary,
-    fontSize: typography.size.md,
+    fontSize: typography.size.sm,
     marginTop: spacing.xs,
     textAlign: 'center',
     opacity: 0.9,
+    letterSpacing: 0.6,
   },
-  loader: {
-    marginTop: spacing.xl,
+  cornerLeafTop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 110,
+    height: 110,
+    borderBottomRightRadius: 110,
+    backgroundColor: 'rgba(168, 214, 197, 0.22)',
+  },
+  cornerLeafBottom: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    width: 96,
+    height: 96,
+    borderTopLeftRadius: 96,
+    backgroundColor: 'rgba(168, 214, 197, 0.22)',
   },
 });

@@ -133,6 +133,12 @@ export const authService = {
     return authRequest<ApiMessage>('cadastro', API_ENDPOINTS.AUTH.REGISTER, data);
   },
 
+  googleLogin: async (credential: string): Promise<LoginResponse> => {
+    return authRequest<LoginResponse>('login com Google', API_ENDPOINTS.AUTH.GOOGLE, {
+      credential,
+    });
+  },
+
   recuperarSenha: async (email: string): Promise<ApiMessage> => {
     return authRequest<ApiMessage>('recuperar senha', API_ENDPOINTS.AUTH.RECUPERAR_SENHA, { email });
   },
