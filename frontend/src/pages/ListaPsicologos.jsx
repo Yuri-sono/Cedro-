@@ -142,13 +142,22 @@ function ListaPsicologos() {
                 </div>
               </div>
               <div className="card-footer bg-transparent border-0 p-4 pt-0">
-                <button 
-                  className="btn btn-success w-100 py-2"
-                  onClick={() => agendarSessao(psicologo.id)}
-                >
-                  <i className="bi bi-calendar-plus me-2"></i>
-                  Agendar Sessão
-                </button>
+                <div className="d-grid gap-2">
+                  <button 
+                    className="btn btn-success w-100 py-2"
+                    onClick={() => agendarSessao(psicologo.id)}
+                  >
+                    <i className="bi bi-calendar-plus me-2"></i>
+                    Agendar Sessão
+                  </button>
+                  <button
+                    className="btn btn-outline-primary w-100 py-2"
+                    onClick={() => navigate(`/chat/${psicologo.id}`)}
+                  >
+                    <i className="bi bi-chat-dots me-2"></i>
+                    Conversar com psicólogo
+                  </button>
+                </div>
               </div>
             </div>
           </div>
