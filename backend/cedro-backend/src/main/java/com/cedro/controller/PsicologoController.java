@@ -114,8 +114,8 @@ public class PsicologoController {
      * Verifica se um CRP é válido e se já existe no banco de dados.
      * Formato esperado: XX/XXXXXX (2 dígitos / 5 ou 6 dígitos)
      */
-    @GetMapping("/verificar-crp/{crp}")
-    public ResponseEntity<?> verificarCrp(@PathVariable String crp) {
+    @GetMapping("/verificar-crp")
+    public ResponseEntity<?> verificarCrp(@RequestParam String crp) {
         // Validar formato do CRP
         if (!crp.matches("\\d{2}/\\d{5,6}")) {
             return ResponseEntity.badRequest().body(Map.of(

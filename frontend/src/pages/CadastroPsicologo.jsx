@@ -45,7 +45,7 @@ const CadastroPsicologo = () => {
 
     try {
       // Consultar o backend para verificar se o CRP existe no banco de dados
-      const response = await api.get(`/api/psicologos/verificar-crp/${encodeURIComponent(crp)}`);
+      const response = await api.get(`/api/psicologos/verificar-crp?crp=${encodeURIComponent(crp)}`);
       
       if (response.data.valido) {
         setCrpStatus('valid');
@@ -138,11 +138,11 @@ const CadastroPsicologo = () => {
         telefone: formData.telefone,
         dataNascimento: formData.dataNascimento,
         genero: formData.genero,
-        tipoUsuario: 'psicologo'
+        tipoUsuario: 'psicologo',
+        especialidade: formData.especialidade,
+        tipoPsicologo: formData.especialidade, // Abordagem clínica idêntica à especialidade
+        precoSessao: parseFloat(formData.preco_sessao)
       };
-      
-      if (formData.especialidade) payload.especialidade = formData.especialidade;
-      if (formData.preco_sessao) payload.precoSessao = parseFloat(formData.preco_sessao);
       
       await api.post('/api/auth/register', payload);
       alert('Cadastro realizado com sucesso!');
@@ -353,7 +353,7 @@ const CadastroPsicologo = () => {
 
                   <div className="row">
                     <div className="col-md-6 mb-3">
-                      <label htmlFor="especialidade" className="form-label">Especialidade</label>
+                      <label htmlFor="especialidade" className="form-label">Especialidade *</label>
                       <input
                         type="text"
                         className="form-control"
@@ -362,19 +362,21 @@ const CadastroPsicologo = () => {
                         placeholder="Ex: Ansiedade, Depressão"
                         value={formData.especialidade}
                         onChange={handleChange}
+                        required
                       />
                     </div>
                     <div className="col-md-6 mb-3">
-                      <label htmlFor="preco_sessao" className="form-label">Valor da Sessão (R$)</label>
+                      <label htmlFor="preco_sessao" className="form-label">Valor da Sessão (R$) *</label>
                       <input
                         type="number"
                         className="form-control"
                         id="preco_sessao"
                         name="preco_sessao"
-                        min="0"
+                        min="0.01"
                         step="0.01"
                         value={formData.preco_sessao}
                         onChange={handleChange}
+                        required
                       />
                     </div>
                   </div>
