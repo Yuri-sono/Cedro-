@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import API_BASE_URL from '../config';
 import '../styles/chat.css';
+
+const FALLBACK_ICE_SERVERS = [{ urls: 'stun:stun.l.google.com:19302' }];
 
 function Chat() {
   const [mensagens, setMensagens] = useState([]);
@@ -11,40 +13,54 @@ function Chat() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [destinatario, setDestinatario] = useState(null);
+  const [realtimeStatus, setRealtimeStatus] = useState('connecting');
+  const [callState, setCallState] = useState('idle');
+  const [callError, setCallError] = useState('');
+  const [isMuted, setIsMuted] = useState(false);
   const { user } = useAuth();
   const { userId } = useParams();
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const socketRef = useRef(null);
+  const reconnectTimerRef = useRef(null);
+  const peerConnectionRef = useRef(null);
+  const localStreamRef = useRef(null);
+  const remoteAudioRef = useRef(null);
+  const activeCallIdRef = useRef(null);
+  const pendingOfferRef = useRef(null);
+  const pendingIceRef = useRef([]);
+  const callStateRef = useRef('idle');
+
+  const destinatarioId = Number(userId);
 
   useEffect(() => {
-    carregarMensagens();
-    carregarDestinatario();
-    const interval = setInterval(carregarMensagens, 3000);
-    return () => clearInterval(interval);
-  }, [userId]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [mensagens]);
+    callStateRef.current = callState;
+  }, [callState]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const carregarDestinatario = async () => {
+  const upsertMensagem = useCallback((mensagem) => {
+    setMensagens((prev) => {
+      if (prev.some((item) => item.id === mensagem.id)) return prev;
+      return [...prev, mensagem].sort((a, b) => new Date(a.dataCriacao) - new Date(b.dataCriacao));
+    });
+  }, []);
+
+  const marcarComoLidas = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_BASE_URL}/api/usuarios/${userId}`, {
+      await axios.put(`${API_BASE_URL}/api/mensagens/marcar-lidas/${userId}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setDestinatario(response.data);
     } catch (error) {
-      console.error('Erro ao carregar destinatário:', error);
+      console.error('Erro ao marcar como lidas:', error);
     }
-  };
+  }, [userId]);
 
-  const carregarMensagens = async () => {
+  const carregarMensagens = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(`${API_BASE_URL}/api/mensagens/conversa/${userId}`, {
@@ -57,41 +73,325 @@ function Chat() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [marcarComoLidas, userId]);
 
-  const marcarComoLidas = async () => {
+  const carregarDestinatario = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`${API_BASE_URL}/api/mensagens/marcar-lidas/${userId}`, {}, {
+      const response = await axios.get(`${API_BASE_URL}/api/usuarios/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      setDestinatario(response.data);
     } catch (error) {
-      console.error('Erro ao marcar como lidas:', error);
+      console.error('Erro ao carregar destinatário:', error);
+    }
+  }, [userId]);
+
+  const sendRealtime = useCallback((payload) => {
+    const socket = socketRef.current;
+    if (!socket || socket.readyState !== WebSocket.OPEN) return false;
+    socket.send(JSON.stringify(payload));
+    return true;
+  }, []);
+
+  const cleanupCall = useCallback(() => {
+    peerConnectionRef.current?.close();
+    peerConnectionRef.current = null;
+    localStreamRef.current?.getTracks().forEach((track) => track.stop());
+    localStreamRef.current = null;
+    pendingOfferRef.current = null;
+    pendingIceRef.current = [];
+    activeCallIdRef.current = null;
+    setIsMuted(false);
+    setCallState('idle');
+  }, []);
+
+  const carregarIceServers = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_BASE_URL}/api/chamadas/ice-servers`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data?.iceServers?.length ? response.data.iceServers : FALLBACK_ICE_SERVERS;
+    } catch (error) {
+      console.error('Erro ao carregar servidores ICE:', error);
+      return FALLBACK_ICE_SERVERS;
+    }
+  }, []);
+
+  const createPeerConnection = useCallback(async () => {
+    const iceServers = await carregarIceServers();
+    const pc = new RTCPeerConnection({ iceServers });
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate && activeCallIdRef.current) {
+        sendRealtime({
+          type: 'call:ice',
+          destinatarioId,
+          callId: activeCallIdRef.current,
+          candidate: event.candidate
+        });
+      }
+    };
+
+    pc.ontrack = (event) => {
+      if (remoteAudioRef.current) {
+        remoteAudioRef.current.srcObject = event.streams[0];
+        remoteAudioRef.current.play().catch(() => {});
+      }
+    };
+
+    pc.onconnectionstatechange = () => {
+      if (['failed', 'closed', 'disconnected'].includes(pc.connectionState)) {
+        if (callStateRef.current !== 'idle') cleanupCall();
+      }
+    };
+
+    peerConnectionRef.current = pc;
+    return pc;
+  }, [carregarIceServers, cleanupCall, destinatarioId, sendRealtime]);
+
+  const attachLocalAudio = async (pc) => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    localStreamRef.current = stream;
+    stream.getAudioTracks().forEach((track) => pc.addTrack(track, stream));
+    return stream;
+  };
+
+  const flushPendingIce = async (pc) => {
+    const candidates = pendingIceRef.current;
+    pendingIceRef.current = [];
+    for (const candidate of candidates) {
+      await pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(() => {});
     }
   };
 
+  const handleIncomingSignal = useCallback(async (message) => {
+    try {
+      if (message.type === 'chat:message' && message.mensagem) {
+        const conversaAtual =
+          Number(message.mensagem.remetenteId) === destinatarioId ||
+          Number(message.mensagem.destinatarioId) === destinatarioId;
+        if (!conversaAtual) return;
+        upsertMensagem(message.mensagem);
+        marcarComoLidas();
+        return;
+      }
+
+      if (Number(message.remetenteId) !== destinatarioId) return;
+
+      if (message.type === 'call:offer') {
+        if (callStateRef.current !== 'idle') {
+          sendRealtime({
+            type: 'call:reject',
+            destinatarioId,
+            callId: message.callId,
+            reason: 'busy'
+          });
+          return;
+        }
+        pendingOfferRef.current = message;
+        activeCallIdRef.current = message.callId;
+        setCallError('');
+        setCallState('ringing');
+        return;
+      }
+
+      if (message.type === 'call:answer' && peerConnectionRef.current) {
+        await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(message.answer));
+        await flushPendingIce(peerConnectionRef.current);
+        setCallState('connected');
+        return;
+      }
+
+      if (message.type === 'call:ice') {
+        const pc = peerConnectionRef.current;
+        if (pc?.remoteDescription) {
+          await pc.addIceCandidate(new RTCIceCandidate(message.candidate)).catch(() => {});
+        } else {
+          pendingIceRef.current.push(message.candidate);
+        }
+        return;
+      }
+
+      if (message.type === 'call:reject') {
+        setCallError('Chamada recusada ou usuário ocupado.');
+        cleanupCall();
+        return;
+      }
+
+      if (message.type === 'call:end') {
+        cleanupCall();
+      }
+    } catch (error) {
+      console.error('Erro no sinal de chamada:', error);
+      setCallError('Não foi possível completar a chamada.');
+      cleanupCall();
+    }
+  }, [cleanupCall, destinatarioId, marcarComoLidas, sendRealtime, upsertMensagem]);
+
+  useEffect(() => {
+    carregarMensagens();
+    carregarDestinatario();
+  }, [carregarDestinatario, carregarMensagens]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [mensagens]);
+
+  useEffect(() => {
+    let closedByComponent = false;
+
+    const connect = () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const wsUrl = `${API_BASE_URL.replace(/^http/, 'ws')}/ws-realtime?token=${encodeURIComponent(token)}`;
+      const socket = new WebSocket(wsUrl);
+      socketRef.current = socket;
+      setRealtimeStatus('connecting');
+
+      socket.onopen = () => setRealtimeStatus('online');
+      socket.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        handleIncomingSignal(message);
+      };
+      socket.onerror = () => setRealtimeStatus('offline');
+      socket.onclose = () => {
+        setRealtimeStatus('offline');
+        if (!closedByComponent) {
+          reconnectTimerRef.current = setTimeout(connect, 2500);
+        }
+      };
+    };
+
+    connect();
+
+    return () => {
+      closedByComponent = true;
+      clearTimeout(reconnectTimerRef.current);
+      socketRef.current?.close();
+      cleanupCall();
+    };
+  }, [cleanupCall, handleIncomingSignal]);
+
   const enviarMensagem = async (e) => {
     e.preventDefault();
-    if (!novaMensagem.trim() || sending) return;
+    const texto = novaMensagem.trim();
+    if (!texto || sending) return;
 
     setSending(true);
+    const clientId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
     try {
-      const token = localStorage.getItem('token');
-      await axios.post(`${API_BASE_URL}/api/mensagens`, {
-        destinatarioId: parseInt(userId),
-        mensagem: novaMensagem
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
+      const sentBySocket = sendRealtime({
+        type: 'chat:send',
+        destinatarioId,
+        mensagem: texto,
+        clientId
       });
-      
+
+      if (!sentBySocket) {
+        const token = localStorage.getItem('token');
+        const response = await axios.post(`${API_BASE_URL}/api/mensagens`, {
+          destinatarioId,
+          mensagem: texto
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        upsertMensagem(response.data);
+      }
+
       setNovaMensagem('');
-      carregarMensagens();
       inputRef.current?.focus();
     } catch (error) {
       alert('Erro ao enviar mensagem. Tente novamente.');
     } finally {
       setSending(false);
     }
+  };
+
+  const iniciarChamada = async () => {
+    if (callState !== 'idle') return;
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCallError('Seu navegador não suporta chamada de voz.');
+      return;
+    }
+
+    try {
+      setCallError('');
+      setCallState('calling');
+      activeCallIdRef.current = `${user.id}-${destinatarioId}-${Date.now()}`;
+      const pc = await createPeerConnection();
+      await attachLocalAudio(pc);
+      const offer = await pc.createOffer({ offerToReceiveAudio: true });
+      await pc.setLocalDescription(offer);
+      sendRealtime({
+        type: 'call:offer',
+        destinatarioId,
+        callId: activeCallIdRef.current,
+        offer
+      });
+    } catch (error) {
+      console.error('Erro ao iniciar chamada:', error);
+      setCallError('Permita o microfone para iniciar a chamada.');
+      cleanupCall();
+    }
+  };
+
+  const aceitarChamada = async () => {
+    const offer = pendingOfferRef.current;
+    if (!offer) return;
+
+    try {
+      setCallError('');
+      const pc = await createPeerConnection();
+      await attachLocalAudio(pc);
+      await pc.setRemoteDescription(new RTCSessionDescription(offer.offer));
+      await flushPendingIce(pc);
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      sendRealtime({
+        type: 'call:answer',
+        destinatarioId,
+        callId: offer.callId,
+        answer
+      });
+      setCallState('connected');
+    } catch (error) {
+      console.error('Erro ao aceitar chamada:', error);
+      setCallError('Não foi possível aceitar a chamada.');
+      cleanupCall();
+    }
+  };
+
+  const encerrarChamada = () => {
+    if (activeCallIdRef.current) {
+      sendRealtime({
+        type: 'call:end',
+        destinatarioId,
+        callId: activeCallIdRef.current
+      });
+    }
+    cleanupCall();
+  };
+
+  const recusarChamada = () => {
+    if (activeCallIdRef.current) {
+      sendRealtime({
+        type: 'call:reject',
+        destinatarioId,
+        callId: activeCallIdRef.current
+      });
+    }
+    cleanupCall();
+  };
+
+  const toggleMute = () => {
+    const audioTrack = localStreamRef.current?.getAudioTracks()[0];
+    if (!audioTrack) return;
+    audioTrack.enabled = !audioTrack.enabled;
+    setIsMuted(!audioTrack.enabled);
   };
 
   const handleKeyDown = (e) => {
@@ -125,6 +425,7 @@ function Chat() {
 
   const nomeDestinatario = destinatario?.nome || `Usuário #${userId}`;
   const inicialDestinatario = nomeDestinatario.charAt(0).toUpperCase();
+  const isCallActive = callState !== 'idle';
 
   if (loading) {
     return (
@@ -141,9 +442,8 @@ function Chat() {
 
   return (
     <div className="chat-page-wrapper">
+      <audio ref={remoteAudioRef} autoPlay playsInline />
       <div className="chat-main-container">
-        
-        {/* Header */}
         <div className="chat-premium-header">
           <div className="d-flex align-items-center">
             <button 
@@ -158,18 +458,26 @@ function Chat() {
               <div className="chat-avatar">
                 {inicialDestinatario}
               </div>
-              <div className="chat-online-dot"></div>
+              <div className={`chat-online-dot ${realtimeStatus === 'online' ? '' : 'offline'}`}></div>
             </div>
             
             <div className="flex-grow-1">
               <h5 className="mb-0 fw-bold text-white">{nomeDestinatario}</h5>
               <small className="chat-status-text">
                 <i className="bi bi-circle-fill me-1" style={{ fontSize: '7px' }}></i>
-                Online
+                {realtimeStatus === 'online' ? 'Tempo real conectado' : 'Reconectando...'}
               </small>
             </div>
             
             <div className="d-flex gap-2">
+              <button
+                className={`chat-action-btn ${isCallActive ? 'in-call' : ''}`}
+                title="Ligação de voz"
+                onClick={iniciarChamada}
+                disabled={isCallActive || realtimeStatus !== 'online'}
+              >
+                <i className="bi bi-telephone-fill"></i>
+              </button>
               <button className="chat-action-btn" title="Informações">
                 <i className="bi bi-info-circle"></i>
               </button>
@@ -177,7 +485,40 @@ function Chat() {
           </div>
         </div>
 
-        {/* Messages Area */}
+        {isCallActive && (
+          <div className={`chat-call-panel ${callState}`}>
+            <div className="chat-call-copy">
+              <strong>
+                {callState === 'calling' && `Chamando ${nomeDestinatario}...`}
+                {callState === 'ringing' && `${nomeDestinatario} está ligando`}
+                {callState === 'connected' && `Ligação com ${nomeDestinatario}`}
+              </strong>
+              <span>{callState === 'connected' ? 'Áudio conectado' : 'Aguardando resposta'}</span>
+            </div>
+            <div className="chat-call-actions">
+              {callState === 'ringing' && (
+                <button className="chat-call-btn accept" onClick={aceitarChamada} title="Atender">
+                  <i className="bi bi-telephone-inbound-fill"></i>
+                </button>
+              )}
+              {callState === 'connected' && (
+                <button className={`chat-call-btn mute ${isMuted ? 'muted' : ''}`} onClick={toggleMute} title="Microfone">
+                  <i className={`bi ${isMuted ? 'bi-mic-mute-fill' : 'bi-mic-fill'}`}></i>
+                </button>
+              )}
+              <button className="chat-call-btn end" onClick={callState === 'ringing' ? recusarChamada : encerrarChamada} title="Encerrar">
+                <i className="bi bi-telephone-x-fill"></i>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {callError && (
+          <div className="chat-call-error">
+            {callError}
+          </div>
+        )}
+
         <div className="chat-messages-area">
           {mensagens.length === 0 ? (
             <div className="chat-empty-state">
@@ -191,7 +532,7 @@ function Chat() {
             </div>
           ) : (
             mensagens.map((msg, index) => {
-              const isSent = msg.remetenteId === user.id;
+              const isSent = Number(msg.remetenteId) === Number(user.id);
               return (
                 <React.Fragment key={msg.id}>
                   {shouldShowDateSeparator(index) && (
@@ -222,7 +563,6 @@ function Chat() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Area */}
         <div className="chat-input-area">
           <form onSubmit={enviarMensagem} className="chat-input-form">
             <div className="chat-input-wrapper">

@@ -89,3 +89,31 @@ backend/cedro-backend/
 - Use senhas fortes
 - HTTPS em produção
 - Mantenha dependências atualizadas
+
+## Chamadas de voz
+
+O chat usa WebRTC para ligação de voz. Em redes simples, o STUN público já funciona. Para funcionar bem em redes restritas, configure um TURN no backend:
+
+### Metered
+
+```env
+TURN_METERED_DOMAIN=seu-app.metered.live
+TURN_METERED_SECRET_KEY=sua-secret-key
+```
+
+### Coturn com secret compartilhado
+
+```env
+TURN_URLS=turn:seu-dominio.com:3478?transport=udp,turn:seu-dominio.com:3478?transport=tcp,turns:seu-dominio.com:5349?transport=tcp
+TURN_SHARED_SECRET=segredo-rest-api-do-coturn
+```
+
+Se o seu provedor não tiver secret temporário, também funciona com credencial fixa:
+
+```env
+TURN_URLS=turn:seu-dominio.com:3478?transport=udp,turns:seu-dominio.com:5349?transport=tcp
+TURN_USERNAME=usuario-turn
+TURN_CREDENTIAL=senha-turn
+```
+
+Prefira `TURN_SHARED_SECRET` quando usar coturn, porque o backend gera credenciais temporárias para usuários autenticados.
