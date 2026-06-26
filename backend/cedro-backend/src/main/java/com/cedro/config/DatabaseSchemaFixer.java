@@ -5,7 +5,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-@Component
+// @Component
 public class DatabaseSchemaFixer implements ApplicationRunner {
 
     private final JdbcTemplate jdbcTemplate;
