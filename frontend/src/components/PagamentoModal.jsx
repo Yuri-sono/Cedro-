@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 import axios from 'axios';
 import API_BASE_URL from '../config.js';
 
-const PagamentoModal = ({ show, onClose, plano }) => {
+const PagamentoModal = ({ show, onClose, plano, onPaymentSuccess }) => {
   const { user, updateUser } = useAuth();
   const [metodoPagamento, setMetodoPagamento] = useState('cartao');
   const [loading, setLoading] = useState(false);
@@ -83,12 +83,26 @@ const PagamentoModal = ({ show, onClose, plano }) => {
               headers: { Authorization: `Bearer ${token}` }
             });
             
-            updateUser({ ...user, plano: 'premium' });
+            if (plano.nome === 'Sessão de Terapia' && onPaymentSuccess) {
+                await onPaymentSuccess(); // Chama a função de callback para agendar a sessão e fechar o modal
+                // onPaymentSuccess já deve lidar com o fechamento do modal e redirecionamento.
+            } else {
+                // Lógica para pagamento de planos premium
+                updateUser({ ...user, plano: 'premium' });
+                setEtapa('sucesso');
+                setTimeout(() => {
+                    onClose(); // Fecha o modal após a mensagem de sucesso
+                    // Se for necessário redirecionar após a compra de um plano premium,
+                    // o componente pai (PagamentoSessao ou outro) precisa gerenciar isso via `onClose`
+                    // ou passando uma função de navegação como prop.
+                }, 2000); // Exibe a mensagem por 2 segundos antes de fechar
+            }
           } catch (error) {
-            console.error('Erro ao confirmar pagamento:', error);
+            console.error('Erro ao confirmar pagamento (PIX):', error);
+            setEtapa('erro'); // Define o estado para erro
+          } finally {
+            setLoading(false); // Garante que o estado de carregamento seja desativado
           }
-          setEtapa('sucesso');
-          setLoading(false);
         }, 3000);
         
       } else {
@@ -104,16 +118,27 @@ const PagamentoModal = ({ show, onClose, plano }) => {
             headers: { Authorization: `Bearer ${token}` }
           });
           
-          updateUser({ ...user, plano: 'premium' });
+          if (plano.nome === 'Sessão de Terapia' && onPaymentSuccess) {
+              await onPaymentSuccess(); // Chama a função de callback para agendar a sessão e fechar o modal
+              // onPaymentSuccess já deve lidar com o fechamento do modal e redirecionamento.
+          } else {
+              // Lógica para pagamento de planos premium
+              updateUser({ ...user, plano: 'premium' });
+              setEtapa('sucesso');
+              setTimeout(() => {
+                  onClose(); // Fecha o modal após a mensagem de sucesso
+              }, 2000); // Exibe a mensagem por 2 segundos antes de fechar
+          }
         } catch (error) {
-          console.error('Erro no pagamento:', error);
+          console.error('Erro no pagamento (Cartão):', error);
+          setEtapa('erro'); // Define o estado para erro
+        } finally {
+          setLoading(false); // Garante que o estado de carregamento seja desativado
         }
-        setEtapa('sucesso');
-        setLoading(false);
       }
     } catch (error) {
-      console.error('Erro no pagamento:', error);
-      setEtapa('sucesso');
+      console.error('Erro inesperado ao processar pagamento:', error);
+      setEtapa('erro'); // Define o estado para erro
       setLoading(false);
     }
   };
@@ -198,6 +223,22 @@ const PagamentoModal = ({ show, onClose, plano }) => {
                 <p className="text-muted mb-4">Bem-vindo ao Premium! Aproveite todos os benefícios.</p>
                 <button className="btn btn-success rounded-pill px-5" onClick={onClose}>
                   <i className="bi bi-check-circle me-2"></i>Fechar
+                </button>
+              </div>
+            ) : etapa === 'erro' ? (
+              <div className="text-center py-5 animate-on-scroll show">
+                <div className="mb-4" style={{
+                  width: '80px', height: '80px', borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #dc3545, #fd7e14)', // Vermelho/Laranja
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  margin: '0 auto', animation: 'checkBounce 0.5s ease'
+                }}>
+                  <i className="bi bi-x-lg text-white" style={{ fontSize: '2.5rem' }}></i>
+                </div>
+                <h4 className="fw-bold mb-2">Erro no Pagamento!</h4>
+                <p className="text-muted mb-4">Ocorreu um erro ao processar seu pagamento. Por favor, tente novamente.</p>
+                <button className="btn btn-danger rounded-pill px-5" onClick={onClose}>
+                  <i className="bi bi-x-circle me-2"></i>Fechar
                 </button>
               </div>
             ) : (

@@ -49,6 +49,22 @@ const PagamentoSessao = () => {
     }
   };
 
+  const handlePaymentSuccess = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API_BASE_URL}/api/sessoes/${sessaoId}/confirmar-pagamento`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert('Sessão agendada e paga com sucesso!');
+      navigate('/minhas-sessoes'); // Redireciona para a página de minhas sessões
+    } catch (error) {
+      console.error('Erro ao confirmar pagamento da sessão:', error);
+      alert('Erro ao confirmar pagamento da sessão.');
+    } finally {
+      setShowPagamento(false); // Fecha o modal, independentemente do sucesso
+    }
+  };
+
   const handlePagar = () => {
     setShowPagamento(true);
   };
@@ -188,9 +204,10 @@ const PagamentoSessao = () => {
         </div>
       </div>
 
-      <PagamentoModal 
+      <PagamentoModal
         show={showPagamento}
         onClose={() => setShowPagamento(false)}
+        onPaymentSuccess={handlePaymentSuccess} // Adicionada a callback para sucesso do pagamento
         plano={{
           nome: 'Sessão de Terapia',
           preco: sessao.preco

@@ -107,13 +107,26 @@ public class SessaoController {
         return ResponseEntity.ok(sessaoService.atualizar(id, request));
     }
 
+    @PostMapping("/{id}/confirmar-pagamento")
+    public ResponseEntity<?> confirmarPagamento(
+            @PathVariable Integer id,
+            @RequestHeader("Authorization") String authHeader) {
+        Integer requesterId = getUserId(authHeader);
+        try {
+            Sessao sessaoAtualizada = sessaoService.confirmarPagamento(id, requesterId);
+            return ResponseEntity.ok(Map.of("message", "Sessão confirmada com sucesso", "sessao", sessaoAtualizada));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(403).body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletar(
             @PathVariable Integer id,
             @RequestHeader("Authorization") String authHeader) {
         Integer userId = getUserId(authHeader);
         Sessao sessao = sessaoService.buscarPorId(id);
-        if (!isAdmin(authHeader) && !sessao.getPacienteId().equals(userId)) {
+        if (!isAdmin(authHeader) && !sessao.getPacienteId().equals(userId)) { //TODO: adicionar verificação se o psicólogo pode deletar
             return ResponseEntity.status(403).body(Map.of("error", "Acesso negado"));
         }
         sessaoService.deletar(id);

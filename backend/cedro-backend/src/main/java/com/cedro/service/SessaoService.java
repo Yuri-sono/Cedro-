@@ -98,6 +98,15 @@ public class SessaoService {
                 "horariosOcupados", horariosOcupados
         );
     }
+
+    public Sessao confirmarPagamento(Integer id, Integer pacienteId) {
+        Sessao sessao = buscarPorId(id);
+        if (!sessao.getPacienteId().equals(pacienteId)) {
+            throw new RuntimeException("Acesso negado. Paciente não corresponde à sessão.");
+        }
+        sessao.setStatusSessao("agendada");
+        return sessaoRepository.save(sessao);
+    }
     
     public void deletar(Integer id) {
         Sessao sessao = buscarPorId(id);
