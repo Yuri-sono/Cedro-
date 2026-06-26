@@ -17,6 +17,8 @@ function Chat() {
   const [callState, setCallState] = useState('idle');
   const [callError, setCallError] = useState('');
   const [isMuted, setIsMuted] = useState(false);
+  const [callMode, setCallMode] = useState('audio'); // 'audio' | 'video'
+  const [isVideoMuted, setIsVideoMuted] = useState(false);
   const { user } = useAuth();
   const { userId } = useParams();
   const navigate = useNavigate();
@@ -27,16 +29,23 @@ function Chat() {
   const peerConnectionRef = useRef(null);
   const localStreamRef = useRef(null);
   const remoteAudioRef = useRef(null);
+  const remoteVideoRef = useRef(null);
+  const localVideoRef = useRef(null);
   const activeCallIdRef = useRef(null);
   const pendingOfferRef = useRef(null);
   const pendingIceRef = useRef([]);
   const callStateRef = useRef('idle');
+  const callModeRef = useRef('audio');
 
   const destinatarioId = Number(userId);
 
   useEffect(() => {
     callStateRef.current = callState;
   }, [callState]);
+
+  useEffect(() => {
+    callModeRef.current = callMode;
+  }, [callMode]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -99,10 +108,14 @@ function Chat() {
     peerConnectionRef.current = null;
     localStreamRef.current?.getTracks().forEach((track) => track.stop());
     localStreamRef.current = null;
+    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+    if (localVideoRef.current) localVideoRef.current.srcObject = null;
     pendingOfferRef.current = null;
     pendingIceRef.current = [];
     activeCallIdRef.current = null;
     setIsMuted(false);
+    setIsVideoMuted(false);
+    setCallMode('audio');
     setCallState('idle');
   }, []);
 
@@ -135,8 +148,13 @@ function Chat() {
     };
 
     pc.ontrack = (event) => {
+      const stream = event.streams[0];
+      if (callModeRef.current === 'video' && remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = stream;
+        remoteVideoRef.current.play().catch(() => {});
+      }
       if (remoteAudioRef.current) {
-        remoteAudioRef.current.srcObject = event.streams[0];
+        remoteAudioRef.current.srcObject = stream;
         remoteAudioRef.current.play().catch(() => {});
       }
     };
@@ -151,10 +169,14 @@ function Chat() {
     return pc;
   }, [carregarIceServers, cleanupCall, destinatarioId, sendRealtime]);
 
-  const attachLocalAudio = async (pc) => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  const attachLocalMedia = async (pc, withVideo = false) => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: withVideo });
     localStreamRef.current = stream;
-    stream.getAudioTracks().forEach((track) => pc.addTrack(track, stream));
+    stream.getTracks().forEach((track) => pc.addTrack(track, stream));
+    if (withVideo && localVideoRef.current) {
+      localVideoRef.current.srcObject = stream;
+      localVideoRef.current.play().catch(() => {});
+    }
     return stream;
   };
 
@@ -192,6 +214,7 @@ function Chat() {
         }
         pendingOfferRef.current = message;
         activeCallIdRef.current = message.callId;
+        setCallMode(message.callMode || 'audio');
         setCallError('');
         setCallState('ringing');
         return;
@@ -320,16 +343,18 @@ function Chat() {
 
     try {
       setCallError('');
+      setCallMode('audio');
       setCallState('calling');
       activeCallIdRef.current = `${user.id}-${destinatarioId}-${Date.now()}`;
       const pc = await createPeerConnection();
-      await attachLocalAudio(pc);
+      await attachLocalMedia(pc, false);
       const offer = await pc.createOffer({ offerToReceiveAudio: true });
       await pc.setLocalDescription(offer);
       sendRealtime({
         type: 'call:offer',
         destinatarioId,
         callId: activeCallIdRef.current,
+        callMode: 'audio',
         offer
       });
     } catch (error) {
@@ -339,14 +364,47 @@ function Chat() {
     }
   };
 
+  const iniciarVideoChamada = async () => {
+    if (callState !== 'idle') return;
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCallError('Seu navegador não suporta videochamada.');
+      return;
+    }
+
+    try {
+      setCallError('');
+      setCallMode('video');
+      setCallState('calling');
+      activeCallIdRef.current = `${user.id}-${destinatarioId}-${Date.now()}`;
+      const pc = await createPeerConnection();
+      await attachLocalMedia(pc, true);
+      const offer = await pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
+      await pc.setLocalDescription(offer);
+      sendRealtime({
+        type: 'call:offer',
+        destinatarioId,
+        callId: activeCallIdRef.current,
+        callMode: 'video',
+        offer
+      });
+    } catch (error) {
+      console.error('Erro ao iniciar videochamada:', error);
+      setCallError('Permita câmera e microfone para iniciar a videochamada.');
+      cleanupCall();
+    }
+  };
+
   const aceitarChamada = async () => {
     const offer = pendingOfferRef.current;
     if (!offer) return;
 
+    const isVideo = (offer.callMode || 'audio') === 'video';
+
     try {
       setCallError('');
+      setCallMode(isVideo ? 'video' : 'audio');
       const pc = await createPeerConnection();
-      await attachLocalAudio(pc);
+      await attachLocalMedia(pc, isVideo);
       await pc.setRemoteDescription(new RTCSessionDescription(offer.offer));
       await flushPendingIce(pc);
       const answer = await pc.createAnswer();
@@ -392,6 +450,13 @@ function Chat() {
     if (!audioTrack) return;
     audioTrack.enabled = !audioTrack.enabled;
     setIsMuted(!audioTrack.enabled);
+  };
+
+  const toggleVideoMute = () => {
+    const videoTrack = localStreamRef.current?.getVideoTracks()[0];
+    if (!videoTrack) return;
+    videoTrack.enabled = !videoTrack.enabled;
+    setIsVideoMuted(!videoTrack.enabled);
   };
 
   const handleKeyDown = (e) => {
@@ -443,6 +508,30 @@ function Chat() {
   return (
     <div className="chat-page-wrapper">
       <audio ref={remoteAudioRef} autoPlay playsInline />
+
+      {/* ============ VIDEO CALL FULLSCREEN ============ */}
+      {callMode === 'video' && callState !== 'idle' && callState !== 'ringing' && (
+        <div className="chat-video-overlay">
+          <video ref={remoteVideoRef} className="chat-video-remote" autoPlay playsInline />
+          <div className="chat-video-local-wrapper">
+            <video ref={localVideoRef} className="chat-video-local" autoPlay playsInline muted />
+          </div>
+          <div className="chat-video-status">
+            <span>{callState === 'calling' ? `Chamando ${nomeDestinatario}...` : `Videochamada com ${nomeDestinatario}`}</span>
+          </div>
+          <div className="chat-video-controls">
+            <button className={`chat-video-ctrl-btn ${isMuted ? 'active' : ''}`} onClick={toggleMute} title="Microfone">
+              <i className={`bi ${isMuted ? 'bi-mic-mute-fill' : 'bi-mic-fill'}`}></i>
+            </button>
+            <button className={`chat-video-ctrl-btn ${isVideoMuted ? 'active' : ''}`} onClick={toggleVideoMute} title="Câmera">
+              <i className={`bi ${isVideoMuted ? 'bi-camera-video-off-fill' : 'bi-camera-video-fill'}`}></i>
+            </button>
+            <button className="chat-video-ctrl-btn end" onClick={encerrarChamada} title="Encerrar">
+              <i className="bi bi-telephone-x-fill"></i>
+            </button>
+          </div>
+        </div>
+      )}
       <div className="chat-main-container">
         <div className="chat-premium-header">
           <div className="d-flex align-items-center">
@@ -478,6 +567,14 @@ function Chat() {
               >
                 <i className="bi bi-telephone-fill"></i>
               </button>
+              <button
+                className={`chat-action-btn ${isCallActive ? 'in-call' : ''}`}
+                title="Videochamada"
+                onClick={iniciarVideoChamada}
+                disabled={isCallActive || realtimeStatus !== 'online'}
+              >
+                <i className="bi bi-camera-video-fill"></i>
+              </button>
               <button className="chat-action-btn" title="Informações">
                 <i className="bi bi-info-circle"></i>
               </button>
@@ -486,22 +583,22 @@ function Chat() {
         </div>
 
         {isCallActive && (
-          <div className={`chat-call-panel ${callState}`}>
+          <div className={`chat-call-panel ${callState} ${callMode === 'video' ? 'video' : ''}`}>
             <div className="chat-call-copy">
               <strong>
-                {callState === 'calling' && `Chamando ${nomeDestinatario}...`}
-                {callState === 'ringing' && `${nomeDestinatario} está ligando`}
-                {callState === 'connected' && `Ligação com ${nomeDestinatario}`}
+                {callState === 'calling' && `${callMode === 'video' ? '📹 Videochamada para' : 'Chamando'} ${nomeDestinatario}...`}
+                {callState === 'ringing' && `${nomeDestinatario} está ${callMode === 'video' ? 'videochamando' : 'ligando'}`}
+                {callState === 'connected' && `${callMode === 'video' ? '📹 Videochamada' : 'Ligação'} com ${nomeDestinatario}`}
               </strong>
-              <span>{callState === 'connected' ? 'Áudio conectado' : 'Aguardando resposta'}</span>
+              <span>{callState === 'connected' ? (callMode === 'video' ? 'Vídeo e áudio conectados' : 'Áudio conectado') : 'Aguardando resposta'}</span>
             </div>
             <div className="chat-call-actions">
               {callState === 'ringing' && (
                 <button className="chat-call-btn accept" onClick={aceitarChamada} title="Atender">
-                  <i className="bi bi-telephone-inbound-fill"></i>
+                  <i className={`bi ${callMode === 'video' ? 'bi-camera-video-fill' : 'bi-telephone-inbound-fill'}`}></i>
                 </button>
               )}
-              {callState === 'connected' && (
+              {callState === 'connected' && callMode !== 'video' && (
                 <button className={`chat-call-btn mute ${isMuted ? 'muted' : ''}`} onClick={toggleMute} title="Microfone">
                   <i className={`bi ${isMuted ? 'bi-mic-mute-fill' : 'bi-mic-fill'}`}></i>
                 </button>

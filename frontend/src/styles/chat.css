@@ -579,6 +579,141 @@
   to { transform: rotate(360deg); }
 }
 
+/* ============ VIDEO CALL OVERLAY ============ */
+.chat-video-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: videoOverlayIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes videoOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.chat-video-remote {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #111;
+}
+
+.chat-video-local-wrapper {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  width: 180px;
+  height: 240px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  background: #222;
+  animation: pipIn 0.5s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes pipIn {
+  from { opacity: 0; transform: scale(0.8) translateY(-10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.chat-video-local {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.chat-video-status {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chat-video-status span {
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.chat-video-controls {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 16px;
+  padding: 16px 28px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(16px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: controlsIn 0.5s 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes controlsIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.chat-video-ctrl-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.chat-video-ctrl-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.chat-video-ctrl-btn.active {
+  background: rgba(255, 193, 7, 0.8);
+  color: #1a1a1a;
+}
+
+.chat-video-ctrl-btn.end {
+  background: #dc3545;
+  width: 60px;
+  height: 60px;
+  font-size: 1.4rem;
+}
+
+.chat-video-ctrl-btn.end:hover {
+  background: #e74c5c;
+  transform: scale(1.15);
+  box-shadow: 0 0 24px rgba(220, 53, 69, 0.5);
+}
+
+/* Video call panel variant in header */
+.chat-call-panel.video {
+  background: linear-gradient(135deg, #1565c0 0%, #1976d2 100%);
+}
+
+.chat-call-panel.video.ringing {
+  background: linear-gradient(135deg, #7b1fa2 0%, #9c27b0 100%);
+}
+
 /* ============ RESPONSIVE ============ */
 @media (max-width: 768px) {
   .chat-page-wrapper {
@@ -617,5 +752,42 @@
     width: 40px;
     height: 40px;
     font-size: 1.1rem;
+  }
+
+  .chat-video-local-wrapper {
+    width: 110px;
+    height: 150px;
+    top: 16px;
+    right: 16px;
+    border-radius: 12px;
+  }
+
+  .chat-video-controls {
+    bottom: 24px;
+    gap: 12px;
+    padding: 12px 20px;
+    border-radius: 16px;
+  }
+
+  .chat-video-ctrl-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 1rem;
+  }
+
+  .chat-video-ctrl-btn.end {
+    width: 52px;
+    height: 52px;
+    font-size: 1.2rem;
+  }
+
+  .chat-video-status {
+    top: 16px;
+    left: 16px;
+    padding: 8px 14px;
+  }
+
+  .chat-video-status span {
+    font-size: 0.8rem;
   }
 }
