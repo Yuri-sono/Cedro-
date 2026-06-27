@@ -19,6 +19,8 @@ function Chat() {
   const [isMuted, setIsMuted] = useState(false);
   const [callMode, setCallMode] = useState('audio'); // 'audio' | 'video'
   const [isVideoMuted, setIsVideoMuted] = useState(false);
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const [permissionType, setPermissionType] = useState('audio'); // 'audio' | 'video'
   const { user } = useAuth();
   const { userId } = useParams();
   const navigate = useNavigate();
@@ -168,6 +170,45 @@ function Chat() {
     peerConnectionRef.current = pc;
     return pc;
   }, [carregarIceServers, cleanupCall, destinatarioId, sendRealtime]);
+
+  const solicitarPermissoes = async (tipo) => {
+    try {
+      const constraints = tipo === 'video' 
+        ? { audio: true, video: true }
+        : { audio: true };
+      
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      stream.getTracks().forEach(track => track.stop());
+      return true;
+    } catch (error) {
+      console.error('Erro ao solicitar permissões:', error);
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        setCallError(`Permissão ${tipo === 'video' ? 'de câmera e microfone' : 'de microfone'} negada. Verifique as configurações do navegador.`);
+      } else if (error.name === 'NotFoundError') {
+        setCallError(`${tipo === 'video' ? 'Câmera ou microfone' : 'Microfone'} não encontrado(s).`);
+      } else {
+        setCallError('Não foi possível acessar os dispositivos de mídia.');
+      }
+      return false;
+    }
+  };
+
+  const handlePermissionRequest = (tipo) => {
+    setPermissionType(tipo);
+    setShowPermissionModal(true);
+  };
+
+  const confirmarPermissoes = async () => {
+    setShowPermissionModal(false);
+    const permissaoOk = await solicitarPermissoes(permissionType);
+    if (permissaoOk) {
+      if (permissionType === 'video') {
+        await iniciarVideoChamadaReal();
+      } else {
+        await iniciarChamadaReal();
+      }
+    }
+  };
 
   const attachLocalMedia = async (pc, withVideo = false) => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: withVideo });
@@ -354,7 +395,16 @@ function Chat() {
     }
   };
 
-  const iniciarChamada = async () => {
+  const iniciarChamada = () => {
+    if (callState !== 'idle') return;
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCallError('Seu navegador não suporta chamada de voz.');
+      return;
+    }
+    handlePermissionRequest('audio');
+  };
+
+  const iniciarChamadaReal = async () => {
     if (callState !== 'idle') return;
     if (!navigator.mediaDevices?.getUserMedia) {
       setCallError('Seu navegador não suporta chamada de voz.');
@@ -384,7 +434,16 @@ function Chat() {
     }
   };
 
-  const iniciarVideoChamada = async () => {
+  const iniciarVideoChamada = () => {
+    if (callState !== 'idle') return;
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCallError('Seu navegador não suporta videochamada.');
+      return;
+    }
+    handlePermissionRequest('video');
+  };
+
+  const iniciarVideoChamadaReal = async () => {
     if (callState !== 'idle') return;
     if (!navigator.mediaDevices?.getUserMedia) {
       setCallError('Seu navegador não suporta videochamada.');
@@ -528,6 +587,52 @@ function Chat() {
   return (
     <div className="chat-page-wrapper">
       <audio ref={remoteAudioRef} autoPlay playsInline />
+
+      {/* Modal de Permissões */}
+      {showPermissionModal && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header border-0">
+                <h5 className="modal-title fw-bold">
+                  <i className={`bi ${permissionType === 'video' ? 'bi-camera-video' : 'bi-mic'} me-2 text-primary`}></i>
+                  Permissão Necessária
+                </h5>
+              </div>
+              <div className="modal-body text-center py-4">
+                <div className="mb-3">
+                  <i className={`bi ${permissionType === 'video' ? 'bi-camera-video-fill' : 'bi-mic-fill'} text-primary`} style={{ fontSize: '3rem' }}></i>
+                </div>
+                <p className="mb-3">
+                  Para iniciar {permissionType === 'video' ? 'a videochamada' : 'a chamada de voz'}, 
+                  precisamos acessar {permissionType === 'video' ? 'sua câmera e microfone' : 'seu microfone'}.
+                </p>
+                <div className="alert alert-info mb-0">
+                  <small>
+                    <i className="bi bi-info-circle me-1"></i>
+                    O navegador solicitará sua permissão. Clique em "Permitir" quando aparecer.
+                  </small>
+                </div>
+              </div>
+              <div className="modal-footer border-0">
+                <button 
+                  className="btn btn-secondary"
+                  onClick={() => setShowPermissionModal(false)}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  className="btn btn-primary"
+                  onClick={confirmarPermissoes}
+                >
+                  <i className="bi bi-check-lg me-2"></i>
+                  Continuar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ============ VIDEO CALL FULLSCREEN ============ */}
       {callMode === 'video' && callState !== 'idle' && callState !== 'ringing' && (
