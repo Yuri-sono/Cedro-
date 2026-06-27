@@ -23,6 +23,7 @@ const ChatsPsicologo = () => {
       const response = await axios.get(`${API_BASE_URL}/api/mensagens/conversas`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      console.log('Conversas carregadas:', response.data);
       setConversas(response.data || []);
     } catch (error) {
       console.error('Erro ao carregar conversas:', error);
@@ -123,7 +124,12 @@ const ChatsPsicologo = () => {
                                 className="mb-0 text-muted text-truncate" 
                                 style={{ maxWidth: '80%' }}
                               >
-                                {conv.ultimaMensagem || 'Sem mensagens'}
+                                {conv.ultimaMensagem ? (
+                                  <span>
+                                    <span className="text-muted small">Você: </span>
+                                    {conv.ultimaMensagem}
+                                  </span>
+                                ) : 'Sem mensagens'}
                               </p>
                               
                               {conv.naoLidas > 0 && (

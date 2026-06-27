@@ -306,28 +306,34 @@ function Chat() {
     setSending(true);
     const clientId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
+    console.log('Enviando mensagem para:', destinatarioId, 'Texto:', texto);
+
     try {
-      const sentBySocket = sendRealtime({
+      const token = localStorage.getItem('token');
+      
+      // Sempre tenta enviar via HTTP primeiro para garantir que salva no banco
+      const response = await axios.post(`${API_BASE_URL}/api/mensagens`, {
+        destinatarioId,
+        mensagem: texto
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      console.log('Mensagem salva no banco:', response.data);
+      upsertMensagem(response.data);
+      
+      // Tenta enviar via WebSocket para notificação em tempo real
+      sendRealtime({
         type: 'chat:send',
         destinatarioId,
         mensagem: texto,
         clientId
       });
 
-      if (!sentBySocket) {
-        const token = localStorage.getItem('token');
-        const response = await axios.post(`${API_BASE_URL}/api/mensagens`, {
-          destinatarioId,
-          mensagem: texto
-        }, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        upsertMensagem(response.data);
-      }
-
       setNovaMensagem('');
       inputRef.current?.focus();
     } catch (error) {
+      console.error('Erro ao enviar mensagem:', error);
       alert('Erro ao enviar mensagem. Tente novamente.');
     } finally {
       setSending(false);

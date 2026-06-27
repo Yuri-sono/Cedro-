@@ -72,6 +72,7 @@ public class MensagemService {
                     CASE WHEN remetente_id = ? THEN destinatario_id ELSE remetente_id END AS outro_usuario_id,
                     mensagem,
                     data_criacao,
+                    remetente_id,
                     ROW_NUMBER() OVER (
                         PARTITION BY CASE WHEN remetente_id = ? THEN destinatario_id ELSE remetente_id END
                         ORDER BY data_criacao DESC, id DESC
@@ -91,7 +92,8 @@ public class MensagemService {
                 u.foto_url AS fotoUrl,
                 b.mensagem AS ultimaMensagem,
                 b.data_criacao AS dataUltimaMensagem,
-                COALESCE(n.total, 0) AS naoLidas
+                COALESCE(n.total, 0) AS naoLidas,
+                CASE WHEN b.remetente_id = ? THEN 1 ELSE 0 END AS mensagemEnviada
             FROM base b
             JOIN usuarios u ON u.id = b.outro_usuario_id
             LEFT JOIN nao_lidas n ON n.remetente_id = b.outro_usuario_id
@@ -106,9 +108,10 @@ public class MensagemService {
                 rs.getString("fotoUrl"),
                 rs.getString("ultimaMensagem"),
                 rs.getString("dataUltimaMensagem"),
-                rs.getInt("naoLidas")
+                rs.getInt("naoLidas"),
+                rs.getBoolean("mensagemEnviada")
             ),
-            usuarioId, usuarioId, usuarioId, usuarioId, usuarioId
+            usuarioId, usuarioId, usuarioId, usuarioId, usuarioId, usuarioId
         );
     }
 }
