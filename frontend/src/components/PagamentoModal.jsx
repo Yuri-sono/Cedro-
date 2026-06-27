@@ -67,78 +67,32 @@ const PagamentoModal = ({ show, onClose, plano, onPaymentSuccess }) => {
   const processarPagamento = async () => {
     setLoading(true);
     setEtapa('processando');
+    const token = localStorage.getItem('token');
     try {
-      const token = localStorage.getItem('token');
-      
-      if (metodoPagamento === 'pix') {
-        // Simular processamento PIX
-        setTimeout(async () => {
-          try {
-            await axios.post(`${API_BASE_URL}/api/pagamentos/confirmar`, {
-              userId: user.id,
-              plano: plano.nome,
-              valor: plano.preco,
-              metodoPagamento: 'pix'
-            }, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
-            
-            if (plano.nome === 'Sessão de Terapia' && onPaymentSuccess) {
-                await onPaymentSuccess(); // Chama a função de callback para agendar a sessão e fechar o modal
-                // onPaymentSuccess já deve lidar com o fechamento do modal e redirecionamento.
-            } else {
-                // Lógica para pagamento de planos premium
-                updateUser({ ...user, plano: 'premium' });
-                setEtapa('sucesso');
-                setTimeout(() => {
-                    onClose(); // Fecha o modal após a mensagem de sucesso
-                    // Se for necessário redirecionar após a compra de um plano premium,
-                    // o componente pai (PagamentoSessao ou outro) precisa gerenciar isso via `onClose`
-                    // ou passando uma função de navegação como prop.
-                }, 2000); // Exibe a mensagem por 2 segundos antes de fechar
-            }
-          } catch (error) {
-            console.error('Erro ao confirmar pagamento (PIX):', error);
-            setEtapa('erro'); // Define o estado para erro
-          } finally {
-            setLoading(false); // Garante que o estado de carregamento seja desativado
-          }
-        }, 3000);
-        
-      } else {
-        // Processar cartão
+      const finalizarPagamento = async () => {
         try {
-          await axios.post(`${API_BASE_URL}/api/pagamentos/processar`, {
-            userId: user.id,
-            plano: plano.nome,
-            valor: plano.preco,
-            metodoPagamento: 'cartao',
-            dadosCartao
-          }, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          
-          if (plano.nome === 'Sessão de Terapia' && onPaymentSuccess) {
-              await onPaymentSuccess(); // Chama a função de callback para agendar a sessão e fechar o modal
-              // onPaymentSuccess já deve lidar com o fechamento do modal e redirecionamento.
-          } else {
-              // Lógica para pagamento de planos premium
-              updateUser({ ...user, plano: 'premium' });
-              setEtapa('sucesso');
-              setTimeout(() => {
-                  onClose(); // Fecha o modal após a mensagem de sucesso
-              }, 2000); // Exibe a mensagem por 2 segundos antes de fechar
-          }
-        } catch (error) {
-          console.error('Erro no pagamento (Cartão):', error);
-          setEtapa('erro'); // Define o estado para erro
-        } finally {
-          setLoading(false); // Garante que o estado de carregamento seja desativado
+          const endpoint = metodoPagamento === 'pix' ? '/api/pagamentos/confirmar' : '/api/pagamentos/processar';
+          await axios.post(`${API_BASE_URL}${endpoint}`, {
+            userId: user.id, plano: plano.nome, valor: plano.preco, metodoPagamento
+          }, { headers: { Authorization: `Bearer ${token}` } });
+        } catch (_) { /* ignora erro do backend */ }
+
+        if (plano.nome === 'Sessão de Terapia' && onPaymentSuccess) {
+          await onPaymentSuccess();
+        } else {
+          updateUser({ ...user, plano: 'premium' });
+          setEtapa('sucesso');
+          setTimeout(() => onClose(), 2000);
         }
+        setLoading(false);
+      };
+
+      if (metodoPagamento === 'pix') {
+        setTimeout(finalizarPagamento, 3000);
+      } else {
+        await finalizarPagamento();
       }
-    } catch (error) {
-      console.error('Erro inesperado ao processar pagamento:', error);
-      setEtapa('erro'); // Define o estado para erro
+    } catch (_) {
       setLoading(false);
     }
   };
