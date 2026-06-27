@@ -36,6 +36,7 @@ const ChatsPsicologo = () => {
   );
 
   const formatarData = (dataStr) => {
+    if (!dataStr) return '';
     const data = new Date(dataStr);
     const hoje = new Date();
     const ontem = new Date(hoje);
@@ -96,10 +97,10 @@ const ChatsPsicologo = () => {
                   <div className="list-group list-group-flush">
                     {filteredConversas.map((conv) => (
                       <button
-                        key={conv.usuarioId}
+                        key={conv.userId}
                         className="list-group-item list-group-item-action p-3 border-0"
                         style={{ cursor: 'pointer' }}
-                        onClick={() => navigate(`/chat/${conv.usuarioId}`)}
+                        onClick={() => navigate(`/chat/${conv.userId}`)}
                       >
                         <div className="d-flex align-items-start">
                           <div 
@@ -111,9 +112,9 @@ const ChatsPsicologo = () => {
                           
                           <div className="flex-grow-1" style={{ minWidth: 0 }}>
                             <div className="d-flex justify-content-between align-items-start mb-1">
-                              <h6 className="mb-0 fw-bold">{conv.nome || `Paciente #${conv.usuarioId}`}</h6>
+                              <h6 className="mb-0 fw-bold">{conv.nome || `Paciente #${conv.userId}`}</h6>
                               <small className="text-muted text-nowrap ms-2">
-                                {conv.ultimaMensagemData && formatarData(conv.ultimaMensagemData)}
+                                {conv.dataUltimaMensagem && formatarData(conv.dataUltimaMensagem)}
                               </small>
                             </div>
                             

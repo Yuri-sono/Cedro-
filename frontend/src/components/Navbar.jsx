@@ -90,6 +90,12 @@ const Navbar = () => {
               <li className="mb-2"><Link className="d-block p-2" to="/perfil" onClick={closeMenu}>
                 <i className="bi bi-person-circle me-2"></i>Meu Perfil
               </Link></li>
+              <li className="mb-2"><Link className="d-block p-2" to="/minhas-conversas" onClick={closeMenu}>
+                <i className="bi bi-chat-dots me-2"></i>Minhas Conversas
+              </Link></li>
+              <li className="mb-2"><Link className="d-block p-2" to="/minhas-sessoes" onClick={closeMenu}>
+                <i className="bi bi-calendar-check me-2"></i>Minhas Sessões
+              </Link></li>
               {user?.tipoUsuario === 'psicologo' && (
                 <li className="mb-2"><Link className="d-block p-2" to="/psicologo/dashboard" onClick={closeMenu}>
                   <i className="bi bi-speedometer2 me-2"></i>Dashboard

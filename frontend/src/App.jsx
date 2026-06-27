@@ -40,6 +40,7 @@ const ConfiguracoesPsicologo = lazy(() => import('./pages/ConfiguracoesPsicologo
 const PerfilPsicologo = lazy(() => import('./pages/PerfilPsicologo.jsx'));
 const EstatisticasPsicologo = lazy(() => import('./pages/EstatisticasPsicologo.jsx'));
 const ChatsPsicologo = lazy(() => import('./pages/ChatsPsicologo.jsx'));
+const MinhasConversas = lazy(() => import('./pages/MinhasConversas.jsx'));
 const TermosUso = lazy(() => import('./pages/TermosUso.jsx'));
 const PoliticaPrivacidade = lazy(() => import('./pages/PoliticaPrivacidade.jsx'));
 const Autoavaliacoes = lazy(() => import('./pages/Autoavaliacoes.jsx'));
@@ -191,6 +192,11 @@ function AppContent() {
             <Route path="/chat/:userId" element={
               <ProtectedRoute>
                 <Chat />
+              </ProtectedRoute>
+            } />
+            <Route path="/minhas-conversas" element={
+              <ProtectedRoute>
+                <MinhasConversas />
               </ProtectedRoute>
             } />
             <Route path="/premium" element={<Premium />} />
