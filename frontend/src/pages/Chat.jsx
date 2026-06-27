@@ -231,6 +231,8 @@ function Chat() {
 
   const handleIncomingSignal = useCallback(async (message) => {
     console.log('Mensagem recebida via WebSocket:', message);
+    console.log('Tipo de mensagem:', message.type);
+    
     try {
       if (message.type === 'chat:message' && message.mensagem) {
         const conversaAtual =
@@ -243,10 +245,24 @@ function Chat() {
         return;
       }
 
-      if (Number(message.remetenteId) !== destinatarioId) return;
+      console.log('Verificando sinais de chamada...');
+      console.log('remetenteId da mensagem:', message.remetenteId);
+      console.log('destinatarioId esperado:', destinatarioId);
+      
+      if (message.type && message.type.startsWith('call:')) {
+        console.log('Sinal de chamada recebido:', message.type);
+      }
+
+      if (Number(message.remetenteId) !== destinatarioId) {
+        console.log('Ignorando mensagem - não é da conversa atual');
+        return;
+      }
 
       if (message.type === 'call:offer') {
+        console.log('CALL:OFFER recebido!');
+        console.log('Estado da chamada atual:', callStateRef.current);
         if (callStateRef.current !== 'idle') {
+          console.log('Já em chamada, rejeitando...');
           sendRealtime({
             type: 'call:reject',
             destinatarioId,
@@ -255,11 +271,13 @@ function Chat() {
           });
           return;
         }
+        console.log('Configurando oferta pendente e estado ringing');
         pendingOfferRef.current = message;
         activeCallIdRef.current = message.callId;
         setCallMode(message.callMode || 'audio');
         setCallError('');
         setCallState('ringing');
+        console.log('Estado atualizado para ringing');
         return;
       }
 
@@ -416,17 +434,24 @@ function Chat() {
       setCallMode('audio');
       setCallState('calling');
       activeCallIdRef.current = `${user.id}-${destinatarioId}-${Date.now()}`;
+      console.log('Iniciando chamada de áudio');
+      console.log('CallID:', activeCallIdRef.current);
+      console.log('De:', user.id, 'Para:', destinatarioId);
+      
       const pc = await createPeerConnection();
       await attachLocalMedia(pc, false);
       const offer = await pc.createOffer({ offerToReceiveAudio: true });
       await pc.setLocalDescription(offer);
-      sendRealtime({
+      
+      console.log('Enviando call:offer via WebSocket');
+      const sent = sendRealtime({
         type: 'call:offer',
         destinatarioId,
         callId: activeCallIdRef.current,
         callMode: 'audio',
         offer
       });
+      console.log('Call:offer enviado?', sent);
     } catch (error) {
       console.error('Erro ao iniciar chamada:', error);
       setCallError('Permita o microfone para iniciar a chamada.');
@@ -455,17 +480,24 @@ function Chat() {
       setCallMode('video');
       setCallState('calling');
       activeCallIdRef.current = `${user.id}-${destinatarioId}-${Date.now()}`;
+      console.log('Iniciando videochamada');
+      console.log('CallID:', activeCallIdRef.current);
+      console.log('De:', user.id, 'Para:', destinatarioId);
+      
       const pc = await createPeerConnection();
       await attachLocalMedia(pc, true);
       const offer = await pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
       await pc.setLocalDescription(offer);
-      sendRealtime({
+      
+      console.log('Enviando call:offer (video) via WebSocket');
+      const sent = sendRealtime({
         type: 'call:offer',
         destinatarioId,
         callId: activeCallIdRef.current,
         callMode: 'video',
         offer
       });
+      console.log('Call:offer (video) enviado?', sent);
     } catch (error) {
       console.error('Erro ao iniciar videochamada:', error);
       setCallError('Permita câmera e microfone para iniciar a videochamada.');
