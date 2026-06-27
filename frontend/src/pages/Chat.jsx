@@ -189,11 +189,13 @@ function Chat() {
   };
 
   const handleIncomingSignal = useCallback(async (message) => {
+    console.log('Mensagem recebida via WebSocket:', message);
     try {
       if (message.type === 'chat:message' && message.mensagem) {
         const conversaAtual =
           Number(message.mensagem.remetenteId) === destinatarioId ||
           Number(message.mensagem.destinatarioId) === destinatarioId;
+        console.log('Conversa atual?', conversaAtual, 'remetenteId:', message.mensagem.remetenteId, 'destinatarioId:', destinatarioId);
         if (!conversaAtual) return;
         upsertMensagem(message.mensagem);
         marcarComoLidas();
@@ -307,28 +309,34 @@ function Chat() {
     const clientId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
     console.log('Enviando mensagem para:', destinatarioId, 'Texto:', texto);
+    console.log('Status WebSocket:', realtimeStatus);
 
     try {
-      const token = localStorage.getItem('token');
-      
-      // Sempre tenta enviar via HTTP primeiro para garantir que salva no banco
-      const response = await axios.post(`${API_BASE_URL}/api/mensagens`, {
-        destinatarioId,
-        mensagem: texto
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      console.log('Mensagem salva no banco:', response.data);
-      upsertMensagem(response.data);
-      
-      // Tenta enviar via WebSocket para notificação em tempo real
-      sendRealtime({
+      // Tenta enviar via WebSocket primeiro (salva no banco e notifica em tempo real)
+      const sentBySocket = sendRealtime({
         type: 'chat:send',
         destinatarioId,
         mensagem: texto,
         clientId
       });
+
+      if (sentBySocket) {
+        console.log('Mensagem enviada via WebSocket');
+        // Não precisa fazer mais nada, o WebSocket já salva e notifica
+      } else {
+        console.log('WebSocket offline, usando HTTP');
+        // Fallback: Se WebSocket está offline, usa HTTP
+        const token = localStorage.getItem('token');
+        const response = await axios.post(`${API_BASE_URL}/api/mensagens`, {
+          destinatarioId,
+          mensagem: texto
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        console.log('Mensagem salva via HTTP:', response.data);
+        upsertMensagem(response.data);
+      }
 
       setNovaMensagem('');
       inputRef.current?.focus();
