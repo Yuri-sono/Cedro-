@@ -7,7 +7,9 @@ import {
   TouchableOpacityProps,
   ViewStyle,
   TextStyle,
+  View,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors, typography, spacing, borderRadius } from '../theme';
 
 interface ButtonProps extends TouchableOpacityProps {
@@ -27,6 +29,38 @@ export const Button = ({
   textStyle,
   ...props
 }: ButtonProps) => {
+  const getTextColor = () => {
+    if (disabled && variant !== 'text') return colors.textSecondary;
+    if (variant === 'outline' || variant === 'text') return colors.primary;
+    return colors.textInverse;
+  };
+
+  const isButtonDisabled = disabled || isLoading;
+
+  if (variant === 'primary') {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.85}
+        disabled={isButtonDisabled}
+        style={[styles.base, isButtonDisabled && styles.disabled, style]}
+        {...props}
+      >
+        <LinearGradient
+          colors={isButtonDisabled ? ['#657268', '#657268'] : ['#24745B', '#2F8E70']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradientButton}
+        >
+          {isLoading ? (
+            <ActivityIndicator color={colors.white} />
+          ) : (
+            <Text style={[styles.text, { color: colors.white }, textStyle]}>{title}</Text>
+          )}
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  }
+
   const getVariantStyles = () => {
     switch (variant) {
       case 'secondary':
@@ -35,19 +69,10 @@ export const Button = ({
         return styles.outline;
       case 'text':
         return styles.textVariant;
-      case 'primary':
       default:
-        return styles.primary;
+        return {};
     }
   };
-
-  const getTextColor = () => {
-    if (disabled && variant !== 'text') return colors.textSecondary;
-    if (variant === 'outline' || variant === 'text') return colors.primary;
-    return colors.textInverse;
-  };
-
-  const isButtonDisabled = disabled || isLoading;
 
   return (
     <TouchableOpacity
@@ -81,43 +106,56 @@ export const Button = ({
 
 const styles = StyleSheet.create({
   base: {
-    minHeight: 52,
-    borderRadius: borderRadius.lg,
+    minHeight: 54,
+    borderRadius: borderRadius.xl,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    overflow: 'hidden',
+  },
+  gradientButton: {
+    flex: 1,
+    width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: spacing.base,
-    width: '100%',
-  },
-  primary: {
-    backgroundColor: colors.forest,
-    borderWidth: 1,
-    borderColor: colors.primaryDark,
+    minHeight: 54,
+    borderRadius: borderRadius.xl,
     shadowColor: colors.forest,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 6,
   },
   secondary: {
     backgroundColor: colors.mint,
+    paddingHorizontal: spacing.base,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3,
   },
   outline: {
-    backgroundColor: colors.surfaceWarm,
-    borderWidth: 1,
+    backgroundColor: colors.surface,
+    borderWidth: 2,
     borderColor: colors.forest,
+    paddingHorizontal: spacing.base,
   },
   textVariant: {
     backgroundColor: 'transparent',
     height: 'auto',
+    minHeight: 'auto',
     paddingHorizontal: 0,
   },
   disabled: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
   text: {
     fontSize: typography.size.base,
     fontWeight: typography.weight.bold,
     textAlign: 'center',
+    letterSpacing: 0.3,
   },
   textUnderline: {
     textDecorationLine: 'none',

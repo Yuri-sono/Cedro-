@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TextInputProps,
   TouchableOpacity,
+  Animated,
 } from 'react-native';
 import { colors, typography, spacing, borderRadius } from '../theme';
 
@@ -19,29 +20,60 @@ export const Input = forwardRef<TextInput, InputProps>(
   ({ label, error, isPassword, style, ...props }, ref) => {
     const [isFocused, setIsFocused] = useState(false);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [focusAnim] = useState(new Animated.Value(0));
+
+    const handleFocus = (e: any) => {
+      setIsFocused(true);
+      Animated.spring(focusAnim, {
+        toValue: 1,
+        useNativeDriver: false,
+        tension: 40,
+        friction: 7,
+      }).start();
+      props.onFocus?.(e);
+    };
+
+    const handleBlur = (e: any) => {
+      setIsFocused(false);
+      Animated.spring(focusAnim, {
+        toValue: 0,
+        useNativeDriver: false,
+        tension: 40,
+        friction: 7,
+      }).start();
+      props.onBlur?.(e);
+    };
+
+    const borderColor = focusAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: ['#E6DDC8', colors.forest],
+    });
+
+    const backgroundColor = focusAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [colors.surfaceWarm, colors.surface],
+    });
 
     return (
       <View style={styles.container}>
         {label && <Text style={styles.label}>{label}</Text>}
         
-        <View style={[
-          styles.inputContainer,
-          isFocused && styles.inputContainerFocused,
-          error ? styles.inputContainerError : null,
-        ]}>
+        <Animated.View
+          style={[
+            styles.inputContainer,
+            {
+              borderColor: error ? colors.error : borderColor,
+              backgroundColor,
+            },
+          ]}
+        >
           <TextInput
             ref={ref}
             style={[styles.input, style]}
             placeholderTextColor="#8C968D"
             secureTextEntry={isPassword && !isPasswordVisible}
-            onFocus={(e) => {
-              setIsFocused(true);
-              props.onFocus?.(e);
-            }}
-            onBlur={(e) => {
-              setIsFocused(false);
-              props.onBlur?.(e);
-            }}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             {...props}
           />
           
@@ -49,13 +81,14 @@ export const Input = forwardRef<TextInput, InputProps>(
             <TouchableOpacity
               style={styles.eyeIcon}
               onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+              activeOpacity={0.7}
             >
               <Text style={styles.eyeText}>
-                {isPasswordVisible ? 'Ocultar' : 'Mostrar'}
+                {isPasswordVisible ? '👁️' : '👁️‍🗨️'}
               </Text>
             </TouchableOpacity>
           )}
-        </View>
+        </Animated.View>
 
         {error && <Text style={styles.errorText}>{error}</Text>}
       </View>
@@ -70,46 +103,44 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
+    fontWeight: typography.weight.semibold,
     color: colors.textPrimary,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
     marginLeft: spacing.xs,
+    letterSpacing: 0.2,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surfaceWarm,
-    borderWidth: 1,
-    borderColor: '#E6DDC8',
-    borderRadius: borderRadius.lg,
-    minHeight: 52,
-  },
-  inputContainerFocused: {
-    borderColor: colors.forest,
-    backgroundColor: colors.surface,
-  },
-  inputContainerError: {
-    borderColor: colors.error,
+    borderWidth: 2,
+    borderRadius: borderRadius.xl,
+    minHeight: 56,
+    shadowColor: colors.forest,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   input: {
     flex: 1,
     paddingHorizontal: spacing.base,
     fontSize: typography.size.base,
     color: colors.textPrimary,
-    minHeight: 52,
+    minHeight: 56,
+    fontWeight: typography.weight.medium,
   },
   eyeIcon: {
-    padding: spacing.sm,
+    padding: spacing.md,
     marginRight: spacing.xs,
   },
   eyeText: {
-    color: colors.primary,
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
+    fontSize: typography.size.lg,
   },
   errorText: {
     color: colors.error,
     fontSize: typography.size.xs,
-    marginTop: spacing.xs,
+    marginTop: spacing.sm,
+    marginLeft: spacing.xs,
+    fontWeight: typography.weight.medium,
   },
 });

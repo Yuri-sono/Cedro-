@@ -15,6 +15,12 @@ export const colors = {
   mint: '#E7F2EC',
   cream: '#F5F7F1',
   sand: '#E8E2D2',
+  
+  // ── Gradientes ──
+  gradientPrimary: ['#24745B', '#2F8E70'],
+  gradientHero: ['#F5F7F1', '#E7F2EC'],
+  gradientCard: ['#FFFFFF', '#FFFDF8'],
+  gradientDark: ['#173B2F', '#24745B'],
 
   // ── Fundos ──
   background: '#FAFBF7',
