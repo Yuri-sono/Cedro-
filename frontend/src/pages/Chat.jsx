@@ -47,8 +47,8 @@ function Chat() {
     callModeRef.current = callMode;
   }, [callMode]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToBottom = (smooth = true) => {
+    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' });
   };
 
   const upsertMensagem = useCallback((mensagem) => {
@@ -261,8 +261,14 @@ function Chat() {
   }, [carregarDestinatario, carregarMensagens]);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [mensagens]);
+    // Scroll apenas quando recebe novas mensagens, não durante digitação
+    if (mensagens.length > 0) {
+      const lastMsg = mensagens[mensagens.length - 1];
+      // Só faz scroll suave se a última mensagem é do usuário atual
+      const isMyMessage = Number(lastMsg.remetenteId) === Number(user?.id);
+      scrollToBottom(isMyMessage);
+    }
+  }, [mensagens, user]);
 
   useEffect(() => {
     let closedByComponent = false;
@@ -684,7 +690,6 @@ function Chat() {
                 value={novaMensagem}
                 onChange={(e) => setNovaMensagem(e.target.value)}
                 onKeyDown={handleKeyDown}
-                rows={1}
               />
               <button 
                 type="submit" 
