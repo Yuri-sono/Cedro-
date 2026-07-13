@@ -69,7 +69,7 @@ const TesteReflexo = () => {
   const getMessage = () => {
     switch (gameState) {
       case 'waiting': return 'Aguarde a cor mudar para verde...';
-      case 'ready': return 'CLIQUE AGORA!';
+      case 'ready': return 'CLIQUE JÁ!';
       case 'too-early': return 'Ops! Você clicou muito cedo. Clique para tentar novamente.';
       case 'result': return `Seu tempo: ${reactionTime} ms. Clique para jogar novamente.`;
       default: return 'Clique aqui para começar';

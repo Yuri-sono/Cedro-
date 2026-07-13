@@ -68,8 +68,7 @@ export const subscriptionService = {
 
   // Verifica o status de assinatura e os limites no Spring Boot
   verificarLimite: async (): Promise<{ isPremium: boolean; chamadasRealizadas: number; limiteMensal: number }> => {
-    // Endpoint que será criado no Spring Boot
-    const response = await api.get(API_ENDPOINTS.CHAMADAS.LIMITE);
+    const response = await api.get(API_ENDPOINTS.ASSINATURA.STATUS);
     return response.data;
   },
 };

@@ -16,7 +16,6 @@ import { useChat } from '../../hooks/useChat';
 import { MessageBubble } from '../../components/MessageBubble';
 import { ChatInput } from '../../components/ChatInput';
 import { borderRadius, colors, spacing } from '../../theme';
-import { useAuthStore } from '../../store/authStore';
 
 type ChatRouteProp = RouteProp<ChatStackParamList, 'Chat'>;
 type ChatNavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -24,34 +23,26 @@ type ChatNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 export const ChatScreen = () => {
   const route = useRoute<ChatRouteProp>();
   const navigation = useNavigation<ChatNavigationProp>();
-  const currentUserId = useAuthStore((state) => state.user?.id);
 
-  const { userId, userName } = route.params;
-  const channelName = currentUserId
-    ? `chat-${Math.min(currentUserId, userId)}-${Math.max(currentUserId, userId)}`
-    : `chat-${userId}`;
+  const { userId, userName, sessaoId } = route.params;
 
   useEffect(() => {
     navigation.setOptions({
       title: userName,
       headerRight: () => (
         <View style={styles.headerButtons}>
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={() => navigation.navigate('VoiceCall', { channelName, userName })}
-          >
-            <Ionicons name="call-outline" size={19} color={colors.primaryDark} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={() => navigation.navigate('VideoCall', { channelName, userName })}
-          >
-            <Ionicons name="videocam-outline" size={21} color={colors.primaryDark} />
-          </TouchableOpacity>
+          {sessaoId ? (
+            <TouchableOpacity
+              style={styles.headerButton}
+              onPress={() => navigation.navigate('Reuniao', { sessaoId })}
+            >
+              <Ionicons name="videocam-outline" size={21} color={colors.primaryDark} />
+            </TouchableOpacity>
+          ) : null}
         </View>
       ),
     });
-  }, [channelName, navigation, userName]);
+  }, [navigation, sessaoId, userName]);
 
   const { mensagens, isLoading, enviarMensagem } = useChat(userId);
   const flatListRef = useRef<FlatList>(null);

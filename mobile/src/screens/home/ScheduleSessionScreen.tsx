@@ -73,7 +73,7 @@ export const ScheduleSessionScreen = () => {
     dataHora.setHours(parseInt(hora, 10), parseInt(minuto, 10), 0, 0);
 
     try {
-      await agendarSessao({
+      const sessaoCriada = await agendarSessao({
         psicologoId,
         dataSessao: dataHora.toISOString(),
         duracao: 50,
@@ -84,6 +84,7 @@ export const ScheduleSessionScreen = () => {
         psicologoId,
         psicologoNome: psicologo?.nome || 'Psicologo',
         avatarUrl: psicologo?.fotoUrl || undefined,
+        sessaoId: sessaoCriada.id,
       });
     } catch {
       // O hook ja trata o erro.

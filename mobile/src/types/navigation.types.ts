@@ -25,13 +25,13 @@ export type HomeStackParamList = {
   PsicologoList: undefined;
   PsicologoDetail: { psicologoId: number };
   ScheduleSession: { psicologoId: number };
-  SessionSuccess: { psicologoId: number; psicologoNome: string; avatarUrl?: string };
+  SessionSuccess: { psicologoId: number; psicologoNome: string; avatarUrl?: string; sessaoId: number };
 };
 
 // Parâmetros para a stack de Chat/Mensagens
 export type ChatStackParamList = {
   Conversas: undefined;
-  Chat: { userId: number; userName: string; avatarUrl?: string };
+  Chat: { userId: number; userName: string; avatarUrl?: string; sessaoId?: number };
 };
 
 // Parâmetros para a stack de Perfil/Sessões
@@ -50,8 +50,7 @@ export type RootStackParamList = {
   Auth: NavigatorScreenParams<AuthStackParamList>;
   Main: NavigatorScreenParams<MainTabParamList>;
   
-  // Modais globais ou telas sobrepostas (futuro: Chamadas, Paywall)
-  VoiceCall: { channelName: string; userName: string; isIncoming?: boolean }; // Sprint 7
-  VideoCall: { channelName: string; userName: string; isIncoming?: boolean }; // Sprint 8
+  // Modais globais ou telas sobrepostas
+  Reuniao: { sessaoId: number };
   Paywall: undefined; // Sprint 6
 };

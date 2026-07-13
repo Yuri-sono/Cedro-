@@ -136,6 +136,13 @@ export interface DisponibilidadeResponse {
   horariosOcupados: string[];
 }
 
+export interface LinkReuniaoResponse {
+  liberado: boolean;
+  disponivelEm?: string;
+  link?: string | null;
+  erro?: string;
+}
+
 // ── UpdatePerfilRequest (UpdatePerfilRequest.java) ──
 export interface UpdatePerfilRequest {
   nome?: string;

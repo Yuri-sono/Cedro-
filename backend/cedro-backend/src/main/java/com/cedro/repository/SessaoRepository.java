@@ -19,13 +19,15 @@ public interface SessaoRepository extends JpaRepository<Sessao, Integer> {
 
     boolean existsByPsicologoIdAndDataSessaoAndStatusSessaoNot(Integer psicologoId, LocalDateTime dataSessao, String statusSessao);
 
+    long countByPacienteIdAndDataCriacaoBetweenAndStatusSessaoNot(Integer pacienteId, LocalDateTime inicio, LocalDateTime fim, String statusSessao);
+
     @Query("SELECT COUNT(DISTINCT s.pacienteId) FROM Sessao s WHERE s.psicologoId = ?1 AND s.statusSessao != 'cancelada'")
     long countPacientesAtivosByPsicologoId(Integer psicologoId);
 
     @Query("SELECT COALESCE(SUM(s.valor), 0) FROM Sessao s WHERE s.psicologoId = ?1 AND s.dataSessao BETWEEN ?2 AND ?3 AND s.statusSessao = 'realizada'")
     java.math.BigDecimal sumValorByPsicologoIdAndPeriodo(Integer psicologoId, LocalDateTime inicio, LocalDateTime fim);
 
-    List<Sessao> findByPsicologoIdAndDataSessaoAfterOrderByDataSessaoAsc(Integer psicologoId, LocalDateTime agora);
+    List<Sessao> findByPsicologoIdAndDataSessaoAfterOrderByDataSessaoAsc(Integer psicologoId, LocalDateTime after);
 
     @Modifying
     @Query("DELETE FROM Sessao s WHERE s.pacienteId = ?1")

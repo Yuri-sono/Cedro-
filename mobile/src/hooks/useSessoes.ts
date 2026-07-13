@@ -5,6 +5,16 @@ import { showToast } from '../components/Toast';
 import { useAuthStore } from '../store/authStore';
 import { TipoUsuario } from '../types/api.types';
 
+function getErrorMessage(error: unknown): string | undefined {
+  if (typeof error === 'object' && error && 'message' in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === 'string' && message.trim()) {
+      return message;
+    }
+  }
+  return undefined;
+}
+
 export const useSessoes = () => {
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
@@ -28,7 +38,7 @@ export const useSessoes = () => {
       showToast.success('Sessao agendada', 'Sua consulta foi agendada com sucesso.');
     },
     onError: (error) => {
-      const message = error instanceof Error ? error.message : undefined;
+      const message = getErrorMessage(error);
       showToast.error('Erro ao agendar', message || 'Tente novamente mais tarde.');
     },
   });
@@ -40,7 +50,7 @@ export const useSessoes = () => {
       showToast.success('Sessao cancelada', 'Consulta cancelada com sucesso.');
     },
     onError: (error) => {
-      const message = error instanceof Error ? error.message : undefined;
+      const message = getErrorMessage(error);
       showToast.error('Erro ao cancelar', message || 'Nao foi possivel cancelar a sessao.');
     },
   });

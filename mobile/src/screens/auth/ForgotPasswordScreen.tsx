@@ -66,7 +66,7 @@ export const ForgotPasswordScreen = () => {
       ) : (
         <View style={styles.successBox}>
           <Text style={styles.successText}>
-            Pronto. Agora faca login com a senha temporaria informada no aviso e altere a senha em
+            Pronto. Em seguida faca login com a senha temporaria informada no aviso e altere a senha em
             {' '}Perfil {'>'} Alterar Senha.
           </Text>
         </View>

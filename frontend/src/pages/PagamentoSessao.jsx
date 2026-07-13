@@ -2,31 +2,32 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import PagamentoModal from '../components/PagamentoModal.jsx';
-import axios from 'axios';
-import API_BASE_URL from '../config.js';
+import api from '../services/api.js';
 
 const PagamentoSessao = () => {
   const { sessaoId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [sessao, setSessao] = useState(null);
   const [showPagamento, setShowPagamento] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) {
+      return;
+    }
     if (!user) {
       navigate('/login');
       return;
     }
     fetchSessao();
-  }, [user, sessaoId]);
+  }, [user, authLoading, sessaoId]);
 
   const fetchSessao = async () => {
     try {
-      const token = localStorage.getItem('token');
       const [sessaoRes, psicologosRes] = await Promise.all([
-        axios.get(`${API_BASE_URL}/api/sessoes/${sessaoId}`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_BASE_URL}/api/psicologos`)
+        api.get(`/api/sessoes/${sessaoId}`),
+        api.get('/api/psicologos')
       ]);
       const s = sessaoRes.data;
       const psicologo = psicologosRes.data.find(p => p.id === s.psicologoId) || {};
@@ -51,10 +52,7 @@ const PagamentoSessao = () => {
 
   const handlePaymentSuccess = async () => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.post(`${API_BASE_URL}/api/sessoes/${sessaoId}/confirmar-pagamento`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.post(`/api/sessoes/${sessaoId}/confirmar-pagamento`, {});
       alert('Sessão agendada e paga com sucesso!');
       navigate('/minhas-sessoes'); // Redireciona para a página de minhas sessões
     } catch (error) {
@@ -69,7 +67,7 @@ const PagamentoSessao = () => {
     setShowPagamento(true);
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
         <div className="spinner-border text-primary"></div>
@@ -186,7 +184,7 @@ const PagamentoSessao = () => {
                         onClick={handlePagar}
                       >
                         <i className="bi bi-credit-card me-2"></i>
-                        Pagar Agora
+                        Pagar já
                       </button>
                       
                       <div className="text-center">

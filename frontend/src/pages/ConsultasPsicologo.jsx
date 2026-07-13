@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import NavbarPsicologo from '../components/NavbarPsicologo.jsx';
 import SidebarPsicologo from '../components/SidebarPsicologo.jsx';
+import ReuniaoModal from '../components/ReuniaoModal.jsx';
 
 const ConsultasPsicologo = () => {
   const [filtroStatus, setFiltroStatus] = useState('todas');
+  const [sessaoReuniao, setSessaoReuniao] = useState(null);
   
   const consultas = [
     { id: 1, paciente: 'Maria Silva', data: '2024-01-15', horario: '09:00', tipo: 'Individual', status: 'Concluída', valor: 150 },
@@ -139,6 +141,15 @@ const ConsultasPsicologo = () => {
                               <ul className="dropdown-menu">
                                 <li><a className="dropdown-item" href="#">Ver Detalhes</a></li>
                                 <li><a className="dropdown-item" href="#">Editar</a></li>
+                                <li>
+                                  <button
+                                    className="dropdown-item"
+                                    type="button"
+                                    onClick={() => setSessaoReuniao(consulta.id)}
+                                  >
+                                    Entrar na sessão
+                                  </button>
+                                </li>
                                 <li><a className="dropdown-item" href="#">Cancelar</a></li>
                               </ul>
                             </div>
@@ -153,6 +164,12 @@ const ConsultasPsicologo = () => {
           </div>
         </div>
       </div>
+
+      <ReuniaoModal
+        show={Boolean(sessaoReuniao)}
+        sessaoId={sessaoReuniao}
+        onClose={() => setSessaoReuniao(null)}
+      />
     </div>
   );
 };

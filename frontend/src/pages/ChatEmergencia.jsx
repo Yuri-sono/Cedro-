@@ -39,7 +39,7 @@ const ChatEmergencia = () => {
     {
       id: 'panico',
       text: '😱 Estou tendo um ataque de pânico',
-      response: "Vamos fazer um exercício para te ajudar agora:\n\n1. RESPIRE: Inspire pelo nariz (4 seg), segure (4 seg), expire pela boca (6 seg)\n2. OBSERVE: Olhe ao redor e nomeie 5 objetos que você vê\n3. LEMBRE-SE: Isso vai passar, você está seguro\n4. REPITA: Continue respirando devagar\n\nSe os ataques são frequentes, procure um médico."
+      response: "Vamos fazer um exercício para te ajudar neste momento:\n\n1. RESPIRE: Inspire pelo nariz (4 seg), segure (4 seg), expire pela boca (6 seg)\n2. OBSERVE: Olhe ao redor e nomeie 5 objetos que você vê\n3. LEMBRE-SE: Isso vai passar, você está seguro\n4. REPITA: Continue respirando devagar\n\nSe os ataques são frequentes, procure um médico."
     },
     {
       id: 'insonia',
@@ -64,7 +64,7 @@ const ChatEmergencia = () => {
     {
       id: 'emergencia',
       text: '🚨 Pensamentos de autolesão',
-      response: "🚨 ATENÇÃO: Sua vida tem valor e existem pessoas que podem te ajudar AGORA:\n\n📞 CVV - 188 (24h, gratuito)\n📞 CAPS - Centro de Atenção Psicossocial\n📞 UBS - Unidade Básica de Saúde\n📞 SAMU - 192\n\nVocê não precisa passar por isso sozinho. Por favor, ligue para um desses números AGORA ou vá ao hospital mais próximo."
+      response: "🚨 ATENÇÃO: Sua vida tem valor e existem pessoas que podem te ajudar neste momento:\n\n📞 CVV - 188 (24h, gratuito)\n📞 CAPS - Centro de Atenção Psicossocial\n📞 UBS - Unidade Básica de Saúde\n📞 SAMU - 192\n\nVocê não precisa passar por isso sozinho. Por favor, ligue para um desses números ou vá ao hospital mais próximo."
     }
   ];
 

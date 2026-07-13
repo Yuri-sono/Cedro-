@@ -6,44 +6,58 @@ import com.cedro.model.entity.Usuario;
 import com.cedro.repository.SessaoRepository;
 import com.cedro.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
 @Service
 public class SessaoService {
-    
+
+    private static final ZoneId ZONA_SAO_PAULO = ZoneId.of("America/Sao_Paulo");
+    private static final int LIMITE_SESSOES_GRATIS_MES = 4;
+
     @Autowired
     private SessaoRepository sessaoRepository;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
-    
+
+    @Autowired
+    private GoogleMeetService googleMeetService;
+
+    @Autowired
+    private AssinaturaService assinaturaService;
+
     public List<Sessao> listarTodas() {
         return sessaoRepository.findAll();
     }
-    
+
     public List<Sessao> listarPorPaciente(Integer pacienteId) {
         return sessaoRepository.findByPacienteId(pacienteId);
     }
-    
+
     public List<Sessao> listarPorPsicologo(Integer psicologoId) {
         return sessaoRepository.findByPsicologoId(psicologoId);
     }
-    
+
     public Sessao buscarPorId(Integer id) {
         return sessaoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Não encontrada"));
     }
-    
+
     public Sessao criar(SessaoRequest request) {
-        // Buscar o preço do psicólogo
         Usuario psicologo = usuarioRepository.findById(request.getPsicologoId())
                 .orElseThrow(() -> new RuntimeException("Psicólogo não encontrado"));
+
+        validarLimiteSessoesGratuitas(request.getPacienteId());
+
         boolean horarioOcupado = sessaoRepository.existsByPsicologoIdAndDataSessaoAndStatusSessaoNot(
                 request.getPsicologoId(),
                 request.getDataSessao(),
@@ -57,20 +71,50 @@ public class SessaoService {
         sessao.setPacienteId(request.getPacienteId());
         sessao.setPsicologoId(request.getPsicologoId());
         sessao.setDataSessao(request.getDataSessao());
-        // Usar o preço definido pelo psicólogo, não o enviado pelo cliente
         sessao.setValor(psicologo.getPrecoSessao());
         if (request.getDuracao() != null) sessao.setDuracao(request.getDuracao());
         if (request.getStatusSessao() != null) sessao.setStatusSessao(request.getStatusSessao());
         if (request.getObservacoes() != null) sessao.setObservacoes(request.getObservacoes());
         return sessaoRepository.save(sessao);
     }
-    
+
+    private void validarLimiteSessoesGratuitas(Integer pacienteId) {
+        if (pacienteId == null || assinaturaService.isPremium(pacienteId)) {
+            return;
+        }
+
+        LocalDateTime inicioMes = LocalDate.now(ZONA_SAO_PAULO)
+                .withDayOfMonth(1)
+                .atStartOfDay();
+        LocalDateTime inicioProximoMes = inicioMes.plusMonths(1);
+
+        long sessoesAgendadasNoMes = sessaoRepository.countByPacienteIdAndDataCriacaoBetweenAndStatusSessaoNot(
+                pacienteId,
+                inicioMes,
+                inicioProximoMes,
+                "cancelada"
+        );
+
+        if (sessoesAgendadasNoMes >= LIMITE_SESSOES_GRATIS_MES) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Voce atingiu o limite de " + LIMITE_SESSOES_GRATIS_MES
+                            + " sessoes agendadas neste mes no plano gratuito."
+            );
+        }
+    }
+
     public Sessao atualizar(Integer id, SessaoRequest request) {
         Sessao sessao = buscarPorId(id);
         if (request.getDataSessao() != null) sessao.setDataSessao(request.getDataSessao());
         if (request.getDuracao() != null) sessao.setDuracao(request.getDuracao());
         if (request.getValor() != null) sessao.setValor(request.getValor());
-        if (request.getStatusSessao() != null) sessao.setStatusSessao(request.getStatusSessao());
+        if (request.getStatusSessao() != null) {
+            if ("cancelada".equals(request.getStatusSessao()) && sessao.getGoogleEventId() != null) {
+                googleMeetService.cancelarReuniao(sessao.getGoogleEventId());
+            }
+            sessao.setStatusSessao(request.getStatusSessao());
+        }
         if (request.getObservacoes() != null) sessao.setObservacoes(request.getObservacoes());
         return sessaoRepository.save(sessao);
     }
@@ -105,11 +149,51 @@ public class SessaoService {
             throw new RuntimeException("Acesso negado. Paciente não corresponde à sessão.");
         }
         sessao.setStatusSessao("agendada");
+        Sessao salva = sessaoRepository.save(sessao);
+
+        Usuario paciente = usuarioRepository.findById(salva.getPacienteId())
+                .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
+        Usuario psicologo = usuarioRepository.findById(salva.getPsicologoId())
+                .orElseThrow(() -> new RuntimeException("Psicólogo não encontrado"));
+
+        GoogleMeetService.GoogleMeetResultado resultado = googleMeetService.criarReuniao(
+                salva,
+                paciente.getNome(),
+                psicologo.getNome()
+        );
+
+        if (resultado != null && (resultado.link() != null || resultado.eventId() != null)) {
+            salva.setLinkReuniao(resultado.link());
+            salva.setGoogleEventId(resultado.eventId());
+            salva = sessaoRepository.save(salva);
+        }
+
+        return salva;
+    }
+
+    public Sessao salvarReuniaoGerada(Sessao sessao, String linkReuniao, String googleEventId) {
+        if (linkReuniao != null) {
+            sessao.setLinkReuniao(linkReuniao);
+        }
+        if (googleEventId != null) {
+            sessao.setGoogleEventId(googleEventId);
+        }
         return sessaoRepository.save(sessao);
     }
-    
+
     public void deletar(Integer id) {
         Sessao sessao = buscarPorId(id);
+        if (sessao.getGoogleEventId() != null) {
+            googleMeetService.cancelarReuniao(sessao.getGoogleEventId());
+        }
         sessaoRepository.delete(sessao);
+    }
+
+    public Sessao atualizarStatusCancelado(Sessao sessao) {
+        if (sessao.getGoogleEventId() != null) {
+            googleMeetService.cancelarReuniao(sessao.getGoogleEventId());
+        }
+        sessao.setStatusSessao("cancelada");
+        return sessaoRepository.save(sessao);
     }
 }

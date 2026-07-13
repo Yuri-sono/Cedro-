@@ -1,24 +1,38 @@
 package com.cedro.config;
 
-import com.cedro.websocket.RealtimeWebSocketHandler;
+import com.cedro.security.StompHandshakeInterceptor;
+import com.cedro.security.StompPrincipalHandshakeHandler;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.socket.config.annotation.EnableWebSocket;
-import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
-import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
+import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 
 @Configuration
-@EnableWebSocket
-public class WebSocketConfig implements WebSocketConfigurer {
+@EnableWebSocketMessageBroker
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final RealtimeWebSocketHandler realtimeWebSocketHandler;
+    private final StompHandshakeInterceptor stompHandshakeInterceptor;
+    private final StompPrincipalHandshakeHandler stompPrincipalHandshakeHandler;
 
-    public WebSocketConfig(RealtimeWebSocketHandler realtimeWebSocketHandler) {
-        this.realtimeWebSocketHandler = realtimeWebSocketHandler;
+    public WebSocketConfig(StompHandshakeInterceptor stompHandshakeInterceptor,
+                           StompPrincipalHandshakeHandler stompPrincipalHandshakeHandler) {
+        this.stompHandshakeInterceptor = stompHandshakeInterceptor;
+        this.stompPrincipalHandshakeHandler = stompPrincipalHandshakeHandler;
     }
 
     @Override
-    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(realtimeWebSocketHandler, "/ws-realtime")
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("/ws-chat")
+            .addInterceptors(stompHandshakeInterceptor)
+            .setHandshakeHandler(stompPrincipalHandshakeHandler)
             .setAllowedOriginPatterns("*");
+    }
+
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry registry) {
+        registry.enableSimpleBroker("/topic", "/queue");
+        registry.setApplicationDestinationPrefixes("/app");
+        registry.setUserDestinationPrefix("/user");
     }
 }

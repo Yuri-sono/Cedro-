@@ -24,11 +24,12 @@ class ChatService {
     this.client.onConnect = () => {
       console.log('Conectado ao STOMP WebSocket!');
       
-      // Inscreve no canal de fila de usuário:
-      // O Spring Boot geralmente direciona mensagens para /user/queue/messages usando SimpMessagingTemplate.convertAndSendToUser
-      this.client.subscribe('/user/queue/messages', (message) => {
+      // Inscreve no canal de fila de usuário (Português): /user/queue/mensagens
+      this.client.subscribe('/user/queue/mensagens', (message) => {
         if (message.body) {
-          const parsedMessage = JSON.parse(message.body) as Mensagem;
+          const parsed = JSON.parse(message.body);
+          // payload expected shape: { type: 'chat:message', mensagem: Mensagem }
+          const parsedMessage = parsed?.mensagem as Mensagem || parsed as Mensagem;
           this.messageListeners.forEach((listener) => listener(parsedMessage));
         }
       });
@@ -66,7 +67,7 @@ class ChatService {
     }
 
     this.client.publish({
-      destination: '/app/chat',
+      destination: '/app/chat.send',
       body: JSON.stringify({ destinatarioId, mensagem: conteudo }),
     });
   }

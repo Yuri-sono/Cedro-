@@ -2,6 +2,7 @@ package com.cedro.config;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -30,6 +31,15 @@ public class GlobalExceptionHandler {
                 "error", "Nao foi possivel salvar os dados. Verifique o tamanho da imagem e tente novamente."
         ));
     }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, String>> handleResponseStatusException(ResponseStatusException ex) {
+        String message = ex.getReason();
+        if (message == null || message.isBlank()) {
+            message = "Erro ao processar sua solicitacao";
+        }
+        return ResponseEntity.status(ex.getStatusCode()).body(Map.of("error", message));
+    }
     
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
@@ -46,7 +56,6 @@ public class GlobalExceptionHandler {
                 message.contains("indisponivel") ||
                 message.contains("Precisa ter") ||
                 message.contains("caractere especial") ||
-                message.contains("Agora") ||
                 message.contains("Google") ||
                 message.contains("CRP") ||
                 message.contains("Especialidade") ||

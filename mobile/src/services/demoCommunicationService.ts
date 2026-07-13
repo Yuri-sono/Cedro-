@@ -82,7 +82,7 @@ export const demoCommunicationService = {
     const counterpart = getCounterpartFor(currentUser);
     const seeded = [
       createMessage(1, counterpart.userId, currentUser.id, 'Oi! Podemos testar o chat para a apresentacao?'),
-      createMessage(2, currentUser.id, counterpart.userId, 'Sim, estou vendo tudo pelo mobile web agora.'),
+      createMessage(2, currentUser.id, counterpart.userId, 'Sim, estou vendo tudo pelo mobile web neste momento.'),
       createMessage(3, counterpart.userId, currentUser.id, 'Perfeito. Depois testa tambem a chamada de voz e video.'),
     ];
 

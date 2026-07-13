@@ -1,11 +1,16 @@
 package com.cedro.controller;
 
+import com.cedro.repository.SessaoRepository;
+import com.cedro.security.JwtUtil;
 import com.cedro.service.AssinaturaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Map;
 
 @RestController
@@ -15,8 +20,17 @@ public class AssinaturaController {
     @Autowired
     private AssinaturaService assinaturaService;
 
+    @Autowired
+    private SessaoRepository sessaoRepository;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @Value("${revenuecat.webhook.secret:}")
     private String webhookSecret;
+
+    private static final ZoneId ZONA_SAO_PAULO = ZoneId.of("America/Sao_Paulo");
+    private static final int LIMITE_SESSOES_GRATIS_MES = 4;
 
     @PostMapping("/webhook")
     public ResponseEntity<?> webhookRevenueCat(
@@ -62,6 +76,28 @@ public class AssinaturaController {
         }
 
         return ResponseEntity.ok(Map.of("message", "Webhook processado"));
+    }
+
+    @GetMapping("/status")
+    public ResponseEntity<?> statusAssinatura(@RequestHeader("Authorization") String authHeader) {
+        Integer usuarioId = jwtUtil.extractUserId(authHeader.replace("Bearer ", ""));
+        boolean isPremium = assinaturaService.isPremium(usuarioId);
+
+        LocalDateTime inicioMes = LocalDate.now(ZONA_SAO_PAULO).withDayOfMonth(1).atStartOfDay();
+        LocalDateTime inicioProximoMes = inicioMes.plusMonths(1);
+        long sessoesAgendadasNoMes = sessaoRepository.countByPacienteIdAndDataCriacaoBetweenAndStatusSessaoNot(
+                usuarioId,
+                inicioMes,
+                inicioProximoMes,
+                "cancelada"
+        );
+
+        int limiteMensal = isPremium ? Integer.MAX_VALUE : LIMITE_SESSOES_GRATIS_MES;
+        return ResponseEntity.ok(Map.of(
+                "isPremium", isPremium,
+                "chamadasRealizadas", sessoesAgendadasNoMes,
+                "limiteMensal", limiteMensal
+        ));
     }
 
     private boolean isAuthorized(String authorization) {

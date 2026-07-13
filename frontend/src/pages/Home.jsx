@@ -186,7 +186,7 @@ const Home = () => {
             <div className="col-lg-6 animate-on-scroll">
               <div className="highlight-banner text-center">
                 <i className="bi bi-controller fs-1 mb-3 d-block"></i>
-                <h2 className="fw-bold mb-3">Precisa relaxar a mente agora?</h2>
+                <h2 className="fw-bold mb-3">Precisa relaxar a mente neste momento?</h2>
                 <p className="fs-5 opacity-75 mb-4">
                   Criamos uma área de passatempos interativos. Se você está ansioso, estourar plástico bolha virtual ou interagir com partículas pode te ajudar a focar no presente.
                 </p>

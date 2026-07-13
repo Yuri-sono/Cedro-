@@ -43,6 +43,7 @@ export const API_ENDPOINTS = {
   SESSOES: {
     LISTAR: '/api/sessoes',
     POR_ID: (id: number) => `/api/sessoes/${id}`,
+    LINK_REUNIAO: (id: number) => `/api/sessoes/${id}/link-reuniao`,
     MINHAS: '/api/sessoes/minhas',
     POR_PACIENTE: (pacienteId: number) => `/api/sessoes/paciente/${pacienteId}`,
     POR_PSICOLOGO: (psicologoId: number) =>
@@ -70,11 +71,6 @@ export const API_ENDPOINTS = {
     LIMITE_CHAMADAS: '/api/assinatura/limite-chamadas',
   },
 
-  // ── Agora / Chamadas (Sprint 7 — endpoint novo) ──
-  CHAMADAS: {
-    TOKEN_AGORA: '/api/agora/token',
-    LIMITE: '/api/chamadas/limite',
-  },
   NOTIFICACOES: {
     REGISTRAR_TOKEN: '/api/notificacoes/token',
     REMOVER_TOKEN: '/api/notificacoes/token/remover',

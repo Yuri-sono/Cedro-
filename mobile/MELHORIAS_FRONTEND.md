@@ -75,9 +75,9 @@
 
 ## 🔧 Correções Realizadas
 
-### TesteAgoraScreen.tsx
-- ✅ Corrigido tipos do TypeScript (IRtcEngine, createAgoraRtcEngine)
-- ✅ Import dinâmico do react-native-agora
+### Tela de reunião
+- ✅ Corrigido tipos do TypeScript para a nova tela de reunião
+- ✅ Removida a dependência nativa de RTC
 - ✅ Tipagem explícita para handlers de erro
 
 ---
@@ -173,7 +173,7 @@ O frontend mobile foi **significativamente melhorado** mantendo:
 - ✅ Compatibilidade
 - ✅ Funcionalidade
 
-**O app agora tem um visual moderno, premium e profissional!** 💙✨
+**O app tem um visual moderno, premium e profissional!** 💙✨
 
 ---
 

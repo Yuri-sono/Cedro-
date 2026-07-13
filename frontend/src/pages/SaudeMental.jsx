@@ -149,7 +149,7 @@ const conditions = [
     badgeText: 'Incapacitante',
     prevalence: 3.5,
     affectedBR: '~5 milhões',
-    description: 'O transtorno do pânico é caracterizado por ataques de pânico recorrentes e inesperados — surtos abruptos de medo intenso que atingem um pico em minutos. A pessoa frequentemente desenvolve medo de ter novas crises, o que pode levar à agorafobia (evitação de locais ou situações).',
+    description: 'O transtorno do pânico é caracterizado por ataques de pânico recorrentes e inesperados — surtos abruptos de medo intenso que atingem um pico em minutos. A pessoa frequentemente desenvolve medo de ter novas crises, o que pode levar à fobia de espaços abertos ou à evitação de locais e situações.',
     symptoms: [
       'Ataques súbitos de medo intenso e terror',
       'Taquicardia, palpitações e dor no peito',

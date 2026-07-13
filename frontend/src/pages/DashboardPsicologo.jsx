@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import NavbarPsicologo from '../components/NavbarPsicologo.jsx';
 import SidebarPsicologo from '../components/SidebarPsicologo.jsx';
-import axios from 'axios';
-import API_BASE_URL from '../config.js';
+import api from '../services/api.js';
 
 const DashboardPsicologo = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [stats, setStats] = useState({
     consultasHoje: 0,
     consultasSemana: 0,
@@ -17,6 +15,7 @@ const DashboardPsicologo = () => {
   });
   const [proximasConsultas, setProximasConsultas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -26,49 +25,30 @@ const DashboardPsicologo = () => {
   
   const carregarDados = async () => {
     setLoading(true);
+    setErro('');
     try {
-      const token = localStorage.getItem('token');
-      await Promise.all([
-        carregarEstatisticas(token),
-        carregarProximasConsultas(token)
+      const [estatisticasResponse, consultasResponse] = await Promise.all([
+        api.get('/api/psicologos/estatisticas'),
+        api.get('/api/psicologos/consultas/proximas')
       ]);
+      setStats(estatisticasResponse.data);
+      setProximasConsultas((consultasResponse.data || []).slice(0, 3));
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
+      setErro(
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        'Não foi possível carregar o dashboard.'
+      );
+      setStats({
+        consultasHoje: 0,
+        consultasSemana: 0,
+        pacientesAtivos: 0,
+        faturamentoMes: 0
+      });
+      setProximasConsultas([]);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const carregarEstatisticas = async (token) => {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/api/psicologos/estatisticas`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setStats(response.data);
-    } catch (error) {
-      console.error('Erro ao carregar estatísticas:', error);
-      setStats({
-        consultasHoje: 2,
-        consultasSemana: 8,
-        pacientesAtivos: 15,
-        faturamentoMes: 4500
-      });
-    }
-  };
-
-  const carregarProximasConsultas = async (token) => {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/api/psicologos/consultas/proximas`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setProximasConsultas(response.data.slice(0, 3));
-    } catch (error) {
-      console.error('Erro ao carregar consultas:', error);
-      setProximasConsultas([
-        { id: 1, pacienteNome: 'Maria Silva', horario: '14:00', tipo: 'Terapia Individual', data: new Date().toISOString(), status: 'Confirmada' },
-        { id: 2, pacienteNome: 'João Santos', horario: '16:00', tipo: 'Terapia de Casal', data: new Date().toISOString(), status: 'Confirmada' },
-        { id: 3, pacienteNome: 'Ana Costa', horario: '09:00', tipo: 'Terapia Individual', data: new Date(Date.now() + 86400000).toISOString(), status: 'Agendada' }
-      ]);
     }
   };
 
@@ -119,6 +99,12 @@ const DashboardPsicologo = () => {
                 </span>
               </div>
             </div>
+
+            {erro && (
+              <div className="alert alert-danger" role="alert">
+                {erro}
+              </div>
+            )}
 
             {/* Stats Cards */}
             <div className="row g-4 mb-4">
@@ -271,7 +257,9 @@ const DashboardPsicologo = () => {
                     ) : (
                       <div className="text-center py-4">
                         <i className="bi bi-calendar-x text-muted" style={{ fontSize: '3rem' }}></i>
-                        <p className="text-muted mt-3">Nenhuma consulta agendada</p>
+                        <p className="text-muted mt-3">
+                          {erro ? 'Não foi possível carregar as consultas' : 'Nenhuma consulta agendada'}
+                        </p>
                         <Link to="/psicologo/agenda" className="btn btn-sm btn-primary">
                           Agendar Consulta
                         </Link>

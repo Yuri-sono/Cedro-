@@ -8,8 +8,7 @@ import { useNotifications } from '../hooks/useNotifications';
 import { AuthStack } from './AuthStack';
 import { MainTabs } from './MainTabs';
 import { SplashScreen } from '../screens/SplashScreen';
-import { VoiceCallScreen } from '../screens/calls/VoiceCallScreen';
-import { VideoCallScreen } from '../screens/calls/VideoCallScreen';
+import { ReuniaoScreen } from '../screens/calls/ReuniaoScreen';
 import { PaywallScreen } from '../screens/subscription/PaywallScreen';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
@@ -50,8 +49,7 @@ export const RootNavigator = () => {
 
             {/* Modais Globais de Chamada */}
             <RootStack.Group screenOptions={{ presentation: 'fullScreenModal', headerShown: false }}>
-              <RootStack.Screen name="VoiceCall" component={VoiceCallScreen} />
-              <RootStack.Screen name="VideoCall" component={VideoCallScreen} />
+              <RootStack.Screen name="Reuniao" component={ReuniaoScreen} />
               <RootStack.Screen name="Paywall" component={PaywallScreen} />
             </RootStack.Group>
           </>

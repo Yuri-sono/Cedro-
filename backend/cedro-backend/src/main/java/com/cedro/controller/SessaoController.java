@@ -2,15 +2,22 @@ package com.cedro.controller;
 
 import com.cedro.model.dto.SessaoRequest;
 import com.cedro.model.entity.Sessao;
+import com.cedro.model.entity.Usuario;
+import com.cedro.repository.UsuarioRepository;
 import com.cedro.security.JwtUtil;
 import com.cedro.service.SessaoService;
+import com.cedro.service.GoogleMeetService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestController
@@ -23,6 +30,17 @@ public class SessaoController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private GoogleMeetService googleMeetService;
+
+    @Value("${google.meet.release.minutes.before:15}")
+    private Integer meetReleaseMinutesBefore;
+
+    private static final ZoneId ZONA_SAO_PAULO = ZoneId.of("America/Sao_Paulo");
+
     private Integer getUserId(String authHeader) {
         return jwtUtil.extractUserId(authHeader.replace("Bearer ", ""));
     }
@@ -31,6 +49,30 @@ public class SessaoController {
         try {
             return "admin".equals(jwtUtil.extractTipoUsuario(authHeader.replace("Bearer ", "")));
         } catch (Exception e) { return false; }
+    }
+
+    private Map<String, Object> mapearSessaoComNomes(Sessao sessao) {
+        Map<String, Object> item = new LinkedHashMap<>();
+        item.put("id", sessao.getId());
+        item.put("pacienteId", sessao.getPacienteId());
+        item.put("psicologoId", sessao.getPsicologoId());
+        item.put("dataSessao", sessao.getDataSessao());
+        item.put("duracao", sessao.getDuracao());
+        item.put("valor", sessao.getValor());
+        item.put("statusSessao", sessao.getStatusSessao());
+        item.put("observacoes", sessao.getObservacoes());
+        item.put("dataCriacao", sessao.getDataCriacao());
+        item.put("linkReuniao", sessao.getLinkReuniao());
+        item.put("googleEventId", sessao.getGoogleEventId());
+        usuarioRepository.findById(sessao.getPacienteId()).ifPresentOrElse(
+                usuario -> item.put("pacienteNome", usuario.getNome()),
+                () -> item.put("pacienteNome", "Paciente #" + sessao.getPacienteId())
+        );
+        usuarioRepository.findById(sessao.getPsicologoId()).ifPresentOrElse(
+                usuario -> item.put("psicologoNome", usuario.getNome()),
+                () -> item.put("psicologoNome", "Psicólogo #" + sessao.getPsicologoId())
+        );
+        return item;
     }
 
     @GetMapping
@@ -71,14 +113,18 @@ public class SessaoController {
     }
 
     @GetMapping("/psicologo/{psicologoId}")
-    public ResponseEntity<List<Sessao>> listarPorPsicologo(
+    public ResponseEntity<?> listarPorPsicologo(
             @PathVariable Integer psicologoId,
             @RequestHeader("Authorization") String authHeader) {
         Integer requesterId = getUserId(authHeader);
         if (!isAdmin(authHeader) && !requesterId.equals(psicologoId)) {
             return ResponseEntity.status(403).build();
         }
-        return ResponseEntity.ok(sessaoService.listarPorPsicologo(psicologoId));
+        List<Map<String, Object>> resultado = sessaoService.listarPorPsicologo(psicologoId)
+                .stream()
+                .map(this::mapearSessaoComNomes)
+                .toList();
+        return ResponseEntity.ok(resultado);
     }
 
     @GetMapping("/disponibilidade/{psicologoId}")
@@ -118,6 +164,66 @@ public class SessaoController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(403).body(Map.of("error", e.getMessage()));
         }
+    }
+
+    @GetMapping("/{id}/link-reuniao")
+    public ResponseEntity<?> obterLinkReuniao(
+            @PathVariable Integer id,
+            @RequestHeader("Authorization") String authHeader) {
+        Integer requesterId = getUserId(authHeader);
+        Sessao sessao = sessaoService.buscarPorId(id);
+        if (!isAdmin(authHeader)
+                && !sessao.getPacienteId().equals(requesterId)
+                && !sessao.getPsicologoId().equals(requesterId)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Acesso negado"));
+        }
+
+        LocalDateTime janelaLiberacao = sessao.getDataSessao().minusMinutes(meetReleaseMinutesBefore);
+        LocalDateTime now = LocalDateTime.now(ZONA_SAO_PAULO);
+
+        if (now.isBefore(janelaLiberacao)) {
+            return ResponseEntity.ok(Map.of(
+                    "liberado", false,
+                    "disponivelEm", janelaLiberacao.toString()
+            ));
+        }
+
+        Map<String, Object> resposta = new LinkedHashMap<>();
+        resposta.put("liberado", true);
+        resposta.put("link", sessao.getLinkReuniao());
+        if (sessao.getLinkReuniao() == null) {
+            resposta.put("erro", "Link ainda não gerado, contate o suporte");
+        }
+        return ResponseEntity.ok(resposta);
+    }
+
+    @PostMapping("/{id}/gerar-reuniao")
+    public ResponseEntity<?> gerarReuniaoManual(
+            @PathVariable Integer id,
+            @RequestHeader("Authorization") String authHeader) {
+        if (!isAdmin(authHeader)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Acesso negado"));
+        }
+
+        Sessao sessao = sessaoService.buscarPorId(id);
+        Usuario paciente = usuarioRepository.findById(sessao.getPacienteId())
+                .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
+        Usuario psicologo = usuarioRepository.findById(sessao.getPsicologoId())
+                .orElseThrow(() -> new RuntimeException("Psicólogo não encontrado"));
+
+        GoogleMeetService.GoogleMeetResultado resultado = googleMeetService.criarReuniao(
+                sessao,
+                paciente.getNome(),
+                psicologo.getNome()
+        );
+
+        sessaoService.salvarReuniaoGerada(sessao, resultado.link(), resultado.eventId());
+
+        Map<String, Object> resposta = new LinkedHashMap<>();
+        resposta.put("message", "Tentativa de geração executada");
+        resposta.put("link", resultado.link());
+        resposta.put("eventId", resultado.eventId());
+        return ResponseEntity.ok(resposta);
     }
 
     @DeleteMapping("/{id}")

@@ -31,7 +31,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/assinatura/webhook").permitAll()
-                .requestMatchers("/ws-realtime").permitAll()
+                .requestMatchers("/ws-chat").permitAll()
                 .requestMatchers("/api/psicologos").permitAll()
                 .requestMatchers("/api/psicologos/{id}").permitAll()
                 .requestMatchers("/uploads/**").permitAll()

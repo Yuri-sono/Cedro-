@@ -10,6 +10,7 @@ BEGIN TRAN;
 
 IF OBJECT_ID(N'dbo.chamadas_historico', N'U') IS NULL
 BEGIN
+    -- Tabela legada mantida apenas para preservar historico existente.
     CREATE TABLE dbo.chamadas_historico (
         id INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_chamadas_historico PRIMARY KEY,
         usuario_id INT NOT NULL,

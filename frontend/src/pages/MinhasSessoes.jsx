@@ -1,23 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import axios from 'axios';
-import API_BASE_URL from '../config';
+import api from '../services/api.js';
+import ReuniaoModal from '../components/ReuniaoModal.jsx';
 
 function MinhasSessoes() {
   const [sessoes, setSessoes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const [sessaoReuniao, setSessaoReuniao] = useState(null);
+  const { loading: authLoading } = useAuth();
 
   useEffect(() => {
+    if (authLoading) {
+      return;
+    }
     carregarSessoes();
-  }, []);
+  }, [authLoading]);
 
   const carregarSessoes = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_BASE_URL}/api/sessoes/minhas`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/api/sessoes/minhas');
       setSessoes(response.data);
     } catch (error) {
       console.error('Erro ao carregar sessões:', error);
@@ -30,10 +31,7 @@ function MinhasSessoes() {
     if (!window.confirm('Deseja realmente cancelar esta sessão?')) return;
     
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${API_BASE_URL}/api/sessoes/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/api/sessoes/${id}`);
       alert('Sessão cancelada com sucesso!');
       carregarSessoes();
     } catch (error) {
@@ -50,7 +48,7 @@ function MinhasSessoes() {
     return badges[status] || 'bg-secondary';
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="container py-5 text-center">
         <div className="spinner-border text-primary" role="status">
@@ -120,13 +118,22 @@ function MinhasSessoes() {
                   )}
                   
                   {sessao.statusSessao === 'agendada' && (
-                    <button 
-                      className="btn btn-outline-danger btn-sm w-100"
-                      onClick={() => cancelarSessao(sessao.id)}
-                    >
-                      <i className="bi bi-x-circle me-2"></i>
-                      Cancelar Sessão
-                    </button>
+                    <div className="d-grid gap-2">
+                      <button
+                        className="btn btn-primary btn-sm w-100"
+                        onClick={() => setSessaoReuniao(sessao.id)}
+                      >
+                        <i className="bi bi-camera-video me-2"></i>
+                        Entrar na sessão
+                      </button>
+                      <button
+                        className="btn btn-outline-danger btn-sm w-100"
+                        onClick={() => cancelarSessao(sessao.id)}
+                      >
+                        <i className="bi bi-x-circle me-2"></i>
+                        Cancelar Sessão
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -134,6 +141,12 @@ function MinhasSessoes() {
           ))}
         </div>
       )}
+
+      <ReuniaoModal
+        show={Boolean(sessaoReuniao)}
+        sessaoId={sessaoReuniao}
+        onClose={() => setSessaoReuniao(null)}
+      />
     </div>
   );
 }

@@ -72,7 +72,7 @@ function classifyError(error: AxiosError): ClassifiedError {
       }
       return { type: ApiErrorType.TIMEOUT, message: 'O servidor demorou para responder. Tente novamente em instantes.' };
     }
-    return { type: ApiErrorType.NETWORK, message: 'Nao foi possivel concluir agora. Verifique sua internet e tente novamente.' };
+    return { type: ApiErrorType.NETWORK, message: 'Nao foi possivel concluir neste momento. Verifique sua internet e tente novamente.' };
   }
 
   const status = error.response.status;
@@ -81,7 +81,11 @@ function classifyError(error: AxiosError): ClassifiedError {
     return { type: ApiErrorType.AUTH, message: 'Sessão expirada. Faça login novamente.', status };
   }
   if (status === 403) {
-    return { type: ApiErrorType.AUTH, message: 'Acesso negado.', status };
+    return {
+      type: ApiErrorType.AUTH,
+      message: extractApiMessage(error.response.data) || 'Acesso negado.',
+      status,
+    };
   }
   if (status === 400 || status === 422) {
     return {

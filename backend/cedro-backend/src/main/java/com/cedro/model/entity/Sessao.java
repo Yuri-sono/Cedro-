@@ -29,6 +29,12 @@ public class Sessao {
     
     @Column(name = "status_sessao", length = 20)
     private String statusSessao = "agendada";
+
+    @Column(name = "link_reuniao")
+    private String linkReuniao;
+
+    @Column(name = "google_event_id")
+    private String googleEventId;
     
     @Column(columnDefinition = "TEXT")
     private String observacoes;
@@ -56,6 +62,12 @@ public class Sessao {
     
     public String getStatusSessao() { return statusSessao; }
     public void setStatusSessao(String statusSessao) { this.statusSessao = statusSessao; }
+
+    public String getLinkReuniao() { return linkReuniao; }
+    public void setLinkReuniao(String linkReuniao) { this.linkReuniao = linkReuniao; }
+
+    public String getGoogleEventId() { return googleEventId; }
+    public void setGoogleEventId(String googleEventId) { this.googleEventId = googleEventId; }
     
     public String getObservacoes() { return observacoes; }
     public void setObservacoes(String observacoes) { this.observacoes = observacoes; }

@@ -5,7 +5,6 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, typography, spacing } from '../../theme';
 import { Button } from '../../components/Button';
 import { HomeStackParamList, RootStackParamList } from '../../types/navigation.types';
-import { useAuthStore } from '../../store/authStore';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type SessionSuccessRouteProp = RouteProp<HomeStackParamList, 'SessionSuccess'>;
@@ -13,11 +12,7 @@ type SessionSuccessRouteProp = RouteProp<HomeStackParamList, 'SessionSuccess'>;
 export const SessionSuccessScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<SessionSuccessRouteProp>();
-  const currentUserId = useAuthStore((state) => state.user?.id);
-  const { psicologoId, psicologoNome, avatarUrl } = route.params;
-  const channelName = currentUserId
-    ? `chat-${Math.min(currentUserId, psicologoId)}-${Math.max(currentUserId, psicologoId)}`
-    : `chat-${psicologoId}`;
+  const { psicologoId, psicologoNome, avatarUrl, sessaoId } = route.params;
 
   return (
     <View style={styles.container}>
@@ -45,9 +40,9 @@ export const SessionSuccessScreen = () => {
           style={styles.button}
         />
         <Button
-          title="Testar videochamada"
+          title="Entrar na reunião"
           variant="secondary"
-          onPress={() => navigation.navigate('VideoCall', { channelName, userName: psicologoNome })}
+          onPress={() => navigation.navigate('Reuniao', { sessaoId })}
           style={styles.button}
         />
         <Button
