@@ -16,6 +16,7 @@
     "@fullcalendar/interaction": "^6.1.19",
     "@fullcalendar/react": "^6.1.19",
     "@fullcalendar/timegrid": "^6.1.19",
+    "@stomp/stompjs": "^7.3.0",
     "axios": "^1.4.0",
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.10.0",
