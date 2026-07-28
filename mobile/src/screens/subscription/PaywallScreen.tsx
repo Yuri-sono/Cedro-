@@ -13,7 +13,7 @@ export const PaywallScreen = () => {
     return (
       <View style={styles.centerContainer}>
         <Text style={styles.successTitle}>Você já é Premium! 🎉</Text>
-        <Text style={styles.successSubtitle}>Aproveite chamadas ilimitadas.</Text>
+        <Text style={styles.successSubtitle}>Aproveite reuniões ilimitadas via Google Meet.</Text>
         <Button 
           title="Voltar" 
           onPress={() => navigation.goBack()} 
@@ -29,7 +29,7 @@ export const PaywallScreen = () => {
       
       <View style={styles.limitCard}>
         <Text style={styles.limitText}>
-          Sua cota mensal de chamadas gratuitas de voz/vídeo atingiu o limite:
+          Sua cota mensal de reuniões gratuitas via Google Meet atingiu o limite:
         </Text>
         <Text style={styles.limitNumbers}>
           {limiteInfo.chamadasRealizadas} / {limiteInfo.limiteMensal}
@@ -39,11 +39,11 @@ export const PaywallScreen = () => {
       <Text style={styles.benefitsTitle}>Vantagens do Premium:</Text>
       <View style={styles.benefitItem}>
         <Text style={styles.benefitCheck}>✓</Text>
-        <Text style={styles.benefitText}>Sessões de vídeo ilimitadas</Text>
+        <Text style={styles.benefitText}>Reuniões via Google Meet ilimitadas</Text>
       </View>
       <View style={styles.benefitItem}>
         <Text style={styles.benefitCheck}>✓</Text>
-        <Text style={styles.benefitText}>Sessões de voz ilimitadas</Text>
+        <Text style={styles.benefitText}>Agendamento prioritário de sessões</Text>
       </View>
       <View style={styles.benefitItem}>
         <Text style={styles.benefitCheck}>✓</Text>

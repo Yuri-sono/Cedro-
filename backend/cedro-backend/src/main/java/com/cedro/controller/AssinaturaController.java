@@ -95,6 +95,9 @@ public class AssinaturaController {
         int limiteMensal = isPremium ? Integer.MAX_VALUE : LIMITE_SESSOES_GRATIS_MES;
         return ResponseEntity.ok(Map.of(
                 "isPremium", isPremium,
+                // Nome legado do sistema anterior (Agora.io). Hoje representa a contagem de
+                // sessões agendadas não-canceladas no mês corrente. Mantido por compatibilidade
+                // com o contrato de API já consumido pelo mobile.
                 "chamadasRealizadas", sessoesAgendadasNoMes,
                 "limiteMensal", limiteMensal
         ));

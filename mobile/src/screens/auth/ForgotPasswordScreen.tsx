@@ -30,8 +30,8 @@ export const ForgotPasswordScreen = () => {
       title="Recuperar Senha"
       subtitle={
         isSuccess
-          ? 'Senha temporaria gerada. Use a senha exibida no aviso e depois troque no perfil.'
-          : 'Informe seu e-mail para gerar uma senha temporaria.'
+          ? 'Se o e-mail estiver cadastrado, você receberá as instruções de redefinição em breve.'
+          : 'Informe seu e-mail para receber o link de redefinição de senha.'
       }
       footer={
         <View style={styles.footerRow}>
@@ -56,7 +56,7 @@ export const ForgotPasswordScreen = () => {
           />
 
           <Button
-            title="Gerar senha temporaria"
+            title="Enviar link de redefinição"
             onPress={handleRecover}
             isLoading={isLoading}
             disabled={!email}
@@ -66,8 +66,8 @@ export const ForgotPasswordScreen = () => {
       ) : (
         <View style={styles.successBox}>
           <Text style={styles.successText}>
-            Pronto. Em seguida faca login com a senha temporaria informada no aviso e altere a senha em
-            {' '}Perfil {'>'} Alterar Senha.
+            Se o e-mail estiver cadastrado, você receberá as instruções em breve.
+            Verifique sua caixa de entrada.
           </Text>
         </View>
       )}

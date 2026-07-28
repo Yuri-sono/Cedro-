@@ -20,7 +20,7 @@ export const SessionSuccessScreen = () => {
         <Text style={styles.icon}>✓</Text>
         <Text style={styles.title}>Consulta agendada</Text>
         <Text style={styles.message}>
-          Sua consulta com {psicologoNome} foi confirmada. A conversa e a chamada ja estao prontas para demonstracao.
+          Sua consulta com {psicologoNome} foi confirmada. A conversa e a reunião via Google Meet já estão prontas.
         </Text>
         <Text style={styles.info}>
           O pagamento sera realizado diretamente com o psicologo no dia da consulta.

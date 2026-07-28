@@ -1,29 +1,30 @@
 # 🌳 Cedro Plus
 
-**Cedro Plus** é uma plataforma inovadora voltada para a saúde mental, desenhada para conectar **Pacientes** e **Psicólogos** de forma segura, fluida e eficiente. O ecossistema abrange uma aplicação Web robusta para gestão, um aplicativo Mobile focado no paciente, e um Backend unificado servindo como a fonte da verdade para toda a arquitetura.
+**Cedro Plus** é uma plataforma de saúde mental que conecta **Pacientes** e **Psicólogos** de forma segura e eficiente. O ecossistema abrange uma aplicação Web para gestão, um aplicativo Mobile focado no paciente e um Backend unificado como fonte da verdade.
 
 ---
 
 ## 🏛️ Arquitetura do Sistema
 
-O sistema é construído sobre uma arquitetura **Centralizada baseada em API**, garantindo que todas as interfaces (Web e Mobile) consumam a mesma camada de segurança, regras de negócios e persistência.
+Arquitetura **centralizada baseada em API REST + WebSocket STOMP**, garantindo que Web e Mobile consumam a mesma camada de segurança, regras de negócio e persistência.
 
-* **Backend Central (A Fonte da Verdade)**: Desenvolvido em Spring Boot (Java), ele expõe endpoints REST para dados transacionais e um servidor WebSocket (STOMP) para a mensageria em tempo real.
-* **Banco de Dados**: Microsoft SQL Server hospedado remotamente, sendo o único repositório de persistência de usuários, sessões, chat e métricas.
-* **Cliente Web (Admin/Psicólogos)**: SPA desenvolvida em React + Vite.
-* **Cliente Mobile (Pacientes)**: Aplicativo híbrido desenvolvido com React Native (Expo SDK).
+- **Backend Central**: Spring Boot 3 (Java 17) — REST + WebSocket STOMP
+- **Banco de Dados**: Microsoft SQL Server (remoto)
+- **Cliente Web**: SPA React + Vite
+- **Cliente Mobile**: React Native (Expo SDK)
 
 ```mermaid
 graph TD
     A[📱 App Mobile (React Native / Expo)] -->|REST / JWT| C((⚙️ Backend Central - Spring Boot))
     A -->|STOMP / WebSocket| C
-    A -->|Telemetria / RTC Tokens| D[📞 Agora.io SDK]
-    A -->|Verificação Nativa| F[💳 RevenueCat SDK]
-    
+    A -->|OAuth2| E[🔑 Google OAuth]
+
     B[💻 Portal Web (React + Vite)] -->|REST / JWT| C
-    
-    C -->|Persistência| E[(🗄️ SQL Server)]
-    F -.->|Webhooks de Assinatura| C
+    B -->|STOMP / WebSocket| C
+
+    C -->|Persistência| D[(🗄️ SQL Server)]
+    C -->|Calendar API| F[📅 Google Calendar / Meet]
+    F -.->|link_reuniao| C
 ```
 
 ---
@@ -31,252 +32,116 @@ graph TD
 ## 🚀 Principais Tecnologias e Funcionalidades
 
 ### 1. Backend (Spring Boot 3)
-* **Segurança**: Autenticação unificada via **JWT** (JSON Web Tokens). Endpoints mapeados para `Paciente`, `Psicologo` e `Admin`.
-* **Mensageria Realtime**: Spring WebSockets acoplado ao protocolo **STOMP** para viabilizar o chat bidirecional em tempo real (substituindo lógicas onerosas de polling).
-* **Gestão de Sessões**: Rotinas para agendamento, controle de status das sessões, e apuração de pagamentos.
+- **Segurança**: Autenticação via **JWT**. Endpoints segmentados por papel: `paciente`, `psicologo`, `admin`.
+- **Mensageria Realtime**: **Spring WebSocket + STOMP** para chat bidirecional em tempo real (sem polling).
+- **Integração Google Meet**: Ao confirmar uma sessão, o backend usa a **Google Calendar API** (service account com OAuth2 refresh token) para criar um evento no Google Calendar e retornar o link do Google Meet. O link é armazenado em `sessoes.link_reuniao`.
+- **Reset de Senha Seguro**: Fluxo com token de uso único (tabela `password_reset_tokens`, expiração 30 min). Envio de e-mail via `spring-boot-starter-mail` (configurável; quando `MAIL_ENABLED=false`, o link é logado no console para testes).
+- **Gestão de Sessões**: Agendamento, controle de status e apuração financeira.
 
 ### 2. Frontend Web (React + Vite)
-* **Gestão de Perfil**: Painel do psicólogo para gestão de biografia, CRP, especialidades e valor das sessões.
-* **Dashboard de Agendamentos**: Visualização das consultas marcadas.
-* **Estilização**: Uso de design system com tokens bem definidos, focando em performance.
+- Dashboard do psicólogo com agenda FullCalendar, financeiro e estatísticas (dados reais via API).
+- Fluxo completo de recuperação/redefinição de senha (`/redefinir-senha?token=...`).
+- Chat em tempo real via STOMP.
+- Instância Axios centralizada em `src/services/api.js` com interceptors de JWT e retry.
 
 ### 3. Mobile (React Native / Expo)
-* **Motor RTC Nativo**: Integração direta com `react-native-agora` para realizar **Chamadas de Voz e Vídeo** de alta resolução e baixa latência dentro do próprio app. O acesso aos canais é orquestrado pelos tokens emitidos pelo Spring Boot.
-* **Assinatura Premium In-App**: Integração transparente com a App Store e Google Play através do **RevenueCat**, desbloqueando cotas ilimitadas de chamadas, enquanto a regra do "limite mensal" continua assegurada pelo backend (SQL Server).
-* **Notificações Push**: Registradas nativamente via Expo Notifications.
-* **Gestão de Estado Robusta**: Uso intensivo de Zustand e TanStack Query (React Query) para sincronização e cache eficiente da UI com as respostas do servidor.
+- **Reuniões via Google Meet**: A tela `ReuniaoScreen` faz polling no backend e abre o link do Meet quando a sessão é liberada.
+- **Notificações Push**: Expo Notifications.
+- **Estado**: Zustand + TanStack Query (React Query).
+- **Token seguro**: `expo-secure-store` (nunca AsyncStorage puro para JWT).
 
 ---
 
 ## 🛠️ Como Rodar Localmente
 
-### 1. Clonando o Repositório
+### Backend (Spring Boot)
 ```bash
-git clone https://github.com/Kayquebrigadeiro/Cedroplus.git
-cd Cedroplus
-```
-
-### 2. Configurando o Backend (Spring Boot)
-1. Certifique-se de ter o **Java 17+** e o Maven instalados.
-2. Navegue até a pasta `backend/cedro-backend` (ou o respectivo diretório do Spring).
-3. O projeto utiliza um banco remoto (`CedroDB.mssql.somee.com`), mas pode ser testado em um SQL Server local. Verifique o `application.properties`.
-4. Inicie o servidor:
-```bash
+cd backend/cedro-backend
+# Configure as variáveis de ambiente (ver seção abaixo)
 mvn spring-boot:run
+# Porta padrão: 8080
 ```
-> O backend rodará na porta `8080` (ex: `http://localhost:8080`).
 
-### 3. Configurando o Frontend (Web)
-1. Navegue até a pasta do frontend.
-2. Crie seu arquivo `.env` referenciando a API local: `VITE_API_URL=http://localhost:8080`
-3. Instale e execute:
+### Frontend Web
 ```bash
-npm install
-npm run dev
+cd frontend
+cp .env.example .env
+# Edite VITE_API_URL=http://localhost:8080
+npm install && npm run dev
 ```
 
-### 4. Configurando o Mobile (App)
-
-#### 📱 Ambiente de Desenvolvimento
-1. Navegue até a pasta `mobile/`:
+### Mobile
 ```bash
 cd mobile
-```
-
-2. Crie o arquivo `.env.development` com a URL do backend:
-```env
-# Para emulador Android
-EXPO_PUBLIC_API_URL=http://10.0.2.2:8080
-
-# Para iOS Simulator (Mac)
-# EXPO_PUBLIC_API_URL=http://localhost:8080
-
-# Para dispositivo físico (na mesma rede)
-# EXPO_PUBLIC_API_URL=http://SEU_IP_LOCAL:8080
-```
-
-3. Instale as dependências:
-```bash
+cp .env.development.example .env.development
+# Edite EXPO_PUBLIC_API_URL conforme seu ambiente
 npm install
-```
-
-4. Inicie o servidor de desenvolvimento:
-```bash
-# Para desenvolvimento rápido (Expo Go)
 npx expo start
-
-# Para Android
-npx expo run:android
-
-# Para iOS (Mac)
-npx expo run:ios
 ```
-
-#### 🏗️ Builds de Produção com EAS
-
-Para gerar builds otimizados para produção:
-
-1. **Configuração inicial (uma vez):**
-```bash
-# Login na conta Expo
-npx eas-cli login
-
-# Configurar projeto EAS
-npx eas-cli init
-```
-
-2. **Build para Android:**
-```bash
-# Build de preview (teste interno)
-npx eas-cli build --platform android --profile preview
-
-# Build de produção
-npx eas-cli build --platform android --profile production
-```
-
-3. **Build para iOS (requer Mac):**
-```bash
-# Build de preview
-npx eas-cli build --platform ios --profile preview
-
-# Build de produção
-npx eas-cli build --platform ios --profile production
-```
-
-#### 🔧 Configurações Importantes
-
-**EAS Build (`eas.json`):**
-```json
-{
-  "cli": {
-    "version": ">= 19.0.8",
-    "appVersionSource": "remote"
-  },
-  "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal"
-    },
-    "preview": {
-      "distribution": "internal"
-    },
-    "production": {
-      "autoIncrement": true
-    }
-  },
-  "submit": {
-    "production": {}
-  }
-}
-```
-
-**Configuração Babel (`babel.config.js`):**
-```javascript
-module.exports = function (api) {
-  api.cache(true);
-  return {
-    presets: ['babel-preset-expo'],
-    plugins: [
-      [
-        'module-resolver',
-        {
-          root: ['./src'],
-          alias: {
-            '@': './src',
-          },
-        },
-      ],
-    ],
-  };
-};
-```
-
-#### 🚨 Solução de Problemas Comuns
-
-**Erro: "Cannot find module 'babel-preset-expo'"**
-```bash
-# Verifique se está instalado
-npm ls babel-preset-expo
-
-# Instale a versão correta
-npm install babel-preset-expo@~54.0.10
-```
-
-**Erro: Assets não encontrados**
-- Certifique-se que todos os arquivos referenciados em `require()` existem na pasta `assets/`
-- Nomes devem ser exatos (Linux é case-sensitive)
-
-**Cache persistente do EAS**
-```bash
-# Limpe o cache
-npx eas-cli build --platform android --profile preview --clear-cache
-```
-
-#### 📦 Dependências Críticas
-Certifique-se que estas versões estão corretas no `package.json`:
-```json
-"dependencies": {
-  "@react-native-async-storage/async-storage": "2.2.0",
-  "@react-native-community/netinfo": "11.4.1",
-  "babel-plugin-module-resolver": "^5.0.0",
-  "babel-preset-expo": "~54.0.10",
-  "expo": "~54.0.33",
-  "react": "19.1.0",
-  "react-native": "0.81.5"
-}
-```
-
-#### 📱 Testando no Dispositivo Físico
-1. Instale o app **Expo Go** na Play Store/App Store
-2. Escaneie o QR code gerado por `npx expo start`
-3. Para recursos nativos (Agora.io), use builds EAS
-
-#### 🎯 Dicas de Performance
-- Use `npx expo prebuild --clean` antes de builds importantes
-- Configure variáveis de ambiente no EAS Console para builds de produção
-- Use `--clear-cache` quando houver problemas persistentes
 
 ---
 
-## 🔒 Variáveis de Ambiente & Segurança
+## 🔒 Variáveis de Ambiente
 
-### Backend (Spring Boot)
-- `application.properties` - Configurações de banco, JWT, etc.
-- **NUNCA** commit arquivos com credenciais reais
+### Backend (`backend/cedro-backend/.env`)
 
-### Frontend Web (React + Vite)
-- `.env` - URL da API, chaves públicas
-- `.env.production` - Configurações de produção
+| Variável | Descrição |
+|---|---|
+| `DATABASE_URL` | JDBC URL do SQL Server |
+| `DATABASE_USERNAME` | Usuário do banco |
+| `DATABASE_PASSWORD` | Senha do banco |
+| `JWT_SECRET` | Secret para assinar tokens JWT (mín. 32 chars) |
+| `GOOGLE_CLIENT_ID` | Client ID do projeto Google Cloud |
+| `GOOGLE_CLIENT_SECRET` | Client Secret do projeto Google Cloud |
+| `GOOGLE_REFRESH_TOKEN` | Refresh token OAuth2 da conta de serviço Google |
+| `GOOGLE_MEET_RELEASE_MINUTES_BEFORE` | Minutos antes da sessão para liberar o link (padrão: 15) |
+| `MAIL_ENABLED` | `true` para enviar e-mails reais, `false` para logar no console |
+| `MAIL_HOST` | Servidor SMTP (ex: `smtp.gmail.com`) |
+| `MAIL_PORT` | Porta SMTP (ex: `587`) |
+| `MAIL_USERNAME` | Usuário SMTP |
+| `MAIL_PASSWORD` | Senha SMTP |
+| `FRONTEND_URL` | URL base do frontend para links de e-mail (ex: `https://cedro.vercel.app`) |
 
-### Mobile (React Native / Expo)
-- `.env.development` - Desenvolvimento local
-- `.env.production` - Produção (configurado no EAS Console)
-- `app.config.ts` - Configurações do app (Expo)
+### Frontend Web (`frontend/.env`)
 
-**Variáveis críticas NUNCA no versionamento:**
-- JWT Secrets
-- Chaves de API do Google OAuth  
-- Tokens do Agora.io
-- RevenueCat SDK Keys
-- Credenciais de banco de dados
+| Variável | Descrição |
+|---|---|
+| `VITE_API_URL` | URL base do backend |
+| `VITE_GOOGLE_CLIENT_ID` | Client ID Google para login social |
 
-**Configuração no EAS (produção):**
-1. Acesse [Expo Dashboard](https://expo.dev)
-2. Navegue até seu projeto
-3. Em "Environment Variables" configure:
-   - `EXPO_PUBLIC_API_URL` (URL do backend em produção)
-   - `EXPO_PUBLIC_RC_APPLE` (RevenueCat Apple)
-   - `EXPO_PUBLIC_RC_GOOGLE` (RevenueCat Google)
-   - Tokens do Agora.io
+### Mobile (`mobile/.env.development` / EAS Console)
 
-### 🛡️ Boas Práticas de Segurança
-1. Use variáveis de ambiente para todos os secrets
-2. Configure `.gitignore` para excluir arquivos sensíveis
-3. Use diferentes credenciais por ambiente (dev/staging/prod)
-4. Revise permissões regularmente
-5. Monitore logs de acesso
+| Variável | Descrição |
+|---|---|
+| `EXPO_PUBLIC_API_URL` | URL base do backend |
 
-Todos os tokens **não devem ser incluídos no controle de versão**. Utilize sempre arquivos locais como `.env` e configure-os com segurança no seu serviço de nuvem/hospedagem no ambiente de Produção.
+> **Nunca versione arquivos `.env` com valores reais.** Use o EAS Console para variáveis de produção.
 
 ---
+
+## 🗄️ Banco de Dados
+
+Scripts SQL em `SQL Cedro/`:
+
+| Arquivo | Descrição |
+|---|---|
+| `schema_simples.sql` | Schema completo (destrutivo — apenas para setup inicial) |
+| `atualizacao_banco.sql` | Migrações incrementais |
+| `google_meet_columns.sql` | Colunas `link_reuniao` e `google_event_id` na tabela `sessoes` |
+| `mobile_tables.sql` | Tabelas adicionais para o mobile |
+| `password_reset_tokens.sql` | Tabela de tokens de reset de senha (idempotente) |
+| `dados_demo_apresentacao.sql` | Seed de dados de demonstração para TCC (idempotente) |
+
+---
+
+## 🔗 Integração Google Meet
+
+1. Crie um projeto no [Google Cloud Console](https://console.cloud.google.com)
+2. Ative a **Google Calendar API**
+3. Configure as credenciais OAuth2 e gere um refresh token com escopo `https://www.googleapis.com/auth/calendar`
+4. Configure `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` e `GOOGLE_REFRESH_TOKEN` no `.env` do backend
+5. Ao agendar uma sessão, o backend cria automaticamente um evento no Google Calendar com link do Meet e armazena em `sessoes.link_reuniao`
+
+---
+
 *Feito com propósito e dedicação para melhorar a saúde mental e expandir a acessibilidade ao suporte psicológico.* 💙

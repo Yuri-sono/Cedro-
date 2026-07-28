@@ -64,7 +64,7 @@ public class DemoPsychologistSeeder implements CommandLineRunner {
         paciente.setTipoUsuario(TipoUsuario.paciente);
         paciente.setTelefone("(11) 98888-0000");
         paciente.setAreaInteresse("Terapia Cognitivo-Comportamental");
-        paciente.setBio("Conta paciente de demonstracao para exibir chat e chamadas.");
+        paciente.setBio("Conta paciente de demonstracao para exibir chat e reunioes via Google Meet.");
         paciente.setAtivo(true);
 
         usuarioRepository.save(paciente);
