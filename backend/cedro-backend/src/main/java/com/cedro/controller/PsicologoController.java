@@ -192,6 +192,60 @@ public class PsicologoController {
         return ResponseEntity.ok(Map.of("message", "Desativado"));
     }
 
+    @GetMapping("/financeiro")
+    public ResponseEntity<?> getFinanceiro(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam(defaultValue = "mes") String periodo) {
+        Integer psicologoId = jwtUtil.extractUserId(authHeader.replace("Bearer ", ""));
+
+        LocalDateTime inicio;
+        LocalDateTime fim = LocalDateTime.now().plusDays(1).toLocalDate().atStartOfDay();
+        LocalDateTime agora = LocalDateTime.now();
+
+        switch (periodo) {
+            case "trimestre" -> inicio = agora.minusMonths(3).toLocalDate().atStartOfDay();
+            case "ano"       -> inicio = LocalDate.now().withDayOfYear(1).atStartOfDay();
+            default          -> inicio = LocalDate.now().withDayOfMonth(1).atStartOfDay();
+        }
+
+        List<Sessao> sessoes = sessaoRepository.findByPsicologoIdAndDataSessaoBetween(psicologoId, inicio, fim);
+
+        java.math.BigDecimal faturamento = sessoes.stream()
+                .filter(s -> "realizada".equals(s.getStatusSessao()))
+                .map(Sessao::getValor)
+                .filter(v -> v != null)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+
+        long consultasRealizadas = sessoes.stream()
+                .filter(s -> "realizada".equals(s.getStatusSessao())).count();
+
+        java.math.BigDecimal ticketMedio = consultasRealizadas > 0
+                ? faturamento.divide(java.math.BigDecimal.valueOf(consultasRealizadas), 2, java.math.RoundingMode.HALF_UP)
+                : java.math.BigDecimal.ZERO;
+
+        List<Map<String, Object>> transacoes = sessoes.stream()
+                .filter(s -> !"cancelada".equals(s.getStatusSessao()))
+                .sorted((a, b) -> b.getDataSessao().compareTo(a.getDataSessao()))
+                .limit(20)
+                .map(s -> {
+                    Map<String, Object> t = new HashMap<>();
+                    t.put("id", s.getId());
+                    t.put("data", s.getDataSessao().toLocalDate().toString());
+                    t.put("valor", s.getValor());
+                    t.put("status", "realizada".equals(s.getStatusSessao()) ? "Pago" : "Pendente");
+                    usuarioRepository.findById(s.getPacienteId())
+                            .ifPresent(p -> t.put("paciente", p.getNome()));
+                    return t;
+                }).collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("faturamentoMes", faturamento);
+        result.put("consultasRealizadas", consultasRealizadas);
+        result.put("ticketMedio", ticketMedio);
+        result.put("transacoes", transacoes);
+        return ResponseEntity.ok(result);
+    }
+
     @GetMapping("/estatisticas")
     public ResponseEntity<?> getEstatisticas(@RequestHeader("Authorization") String authHeader) {
         Integer psicologoId = jwtUtil.extractUserId(authHeader.replace("Bearer ", ""));

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
-import axios from 'axios';
-import API_BASE_URL from '../config.js';
+import api from '../services/api.js';
 
 const MinhasConversas = () => {
   const [conversas, setConversas] = useState([]);
@@ -17,10 +16,7 @@ const MinhasConversas = () => {
 
   const carregarConversas = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_BASE_URL}/api/mensagens/conversas`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/api/mensagens/conversas');
       setConversas(response.data || []);
     } catch (error) {
       console.error('Erro ao carregar conversas:', error);

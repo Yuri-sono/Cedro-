@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../styles/chat-emergencia.css';
 
+// Funcionalidade local, não depende de backend.
+// Chat de apoio emocional com respostas pré-definidas e links de emergência (CVV, SAMU, etc.).
 const ChatEmergencia = () => {
   const [messages, setMessages] = useState([
     {

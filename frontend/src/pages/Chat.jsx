@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import API_BASE_URL from '../config';
+import api from '../services/api.js';
 import { Client } from '@stomp/stompjs';
 import '../styles/chat.css';
+
+// Helper para obter token (WebSocket STOMP precisa do token na URL)
+const getTokenForWebSocket = () => localStorage.getItem('token');
 
 function Chat() {
   const [mensagens, setMensagens] = useState([]);
@@ -36,10 +38,7 @@ function Chat() {
 
   const marcarComoLidas = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.put(`${API_BASE_URL}/api/mensagens/marcar-lidas/${userId}`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.put(`/api/mensagens/marcar-lidas/${userId}`, {});
     } catch (error) {
       console.error('Erro ao marcar como lidas:', error);
     }
@@ -47,10 +46,7 @@ function Chat() {
 
   const carregarMensagens = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_BASE_URL}/api/mensagens/conversa/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(`/api/mensagens/conversa/${userId}`);
       setMensagens(response.data);
       marcarComoLidas();
     } catch (error) {
@@ -62,10 +58,7 @@ function Chat() {
 
   const carregarDestinatario = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_BASE_URL}/api/usuarios/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(`/api/usuarios/${userId}`);
       setDestinatario(response.data);
     } catch (error) {
       console.error('Erro ao carregar destinatário:', error);
@@ -107,9 +100,10 @@ function Chat() {
     let closedByComponent = false;
 
     const connect = () => {
-      const token = localStorage.getItem('token');
+      const token = getTokenForWebSocket();
       if (!token) return;
 
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
       const wsUrl = `${API_BASE_URL.replace(/^http/, 'ws')}/ws-chat?token=${encodeURIComponent(token)}`;
 
       const client = new Client({
@@ -164,12 +158,9 @@ function Chat() {
       });
 
       if (!sentBySocket) {
-        const token = localStorage.getItem('token');
-        const response = await axios.post(`${API_BASE_URL}/api/mensagens`, {
+        const response = await api.post('/api/mensagens', {
           destinatarioId,
           mensagem: texto
-        }, {
-          headers: { Authorization: `Bearer ${token}` }
         });
 
         upsertMensagem(response.data);

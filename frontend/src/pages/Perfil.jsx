@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
-import axios from 'axios';
+import api from '../services/api.js';
 import CustomModal from '../components/CustomModal.jsx';
 import { useModal } from '../hooks/useModal.jsx';
-import API_BASE_URL from '../config.js';
 
 const Perfil = () => {
   const { user, logout, updateUser } = useAuth();
@@ -59,16 +58,13 @@ const Perfil = () => {
   const handleSalvar = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      await axios.put(`${API_BASE_URL}/api/auth/perfil`, {
+      await api.put('/api/auth/perfil', {
         nome: usuario.nome,
         telefone: usuario.telefone,
         dataNascimento: usuario.dataNascimento,
         genero: usuario.genero,
         endereco: usuario.endereco,
         bio: usuario.bio
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
       
       updateUser({ ...user, ...usuario, dataNascimento: usuario.dataNascimento, data_nascimento: usuario.dataNascimento });
@@ -90,10 +86,7 @@ const Perfil = () => {
 
   const handleExcluirConta = async () => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${API_BASE_URL}/api/auth/conta`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete('/api/auth/conta');
       
       await showAlert('Conta excluída com sucesso.', 'Sucesso', 'success');
       logout();
@@ -112,15 +105,10 @@ const Perfil = () => {
         return;
       }
       const reader = new FileReader();
-      reader.onloadend = async () => {
+       reader.onloadend = async () => {
         const base64 = reader.result;
         try {
-          const token = localStorage.getItem('token');
-          await axios.put(
-            `${API_BASE_URL}/api/auth/foto-perfil`,
-            { fotoUrl: base64 },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
+          await api.put('/api/auth/foto-perfil', { fotoUrl: base64 });
           setUsuario(prev => ({ ...prev, foto_url: base64, fotoUrl: base64 }));
           updateUser({ ...user, fotoUrl: base64, foto_url: base64 });
           await showAlert('Foto atualizada com sucesso!', 'Sucesso', 'success');
@@ -145,12 +133,9 @@ const Perfil = () => {
     }
     
     try {
-      const token = localStorage.getItem('token');
-      await axios.put(`${API_BASE_URL}/api/auth/alterar-senha`, {
+      await api.put('/api/auth/alterar-senha', {
         senhaAtual,
         novaSenha
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
       
       await showAlert('Senha alterada com sucesso!', 'Sucesso', 'success');

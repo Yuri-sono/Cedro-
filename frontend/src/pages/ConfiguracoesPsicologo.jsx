@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import NavbarPsicologo from '../components/NavbarPsicologo.jsx';
 import SidebarPsicologo from '../components/SidebarPsicologo.jsx';
-import axios from 'axios';
-import API_BASE_URL from '../config.js';
+import api from '../services/api.js';
 
 const ConfiguracoesPsicologo = () => {
   const [psicologo, setPsicologo] = useState(null);
@@ -50,15 +49,12 @@ const ConfiguracoesPsicologo = () => {
 
   const handleSalvar = async () => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.put(`${API_BASE_URL}/api/auth/perfil`, {
+      await api.put('/api/auth/perfil', {
         nome: config.nome,
         telefone: config.telefone,
         bio: config.bio,
         especialidade: config.especialidade,
         preco_sessao: config.preco_sessao ? parseFloat(config.preco_sessao) : null
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
       
       const updatedData = { ...psicologo, ...config, precoSessao: config.preco_sessao };
@@ -84,12 +80,9 @@ const ConfiguracoesPsicologo = () => {
     }
     
     try {
-      const token = localStorage.getItem('token');
-      await axios.put(`${API_BASE_URL}/api/auth/alterar-senha`, {
+      await api.put('/api/auth/alterar-senha', {
         senhaAtual,
         novaSenha
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
       
       alert('Senha alterada com sucesso!');
@@ -296,3 +289,4 @@ const ConfiguracoesPsicologo = () => {
 };
 
 export default ConfiguracoesPsicologo;
+

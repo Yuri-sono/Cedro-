@@ -57,6 +57,7 @@ const AdBanner = lazy(() => import('./components/AdBanner.jsx'));
 const JogosRelaxamento = lazy(() => import('./pages/JogosRelaxamento.jsx'));
 const CursorGlow = lazy(() => import('./components/CursorGlow.jsx'));
 const SaudeMental = lazy(() => import('./pages/SaudeMental.jsx'));
+const RedefinirSenha = lazy(() => import('./pages/RedefinirSenha.jsx'));
 
 /**
  * Wrapper que re-monta o PageTransition em cada mudança de rota,
@@ -207,6 +208,7 @@ function AppContent() {
             } />
             <Route path="/relaxar" element={<JogosRelaxamento />} />
             <Route path="/saude-mental" element={<SaudeMental />} />
+            <Route path="/redefinir-senha" element={<RedefinirSenha />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AnimatedRoute>

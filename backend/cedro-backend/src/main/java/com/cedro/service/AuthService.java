@@ -4,11 +4,14 @@ import com.cedro.model.TipoUsuario;
 import com.cedro.model.dto.AlterarSenhaRequest;
 import com.cedro.model.dto.LoginRequest;
 import com.cedro.model.dto.LoginResponse;
+import com.cedro.model.dto.RedefinirSenhaRequest;
 import com.cedro.model.dto.RegisterRequest;
 import com.cedro.model.dto.UpdatePerfilRequest;
 import com.cedro.model.dto.UsuarioResponse;
+import com.cedro.model.entity.PasswordResetToken;
 import com.cedro.model.entity.Usuario;
 import com.cedro.repository.MensagemRepository;
+import com.cedro.repository.PasswordResetTokenRepository;
 import com.cedro.repository.SessaoRepository;
 import com.cedro.repository.UsuarioRepository;
 import com.cedro.security.JwtUtil;
@@ -16,6 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -34,6 +40,12 @@ public class AuthService {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     private String normalizeEmail(String email) {
         return email == null ? "" : email.trim().toLowerCase();
@@ -309,15 +321,36 @@ public class AuthService {
         usuarioRepository.delete(usuario);
     }
 
-    public String recuperarSenha(String email) {
-        Usuario usuario = usuarioRepository.findByEmailIgnoreCaseAndAtivoTrue(normalizeEmail(email))
-                .orElseThrow(() -> new RuntimeException("Email nao cadastrado"));
+    public void recuperarSenha(String email) {
+        // Busca silenciosa: nunca revelar se o e-mail existe
+        usuarioRepository.findByEmailIgnoreCaseAndAtivoTrue(normalizeEmail(email))
+                .ifPresent(usuario -> {
+                    String token = UUID.randomUUID().toString().replace("-", "") +
+                            UUID.randomUUID().toString().replace("-", "");
+                    PasswordResetToken prt = new PasswordResetToken(
+                            usuario.getId(), token, LocalDateTime.now().plusMinutes(30));
+                    passwordResetTokenRepository.save(prt);
+                    emailService.enviarResetSenha(usuario.getEmail(), token);
+                });
+    }
 
-        String sufixo = String.valueOf(System.currentTimeMillis() % 100000);
-        String senhaTemporaria = "Cedro@" + sufixo;
-        usuario.setSenhaHash(passwordEncoder.encode(senhaTemporaria));
+    @Transactional
+    public void redefinirSenha(RedefinirSenhaRequest request) {
+        PasswordResetToken prt = passwordResetTokenRepository.findByToken(request.getToken())
+                .orElseThrow(() -> new RuntimeException("Token invalido ou expirado"));
+
+        if (prt.isUsado() || prt.getExpiraEm().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Token invalido ou expirado");
+        }
+
+        Usuario usuario = usuarioRepository.findById(prt.getUsuarioId())
+                .orElseThrow(() -> new RuntimeException("Usuario nao encontrado"));
+
+        usuario.setSenhaHash(passwordEncoder.encode(request.getNovaSenha()));
         usuarioRepository.save(usuario);
-        return senhaTemporaria;
+
+        prt.setUsado(true);
+        passwordResetTokenRepository.save(prt);
     }
 
     public void updateFotoPerfil(Integer userId, String fotoUrl) {

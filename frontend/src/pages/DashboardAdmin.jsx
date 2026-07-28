@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
-import axios from 'axios';
-import API_BASE_URL from '../config.js';
+import api from '../services/api.js';
 
 const DashboardAdmin = () => {
   const { user, logout } = useAuth();
@@ -10,10 +9,9 @@ const DashboardAdmin = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
     Promise.all([
-      axios.get(`${API_BASE_URL}/api/usuarios`, { headers: { Authorization: `Bearer ${token}` } }),
-      axios.get(`${API_BASE_URL}/api/sessoes`, { headers: { Authorization: `Bearer ${token}` } })
+      api.get('/api/usuarios'),
+      api.get('/api/sessoes')
     ]).then(([usersRes, sessoesRes]) => {
       const usuarios = usersRes.data;
       const sessoes = sessoesRes.data;

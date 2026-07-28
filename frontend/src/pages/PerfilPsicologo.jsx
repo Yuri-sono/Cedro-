@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import NavbarPsicologo from '../components/NavbarPsicologo.jsx';
 import SidebarPsicologo from '../components/SidebarPsicologo.jsx';
-import axios from 'axios';
-import API_BASE_URL from '../config.js';
+import api from '../services/api.js';
 
 const PerfilPsicologo = () => {
   const navigate = useNavigate();
@@ -37,10 +36,7 @@ const PerfilPsicologo = () => {
 
   const handleSalvar = async () => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.put(`${API_BASE_URL}/api/auth/perfil`, psicologo, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.put('/api/auth/perfil', psicologo);
       updateUser({ ...user, ...psicologo });
       alert('Perfil atualizado com sucesso!');
       setEditando(false);
@@ -57,15 +53,11 @@ const PerfilPsicologo = () => {
         alert('A imagem deve ter no máximo 5MB');
         return;
       }
-      const reader = new FileReader();
-      reader.onloadend = async () => {
+       const reader = new FileReader();
+       reader.onloadend = async () => {
         const base64 = reader.result;
         try {
-          const token = localStorage.getItem('token');
-          await axios.put(`${API_BASE_URL}/api/auth/foto-perfil`, 
-            { fotoUrl: base64 },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
+          await api.put('/api/auth/foto-perfil', { fotoUrl: base64 });
           setPsicologo({ ...psicologo, fotoUrl: base64 });
           updateUser({ ...user, fotoUrl: base64 });
           alert('Foto atualizada com sucesso!');

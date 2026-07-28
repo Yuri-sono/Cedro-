@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import api from '../services/api.js';
-import API_BASE_URL from '../config.js';
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -22,6 +21,13 @@ function Login() {
   const [emailRecuperacao, setEmailRecuperacao] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.successMsg) {
+      setSuccessMsg(location.state.successMsg);
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -359,12 +365,13 @@ function Login() {
                             onClick={async () => {
                               try {
                                 await api.post('/api/auth/recuperar-senha', { email: emailRecuperacao });
-                                alert('Instruções de recuperação enviadas! Verifique seu email ou entre em contato com o suporte.');
+                                setSuccessMsg('Se o e-mail estiver cadastrado, você receberá as instruções em breve.');
                                 setShowRecuperarSenha(false);
                                 setEmailRecuperacao('');
-                              } catch (error) {
-                                setErrorMsg(error.response?.data?.error || 'Email não encontrado');
+                              } catch {
+                                setSuccessMsg('Se o e-mail estiver cadastrado, você receberá as instruções em breve.');
                                 setShowRecuperarSenha(false);
+                                setEmailRecuperacao('');
                               }
                             }}
                           >

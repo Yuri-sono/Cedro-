@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import axios from 'axios';
 import API_BASE_URL from '../config.js';
+import api from '../services/api.js';
 
 const PagamentoModal = ({ show, onClose, plano, onPaymentSuccess }) => {
   const { user, updateUser } = useAuth();
@@ -67,14 +68,13 @@ const PagamentoModal = ({ show, onClose, plano, onPaymentSuccess }) => {
   const processarPagamento = async () => {
     setLoading(true);
     setEtapa('processando');
-    const token = localStorage.getItem('token');
     try {
       const finalizarPagamento = async () => {
         try {
           const endpoint = metodoPagamento === 'pix' ? '/api/pagamentos/confirmar' : '/api/pagamentos/processar';
-          await axios.post(`${API_BASE_URL}${endpoint}`, {
+          await api.post(endpoint, {
             userId: user.id, plano: plano.nome, valor: plano.preco, metodoPagamento
-          }, { headers: { Authorization: `Bearer ${token}` } });
+          });
         } catch (_) { /* ignora erro do backend */ }
 
         if (plano.nome === 'Sessão de Terapia' && onPaymentSuccess) {

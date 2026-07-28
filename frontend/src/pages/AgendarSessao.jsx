@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
-import API_BASE_URL from '../config';
+import api from '../services/api.js';
 
 function AgendarSessao() {
   const { psicologoId } = useParams();
@@ -26,16 +25,13 @@ function AgendarSessao() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
       const dataSessao = `${formData.data}T${formData.hora}:00`;
       
-      const response = await axios.post(`${API_BASE_URL}/api/sessoes`, {
+      const response = await api.post('/api/sessoes', {
         psicologoId: parseInt(psicologoId),
         dataSessao,
         duracao: parseInt(formData.duracao),
         observacoes: formData.observacoes
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
 
       const sessaoId = response.data?.id;

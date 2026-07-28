@@ -12,6 +12,7 @@
   "type": "commonjs",
   "dependencies": {
     "@stomp/stompjs": "^7.3.0",
+    "mssql": "^12.7.0",
     "node-fetch": "^2.7.0",
     "ws": "^8.21.0"
   }

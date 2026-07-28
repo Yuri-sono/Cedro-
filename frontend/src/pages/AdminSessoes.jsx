@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import API_BASE_URL from '../config';
+import api from '../services/api.js';
 
 function AdminSessoes() {
   const [sessoes, setSessoes] = useState([]);
@@ -22,7 +21,7 @@ function AdminSessoes() {
 
   const carregarSessoes = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/sessoes`);
+      const response = await api.get('/api/sessoes');
       setSessoes(response.data);
     } catch (error) {
       console.error('Erro ao carregar sessões:', error);
@@ -35,9 +34,9 @@ function AdminSessoes() {
     e.preventDefault();
     try {
       if (editando) {
-        await axios.put(`${API_BASE_URL}/api/sessoes/${editando}`, form);
+        await api.put(`/api/sessoes/${editando}`, form);
       } else {
-        await axios.post(`${API_BASE_URL}/api/sessoes`, form);
+        await api.post('/api/sessoes', form);
       }
       limparForm();
       carregarSessoes();
@@ -62,7 +61,7 @@ function AdminSessoes() {
   const deletar = async (id) => {
     if (!confirm('Deseja realmente deletar esta sessão?')) return;
     try {
-      await axios.delete(`${API_BASE_URL}/api/sessoes/${id}`);
+      await api.delete(`/api/sessoes/${id}`);
       carregarSessoes();
     } catch (error) {
       alert('Erro ao deletar sessão');

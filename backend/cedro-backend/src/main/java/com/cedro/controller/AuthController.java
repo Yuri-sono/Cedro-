@@ -112,12 +112,22 @@ public class AuthController {
         if (email == null || email.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Informe o email"));
         }
+        authService.recuperarSenha(email);
+        return ResponseEntity.ok(Map.of("message", "Se o e-mail existir, enviaremos instrucoes"));
+    }
 
-        String senhaTemporaria = authService.recuperarSenha(email);
-        return ResponseEntity.ok(Map.of(
-                "message", "Senha temporaria gerada com sucesso",
-                "senhaTemporaria", senhaTemporaria
-        ));
+    @PostMapping("/redefinir-senha")
+    public ResponseEntity<?> redefinirSenha(@RequestBody RedefinirSenhaRequest request) {
+        if (request.getToken() == null || request.getToken().isBlank()
+                || request.getNovaSenha() == null || request.getNovaSenha().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Token e nova senha sao obrigatorios"));
+        }
+        try {
+            authService.redefinirSenha(request);
+            return ResponseEntity.ok(Map.of("message", "Senha redefinida com sucesso"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Token invalido ou expirado"));
+        }
     }
 
     @PutMapping("/foto-perfil")

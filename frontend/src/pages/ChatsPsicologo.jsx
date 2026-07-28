@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import NavbarPsicologo from '../components/NavbarPsicologo.jsx';
 import SidebarPsicologo from '../components/SidebarPsicologo.jsx';
-import axios from 'axios';
-import API_BASE_URL from '../config.js';
+import api from '../services/api.js';
 
 const ChatsPsicologo = () => {
   const [conversas, setConversas] = useState([]);
@@ -19,10 +18,7 @@ const ChatsPsicologo = () => {
 
   const carregarConversas = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_BASE_URL}/api/mensagens/conversas`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/api/mensagens/conversas');
       console.log('Conversas carregadas:', response.data);
       setConversas(response.data || []);
     } catch (error) {

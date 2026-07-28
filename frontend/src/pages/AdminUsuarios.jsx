@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import API_BASE_URL from '../config';
+import api from '../services/api.js';
 import psicologoService from '../services/psicologoService';
 import pacienteService from '../services/pacienteService';
 
@@ -30,7 +29,7 @@ function AdminUsuarios() {
   const carregarTodos = async () => {
     try {
       const [usersRes, psicRes, pacRes] = await Promise.all([
-        axios.get(`${API_BASE_URL}/api/usuarios`),
+        api.get('/api/usuarios'),
         psicologoService.listar(),
         pacienteService.listar()
       ]);
@@ -46,7 +45,7 @@ function AdminUsuarios() {
 
   const toggleAtivo = async (id, ativo) => {
     try {
-      await axios.put(`${API_BASE_URL}/api/usuarios/${id}/ativar`, { ativo: !ativo });
+      await api.put(`/api/usuarios/${id}/ativar`, { ativo: !ativo });
       carregarTodos();
     } catch (error) {
       alert('Erro ao atualizar status');
@@ -56,7 +55,7 @@ function AdminUsuarios() {
   const deletarUsuario = async (id) => {
     if (!window.confirm('Deseja deletar?')) return;
     try {
-      await axios.delete(`${API_BASE_URL}/api/usuarios/${id}`);
+      await api.delete(`/api/usuarios/${id}`);
       carregarTodos();
     } catch (error) {
       alert('Erro ao deletar');
