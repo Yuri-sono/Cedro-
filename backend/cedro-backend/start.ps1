@@ -4,10 +4,10 @@ Get-Content .env | Where-Object { $_ -match '^\s*[^#]\S+=\S*' } | ForEach-Object
     [System.Environment]::SetEnvironmentVariable($key.Trim(), $value.Trim(), 'Process')
 }
 
-# As credenciais do Google OAuth devem ser definidas no arquivo .env
+# As credenciais do Google Meet/Calendar devem ser definidas no arquivo .env
 # Exemplo:
-# GOOGLE_CLIENT_ID=seu-client-id
-# GOOGLE_CLIENT_SECRET=seu-client-secret
-# GOOGLE_REFRESH_TOKEN=seu-refresh-token
+# GOOGLE_MEET_CLIENT_ID=seu-client-id
+# GOOGLE_MEET_CLIENT_SECRET=seu-client-secret
+# GOOGLE_MEET_REFRESH_TOKEN=seu-refresh-token
 
 java -jar target\cedro-backend-0.0.1-SNAPSHOT.jar

@@ -91,9 +91,9 @@ npx expo start
 | `DATABASE_USERNAME` | Usuário do banco |
 | `DATABASE_PASSWORD` | Senha do banco |
 | `JWT_SECRET` | Secret para assinar tokens JWT (mín. 32 chars) |
-| `GOOGLE_CLIENT_ID` | Client ID do projeto Google Cloud |
-| `GOOGLE_CLIENT_SECRET` | Client Secret do projeto Google Cloud |
-| `GOOGLE_REFRESH_TOKEN` | Refresh token OAuth2 da conta de serviço Google |
+| `GOOGLE_MEET_CLIENT_ID` | Client ID do projeto Google Cloud (integração Google Meet/Calendar) |
+| `GOOGLE_MEET_CLIENT_SECRET` | Client Secret do projeto Google Cloud (integração Google Meet/Calendar) |
+| `GOOGLE_MEET_REFRESH_TOKEN` | Refresh token OAuth2 da conta de serviço Google (integração Google Meet/Calendar) |
 | `GOOGLE_MEET_RELEASE_MINUTES_BEFORE` | Minutos antes da sessão para liberar o link (padrão: 15) |
 | `MAIL_ENABLED` | `true` para enviar e-mails reais, `false` para logar no console |
 | `MAIL_HOST` | Servidor SMTP (ex: `smtp.gmail.com`) |
@@ -139,7 +139,7 @@ Scripts SQL em `SQL Cedro/`:
 1. Crie um projeto no [Google Cloud Console](https://console.cloud.google.com)
 2. Ative a **Google Calendar API**
 3. Configure as credenciais OAuth2 e gere um refresh token com escopo `https://www.googleapis.com/auth/calendar`
-4. Configure `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` e `GOOGLE_REFRESH_TOKEN` no `.env` do backend
+4. Configure `GOOGLE_MEET_CLIENT_ID`, `GOOGLE_MEET_CLIENT_SECRET` e `GOOGLE_MEET_REFRESH_TOKEN` no `.env` do backend
 5. Ao agendar uma sessão, o backend cria automaticamente um evento no Google Calendar com link do Meet e armazena em `sessoes.link_reuniao`
 
 ---

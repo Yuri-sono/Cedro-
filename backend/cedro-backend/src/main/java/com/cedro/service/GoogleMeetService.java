@@ -36,13 +36,13 @@ public class GoogleMeetService {
     private static final Logger logger = LoggerFactory.getLogger(GoogleMeetService.class);
     private static final ZoneId ZONA_SAO_PAULO = ZoneId.of("America/Sao_Paulo");
 
-    @Value("${google.client.id}")
+    @Value("${google.meet.client.id}")
     private String clientId;
 
-    @Value("${google.client.secret}")
+    @Value("${google.meet.client.secret}")
     private String clientSecret;
 
-    @Value("${google.refresh.token}")
+    @Value("${google.meet.refresh.token}")
     private String refreshToken;
 
     private Calendar calendarService;
