@@ -1,0 +1,12 @@
+{
+  "paciente": {
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZS5wYWNpZW50ZUBjZWRyb3BsdXMuZGV2IiwiaWQiOjU5LCJ0aXBvIjoicGFjaWVudGUiLCJpYXQiOjE3ODU4ODA3NTUsImV4cCI6MTc4NTk2NzE1NX0.389Q7WjPhLPlj_ppWMt7w1HKQKcYb-H1ihFg9_dJbwQ",
+    "id": 59,
+    "email": "teste.paciente@cedroplus.dev"
+  },
+  "psicologo": {
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZS5wc2ljb2xvZ29AY2Vkcm9wbHVzLmRldiIsImlkIjo2MCwidGlwbyI6InBzaWNvbG9nbyIsImlhdCI6MTc4NTg4MDc1NSwiZXhwIjoxNzg1OTY3MTU1fQ.3KfjJ3URLaCClBsuywC40X3r3InVvNPnaqEexOPItoY",
+    "id": 60,
+    "email": "teste.psicologo@cedroplus.dev"
+  }
+}

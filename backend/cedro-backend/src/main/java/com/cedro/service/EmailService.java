@@ -28,7 +28,8 @@ public class EmailService {
     }
 
     public void enviarResetSenha(String destinatario, String token) {
-        String link = frontendUrl + "/redefinir-senha?token=" + token;
+        String baseUrl = frontendUrl.replaceAll("/+$", "");
+        String link = baseUrl + "/redefinir-senha?token=" + token;
 
         if (!mailEnabled) {
             log.warn("[MAIL_ENABLED=false] Link de reset para {}: {}", destinatario, link);
