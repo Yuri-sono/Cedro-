@@ -1,0 +1,1 @@
+"""Pacote de testes de API para o Cedro Plus."""

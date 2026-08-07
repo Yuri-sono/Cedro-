@@ -1,0 +1,8 @@
+# Dependências do pacote de automação de testes do Cedro Plus
+pytest==8.3.2
+requests==2.32.3
+openpyxl==3.1.5
+python-dotenv==1.0.1
+pytest-html==4.1.1
+pytest-json-report==1.5.0
+websocket-client==1.8.0
