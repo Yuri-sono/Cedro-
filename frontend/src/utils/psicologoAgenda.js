@@ -24,6 +24,34 @@ export const WEEKDAY_OPTIONS = [
   { value: 0, label: 'Dom' },
 ];
 
+// Gera horários de hora em hora dentro de uma faixa [horaInicio, horaFim).
+// horaInicio e horaFim no formato "HH:mm" (ex: "07:00", "20:00"). Exclui horaFim
+// (fim do último atendimento, não um horário inicial válido). Retorna array vazio
+// se horaFim <= horaInicio ou se um dos valores for inválido/incompleto.
+// Ex: gerarHorariosPorFaixa("08:00", "12:00") => ["08:00","09:00","10:00","11:00"]
+export function gerarHorariosPorFaixa(horaInicio, horaFim) {
+  if (!horaInicio || !horaFim) return [];
+
+  const toMinutes = (value) => {
+    const [hour, minute] = value.split(':').map(Number);
+    if (!Number.isFinite(hour)) return null;
+    const safeMinute = Number.isFinite(minute) ? minute : 0;
+    return hour * 60 + safeMinute;
+  };
+
+  const inicio = toMinutes(horaInicio);
+  const fim = toMinutes(horaFim);
+  if (inicio === null || fim === null || fim <= inicio) return [];
+
+  const slots = [];
+  for (let current = inicio; current < fim; current += 60) {
+    const hour = Math.floor(current / 60);
+    const minute = current % 60;
+    slots.push(`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
+  }
+  return slots;
+}
+
 // Mantém apenas dias válidos (0..6), remove duplicados e ordena.
 export function normalizeWeekdays(days = []) {
   if (!Array.isArray(days) || !days.length) return [];

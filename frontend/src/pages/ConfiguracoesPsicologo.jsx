@@ -5,9 +5,9 @@ import NavbarPsicologo from '../components/NavbarPsicologo.jsx';
 import SidebarPsicologo from '../components/SidebarPsicologo.jsx';
 import api from '../services/api.js';
 import {
-  DEFAULT_TIME_SLOTS,
   WEEKDAY_OPTIONS,
   formatAgendaSummary,
+  gerarHorariosPorFaixa,
   normalizeTimeSlots,
   normalizeWeekdays,
 } from '../utils/psicologoAgenda.js';
@@ -27,6 +27,9 @@ const ConfiguracoesPsicologo = () => {
   });
   const [diasAtendimento, setDiasAtendimento] = useState([]);
   const [horariosAtendimento, setHorariosAtendimento] = useState([]);
+  const [faixaInicio, setFaixaInicio] = useState('');
+  const [faixaFim, setFaixaFim] = useState('');
+  const [faixaErro, setFaixaErro] = useState('');
   const [senhaAtual, setSenhaAtual] = useState('');
   const [novaSenha, setNovaSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
@@ -55,7 +58,12 @@ const ConfiguracoesPsicologo = () => {
       bio: user.bio || ''
     });
     setDiasAtendimento(normalizeWeekdays(user.diasAtendimento));
-    setHorariosAtendimento(normalizeTimeSlots(user.horariosAtendimento));
+    const loadedSlots = normalizeTimeSlots(user.horariosAtendimento);
+    setHorariosAtendimento(loadedSlots);
+    if (loadedSlots.length) {
+      setFaixaInicio(loadedSlots[0]);
+      setFaixaFim(loadedSlots[loadedSlots.length - 1]);
+    }
   }, [user, navigate]);
 
   const handleChange = (e) => {
@@ -76,6 +84,16 @@ const ConfiguracoesPsicologo = () => {
         ? current.filter((value) => value !== slot)
         : normalizeTimeSlots([...current, slot])
     );
+  };
+
+  const handleGerarFaixa = () => {
+    const gerados = gerarHorariosPorFaixa(faixaInicio, faixaFim);
+    if (!gerados.length) {
+      setFaixaErro('O horário final deve ser maior que o horário inicial.');
+      return;
+    }
+    setFaixaErro('');
+    setHorariosAtendimento(gerados);
   };
 
   const resumoAgenda = useMemo(
@@ -319,23 +337,64 @@ const ConfiguracoesPsicologo = () => {
                   </div>
                 </div>
 
+                <div className="mb-4">
+                  <label className="form-label fw-semibold">Gerar horários por faixa (opcional)</label>
+                  <div className="d-flex flex-wrap gap-2 align-items-end">
+                    <div>
+                      <label className="form-label small mb-1 text-muted">Atender a partir de</label>
+                      <input
+                        type="time"
+                        className="form-control"
+                        value={faixaInicio}
+                        onChange={(e) => {
+                          setFaixaInicio(e.target.value);
+                          setFaixaErro('');
+                        }}
+                        disabled={!editando}
+                      />
+                    </div>
+                    <div>
+                      <label className="form-label small mb-1 text-muted">Atender até</label>
+                      <input
+                        type="time"
+                        className="form-control"
+                        value={faixaFim}
+                        onChange={(e) => {
+                          setFaixaFim(e.target.value);
+                          setFaixaErro('');
+                        }}
+                        disabled={!editando}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-primary"
+                      onClick={handleGerarFaixa}
+                      disabled={!editando}
+                    >
+                      <i className="bi bi-magic me-1"></i>Gerar horários
+                    </button>
+                  </div>
+                  {faixaErro && <div className="text-danger small mt-1">{faixaErro}</div>}
+                  <small className="text-muted d-block mt-2">
+                    Os horários serão gerados de hora em hora dentro da faixa escolhida. Você pode remover horários específicos clicando neles depois de gerar (ex: para um horário de almoço).
+                  </small>
+                </div>
+
                 <div>
                   <label className="form-label fw-semibold">Horários disponíveis</label>
                   <div className="d-flex flex-wrap gap-2">
-                    {DEFAULT_TIME_SLOTS.map((slot) => {
-                      const selected = horariosAtendimento.includes(slot);
-                      return (
-                        <button
-                          key={slot}
-                          type="button"
-                          className={`btn btn-sm rounded-pill px-3 ${selected ? 'btn-primary' : 'btn-outline-secondary'}`}
-                          onClick={() => toggleTimeSlot(slot)}
-                          disabled={!editando}
-                        >
-                          {slot}
-                        </button>
-                      );
-                    })}
+                    {horariosAtendimento.map((slot) => (
+                      <button
+                        key={slot}
+                        type="button"
+                        className="btn btn-sm rounded-pill px-3 btn-primary"
+                        onClick={() => toggleTimeSlot(slot)}
+                        disabled={!editando}
+                      >
+                        {slot}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>

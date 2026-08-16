@@ -19,8 +19,8 @@ import { useAuthStore } from '../../store/authStore';
 import { borderRadius, colors, spacing, typography } from '../../theme';
 import { PsicologoAgendaConfig } from '../../types/api.types';
 import {
-  DEFAULT_TIME_SLOTS,
   formatAgendaSummary,
+  generateSlotsByRange,
   normalizeTimeSlots,
   normalizeWeekdays,
   WEEKDAY_OPTIONS,
@@ -50,6 +50,15 @@ export const PsychologistSettingsScreen = () => {
   const [horariosAtendimento, setHorariosAtendimento] = useState<string[]>(
     normalizeTimeSlots(user?.horariosAtendimento),
   );
+  const [faixaInicio, setFaixaInicio] = useState<string>(() => {
+    const slots = normalizeTimeSlots(user?.horariosAtendimento);
+    return slots.length ? slots[0] : '';
+  });
+  const [faixaFim, setFaixaFim] = useState<string>(() => {
+    const slots = normalizeTimeSlots(user?.horariosAtendimento);
+    return slots.length ? slots[slots.length - 1] : '';
+  });
+  const [faixaErro, setFaixaErro] = useState('');
 
   const agendaResumo = useMemo(
     () => formatAgendaSummary(diasAtendimento, horariosAtendimento),
@@ -74,6 +83,16 @@ export const PsychologistSettingsScreen = () => {
         ? current.filter((value) => value !== slot)
         : normalizeTimeSlots([...current, slot]),
     );
+  };
+
+  const handleGerarFaixa = () => {
+    const gerados = generateSlotsByRange(faixaInicio, faixaFim);
+    if (!gerados.length) {
+      setFaixaErro('O horario final deve ser maior que o horario inicial.');
+      return;
+    }
+    setFaixaErro('');
+    setHorariosAtendimento(gerados);
   };
 
   const handleSave = async () => {
@@ -222,23 +241,52 @@ export const PsychologistSettingsScreen = () => {
           })}
         </View>
 
+        <Text style={styles.sectionTitle}>Gerar horarios por faixa (opcional)</Text>
+        <Input
+          label="Atender a partir de"
+          value={faixaInicio}
+          onChangeText={(value) => {
+            setFaixaInicio(value);
+            setFaixaErro('');
+          }}
+          placeholder="HH:mm"
+          keyboardType="numbers-and-punctuation"
+          maxLength={5}
+        />
+        <Input
+          label="Atender ate"
+          value={faixaFim}
+          onChangeText={(value) => {
+            setFaixaFim(value);
+            setFaixaErro('');
+          }}
+          placeholder="HH:mm"
+          keyboardType="numbers-and-punctuation"
+          maxLength={5}
+        />
+        {!!faixaErro && <Text style={styles.errorText}>{faixaErro}</Text>}
+        <Button
+          title="Gerar horarios"
+          onPress={handleGerarFaixa}
+          style={styles.generateButton}
+        />
+        <Text style={styles.helpText}>
+          Os horarios serao gerados de hora em hora dentro da faixa escolhida. Voce pode
+          remover horarios especificos clicando neles depois de gerar (ex: para um horario
+          de almoco).
+        </Text>
+
         <Text style={styles.sectionTitle}>Horarios disponiveis</Text>
         <View style={styles.chipGrid}>
-          {DEFAULT_TIME_SLOTS.map((slot) => {
-            const selected = horariosAtendimento.includes(slot);
-
-            return (
-              <TouchableOpacity
-                key={slot}
-                style={[styles.chip, selected && styles.chipSelected]}
-                onPress={() => toggleTimeSlot(slot)}
-              >
-                <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                  {slot}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+          {horariosAtendimento.map((slot) => (
+            <TouchableOpacity
+              key={slot}
+              style={[styles.chip, styles.chipSelected]}
+              onPress={() => toggleTimeSlot(slot)}
+            >
+              <Text style={[styles.chipText, styles.chipTextSelected]}>{slot}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
 
         <Button
@@ -329,5 +377,21 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     marginTop: spacing.xl,
+  },
+  generateButton: {
+    marginTop: spacing.xs,
+  },
+  helpText: {
+    fontSize: typography.size.xs,
+    color: colors.textSecondary,
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
+    lineHeight: 16,
+  },
+  errorText: {
+    color: colors.error,
+    fontSize: typography.size.xs,
+    fontWeight: typography.weight.medium,
+    marginBottom: spacing.sm,
   },
 });
