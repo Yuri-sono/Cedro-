@@ -45,11 +45,12 @@ export const ScheduleSessionScreen = () => {
 
   const proximosDias = getNextAvailableDates(psicologo?.diasAtendimento);
   const horariosConfigurados = normalizeTimeSlots(psicologo?.horariosAtendimento);
-  const horariosDisponiveis = disponibilidade?.horariosDisponiveis?.length
+  const atendeNesteDia = disponibilidade?.atendeNesteDia !== false;
+  const horariosDisponiveis = disponibilidade?.horariosDisponiveis
     ? disponibilidade.horariosDisponiveis.filter(
-        (horario) => !horariosConfigurados.length || horariosConfigurados.includes(horario),
-      )
-    : horariosConfigurados;
+      (horario) => !horariosConfigurados.length || horariosConfigurados.includes(horario),
+    )
+    : [];
 
   const formatarData = (data: Date) => {
     const dias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
@@ -165,7 +166,11 @@ export const ScheduleSessionScreen = () => {
               );
             })}
             {!isLoadingDisponibilidade && horariosDisponiveis.length === 0 && (
-              <Text style={styles.emptyText}>Nenhum horario disponivel neste dia.</Text>
+              <Text style={styles.emptyText}>
+                {atendeNesteDia
+                  ? 'Nenhum horario disponivel neste dia.'
+                  : 'Este psicologo nao atende neste dia da semana.'}
+              </Text>
             )}
           </View>
         </View>

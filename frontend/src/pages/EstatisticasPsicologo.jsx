@@ -63,7 +63,7 @@ const EstatisticasPsicologo = () => {
                         <div className="card-body text-white p-4">
                           <div className="d-flex justify-content-between align-items-center">
                             <div>
-                              <p className="card-title mb-2 opacity-75">Sessões este Mês</p>
+                              <p className="card-title mb-2 opacity-75">Sessões esta Semana</p>
                               <h2 className="mb-0 fw-bold">{stats.consultasSemana}</h2>
                             </div>
                             <div className="bg-white bg-opacity-25 rounded-circle p-3">

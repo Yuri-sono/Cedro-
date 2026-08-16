@@ -37,11 +37,14 @@ export function mergeAgendaConfig<T extends AgendaCarrier>(
     return item;
   }
 
+  const apiDias = normalizeWeekdays(item.diasAtendimento);
+  const apiHorarios = normalizeTimeSlots(item.horariosAtendimento);
+
   return {
     ...item,
     precoSessao: config.precoSessao ?? item.precoSessao,
-    diasAtendimento: normalizeWeekdays(config.diasAtendimento),
-    horariosAtendimento: normalizeTimeSlots(config.horariosAtendimento),
+    diasAtendimento: apiDias.length ? apiDias : normalizeWeekdays(config.diasAtendimento),
+    horariosAtendimento: apiHorarios.length ? apiHorarios : normalizeTimeSlots(config.horariosAtendimento),
   };
 }
 

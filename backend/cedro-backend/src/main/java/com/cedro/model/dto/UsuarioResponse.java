@@ -4,6 +4,7 @@ import com.cedro.model.TipoUsuario;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 public class UsuarioResponse {
     
@@ -36,6 +37,9 @@ public class UsuarioResponse {
     
     @JsonProperty("precoSessao")
     private BigDecimal precoSessao;
+
+    private List<Integer> diasAtendimento;
+    private List<String> horariosAtendimento;
     
     public UsuarioResponse() {}
     
@@ -57,6 +61,18 @@ public class UsuarioResponse {
         this.crp = crp;
         this.areaInteresse = areaInteresse;
         this.precoSessao = precoSessao;
+    }
+
+    public UsuarioResponse(Integer id, String nome, String email, TipoUsuario tipoUsuario,
+                          String telefone, LocalDate dataNascimento, String genero,
+                          String endereco, String bio, String fotoUrl, String especialidade,
+                          String tipoPsicologo, String crp, String areaInteresse,
+                          BigDecimal precoSessao, List<Integer> diasAtendimento,
+                          List<String> horariosAtendimento) {
+        this(id, nome, email, tipoUsuario, telefone, dataNascimento, genero, endereco, bio,
+                fotoUrl, especialidade, tipoPsicologo, crp, areaInteresse, precoSessao);
+        this.diasAtendimento = diasAtendimento;
+        this.horariosAtendimento = horariosAtendimento;
     }
     
     public Integer getId() { return id; }
@@ -103,4 +119,10 @@ public class UsuarioResponse {
     
     public BigDecimal getPrecoSessao() { return precoSessao; }
     public void setPrecoSessao(BigDecimal precoSessao) { this.precoSessao = precoSessao; }
+
+    public List<Integer> getDiasAtendimento() { return diasAtendimento; }
+    public void setDiasAtendimento(List<Integer> diasAtendimento) { this.diasAtendimento = diasAtendimento; }
+
+    public List<String> getHorariosAtendimento() { return horariosAtendimento; }
+    public void setHorariosAtendimento(List<String> horariosAtendimento) { this.horariosAtendimento = horariosAtendimento; }
 }

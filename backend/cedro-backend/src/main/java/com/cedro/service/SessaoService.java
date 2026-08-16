@@ -120,6 +120,15 @@ public class SessaoService {
     }
 
     public Map<String, Object> consultarDisponibilidade(Integer psicologoId, LocalDate data) {
+        Usuario psicologo = usuarioRepository.findById(psicologoId)
+                .orElseThrow(() -> new RuntimeException("Psicologo nao encontrado"));
+
+        int diaDaSemana = data.getDayOfWeek().getValue() % 7; // 0=Domingo a 6=Sábado
+
+        List<String> diasConfigurados = splitLista(psicologo.getDiasAtendimento());
+        List<String> horariosConfigurados = splitLista(psicologo.getHorariosAtendimento());
+        boolean temConfiguracao = !diasConfigurados.isEmpty() && !horariosConfigurados.isEmpty();
+
         LocalDateTime inicio = data.atStartOfDay();
         LocalDateTime fim = data.plusDays(1).atStartOfDay().minusNanos(1);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
@@ -131,16 +140,38 @@ public class SessaoService {
                 .map(sessao -> sessao.getDataSessao().format(formatter))
                 .toList();
 
+        // Sem configuração: usa a lista fixa como fallback (compatibilidade com
+        // psicólogos que ainda não configuraram dias/horários).
         List<String> horariosBase = List.of("08:00", "09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00", "18:00");
-        List<String> horariosDisponiveis = horariosBase.stream()
+        List<String> candidatos = temConfiguracao ? horariosConfigurados : horariosBase;
+
+        if (temConfiguracao && !diasConfigurados.contains(String.valueOf(diaDaSemana))) {
+            return Map.of(
+                    "data", data.toString(),
+                    "atendeNesteDia", false,
+                    "horariosDisponiveis", List.of(),
+                    "horariosOcupados", horariosOcupados
+            );
+        }
+
+        List<String> horariosDisponiveis = candidatos.stream()
                 .filter(horario -> !horariosOcupados.contains(horario))
                 .toList();
 
         return Map.of(
                 "data", data.toString(),
+                "atendeNesteDia", true,
                 "horariosDisponiveis", horariosDisponiveis,
                 "horariosOcupados", horariosOcupados
         );
+    }
+
+    private List<String> splitLista(String valor) {
+        if (valor == null || valor.isBlank()) return List.of();
+        return java.util.Arrays.stream(valor.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
     }
 
     public Sessao confirmarPagamento(Integer id, Integer pacienteId) {

@@ -1,9 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import NavbarPsicologo from '../components/NavbarPsicologo.jsx';
 import SidebarPsicologo from '../components/SidebarPsicologo.jsx';
 import api from '../services/api.js';
+import {
+  DEFAULT_TIME_SLOTS,
+  WEEKDAY_OPTIONS,
+  formatAgendaSummary,
+  normalizeTimeSlots,
+  normalizeWeekdays,
+} from '../utils/psicologoAgenda.js';
 
 const ConfiguracoesPsicologo = () => {
   const [psicologo, setPsicologo] = useState(null);
@@ -13,9 +20,13 @@ const ConfiguracoesPsicologo = () => {
     email: '',
     telefone: '',
     especialidade: '',
+    tipoPsicologo: '',
+    crp: '',
     preco_sessao: '',
     bio: ''
   });
+  const [diasAtendimento, setDiasAtendimento] = useState([]);
+  const [horariosAtendimento, setHorariosAtendimento] = useState([]);
   const [senhaAtual, setSenhaAtual] = useState('');
   const [novaSenha, setNovaSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
@@ -38,14 +49,39 @@ const ConfiguracoesPsicologo = () => {
       email: user.email || '',
       telefone: user.telefone || '',
       especialidade: user.especialidade || '',
+      tipoPsicologo: user.tipoPsicologo || '',
+      crp: user.crp || '',
       preco_sessao: user.precoSessao || '',
       bio: user.bio || ''
     });
+    setDiasAtendimento(normalizeWeekdays(user.diasAtendimento));
+    setHorariosAtendimento(normalizeTimeSlots(user.horariosAtendimento));
   }, [user, navigate]);
 
   const handleChange = (e) => {
     setConfig({ ...config, [e.target.name]: e.target.value });
   };
+
+  const toggleDay = (day) => {
+    setDiasAtendimento((current) =>
+      current.includes(day)
+        ? current.filter((value) => value !== day)
+        : normalizeWeekdays([...current, day])
+    );
+  };
+
+  const toggleTimeSlot = (slot) => {
+    setHorariosAtendimento((current) =>
+      current.includes(slot)
+        ? current.filter((value) => value !== slot)
+        : normalizeTimeSlots([...current, slot])
+    );
+  };
+
+  const resumoAgenda = useMemo(
+    () => formatAgendaSummary(diasAtendimento, horariosAtendimento),
+    [diasAtendimento, horariosAtendimento]
+  );
 
   const handleSalvar = async () => {
     try {
@@ -54,10 +90,20 @@ const ConfiguracoesPsicologo = () => {
         telefone: config.telefone,
         bio: config.bio,
         especialidade: config.especialidade,
-        preco_sessao: config.preco_sessao ? parseFloat(config.preco_sessao) : null
+        tipoPsicologo: config.tipoPsicologo,
+        crp: config.crp,
+        precoSessao: config.preco_sessao ? parseFloat(config.preco_sessao) : null,
+        diasAtendimento,
+        horariosAtendimento
       });
       
-      const updatedData = { ...psicologo, ...config, precoSessao: config.preco_sessao };
+      const updatedData = {
+        ...psicologo,
+        ...config,
+        precoSessao: config.preco_sessao ? parseFloat(config.preco_sessao) : null,
+        diasAtendimento,
+        horariosAtendimento
+      };
       updateUser(updatedData);
       setPsicologo(updatedData);
       setEditando(false);
@@ -186,6 +232,33 @@ const ConfiguracoesPsicologo = () => {
                   </div>
                 </div>
 
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label">Tipo de Psicólogo</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="tipoPsicologo"
+                      value={config.tipoPsicologo}
+                      onChange={handleChange}
+                      disabled={!editando}
+                      placeholder="Ex: TCC, infantil, casal"
+                    />
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label">CRP</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="crp"
+                      value={config.crp}
+                      onChange={handleChange}
+                      disabled={!editando}
+                      placeholder="Ex: 06/123456"
+                    />
+                  </div>
+                </div>
+
                 <div className="mb-3">
                   <label className="form-label">Biografia</label>
                   <textarea
@@ -213,6 +286,57 @@ const ConfiguracoesPsicologo = () => {
                       </button>
                     </>
                   )}
+                </div>
+              </div>
+            </div>
+
+            <div className="card border-0 shadow-sm mb-4">
+              <div className="card-header bg-transparent">
+                <h5 className="fw-bold mb-0">
+                  <i className="bi bi-calendar-range me-2"></i>Dias e Horários de Atendimento
+                </h5>
+              </div>
+              <div className="card-body">
+                <p className="text-muted mb-3">{resumoAgenda}</p>
+
+                <div className="mb-4">
+                  <label className="form-label fw-semibold">Dias da semana</label>
+                  <div className="d-flex flex-wrap gap-2">
+                    {WEEKDAY_OPTIONS.map((option) => {
+                      const selected = diasAtendimento.includes(option.value);
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          className={`btn btn-sm rounded-pill px-3 ${selected ? 'btn-primary' : 'btn-outline-secondary'}`}
+                          onClick={() => toggleDay(option.value)}
+                          disabled={!editando}
+                        >
+                          {option.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="form-label fw-semibold">Horários disponíveis</label>
+                  <div className="d-flex flex-wrap gap-2">
+                    {DEFAULT_TIME_SLOTS.map((slot) => {
+                      const selected = horariosAtendimento.includes(slot);
+                      return (
+                        <button
+                          key={slot}
+                          type="button"
+                          className={`btn btn-sm rounded-pill px-3 ${selected ? 'btn-primary' : 'btn-outline-secondary'}`}
+                          onClick={() => toggleTimeSlot(slot)}
+                          disabled={!editando}
+                        >
+                          {slot}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>

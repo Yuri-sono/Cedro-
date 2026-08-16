@@ -132,6 +132,7 @@ export interface Sessao {
 
 export interface DisponibilidadeResponse {
   data: string;
+  atendeNesteDia: boolean;
   horariosDisponiveis: string[];
   horariosOcupados: string[];
 }
@@ -156,6 +157,8 @@ export interface UpdatePerfilRequest {
   crp?: string;
   areaInteresse?: string;
   precoSessao?: number;
+  diasAtendimento?: number[];
+  horariosAtendimento?: string[];
 }
 
 export interface PsicologoAgendaConfig {

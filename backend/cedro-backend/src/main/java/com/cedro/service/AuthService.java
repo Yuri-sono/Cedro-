@@ -21,7 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthService {
@@ -105,7 +107,9 @@ public class AuthService {
                 usuario.getTipoPsicologo(),
                 usuario.getCrp(),
                 usuario.getAreaInteresse(),
-                usuario.getPrecoSessao()
+                usuario.getPrecoSessao(),
+                com.cedro.model.dto.PsicologoResponse.parseDias(usuario.getDiasAtendimento()),
+                com.cedro.model.dto.PsicologoResponse.parseHorarios(usuario.getHorariosAtendimento())
         );
 
         return new LoginResponse(token, usuarioResponse);
@@ -217,7 +221,9 @@ public class AuthService {
                 usuario.getTipoPsicologo(),
                 usuario.getCrp(),
                 usuario.getAreaInteresse(),
-                usuario.getPrecoSessao()
+                usuario.getPrecoSessao(),
+                com.cedro.model.dto.PsicologoResponse.parseDias(usuario.getDiasAtendimento()),
+                com.cedro.model.dto.PsicologoResponse.parseHorarios(usuario.getHorariosAtendimento())
         );
 
         return new LoginResponse(token, usuarioResponse);
@@ -282,8 +288,28 @@ public class AuthService {
         if (request.getCrp() != null) usuario.setCrp(request.getCrp());
         if (request.getAreaInteresse() != null) usuario.setAreaInteresse(request.getAreaInteresse());
         if (request.getPrecoSessao() != null) usuario.setPrecoSessao(request.getPrecoSessao());
+        if (request.getDiasAtendimento() != null)
+            usuario.setDiasAtendimento(joinDias(request.getDiasAtendimento()));
+        if (request.getHorariosAtendimento() != null)
+            usuario.setHorariosAtendimento(joinHorarios(request.getHorariosAtendimento()));
 
         usuarioRepository.save(usuario);
+    }
+
+    private String joinDias(List<Integer> dias) {
+        if (dias == null || dias.isEmpty()) return null;
+        return dias.stream()
+                .filter(d -> d != null && d >= 0 && d <= 6)
+                .map(String::valueOf)
+                .collect(Collectors.joining(","));
+    }
+
+    private String joinHorarios(List<String> horarios) {
+        if (horarios == null || horarios.isEmpty()) return null;
+        return horarios.stream()
+                .filter(h -> h != null && !h.isBlank())
+                .map(String::trim)
+                .collect(Collectors.joining(","));
     }
 
     public void alterarSenha(Integer userId, AlterarSenhaRequest request) {

@@ -104,14 +104,22 @@ export const PsychologistSettingsScreen = () => {
     }
 
     try {
+      // O BACKEND é a fonte de verdade da agenda: os campos vão no PUT
+      // /api/auth/perfil e são persistidos em dias_atendimento /
+      // horarios_atendimento na tabela usuarios.
       await atualizarPerfil({
         bio: bio.trim() || undefined,
         especialidade: especialidade.trim(),
         tipoPsicologo: tipoPsicologo.trim(),
         crp: crp.trim(),
         precoSessao: hasValidPrice ? parsedPrice : undefined,
+        diasAtendimento,
+        horariosAtendimento,
       });
 
+      // CACHE LOCAL (fallback offline): não é mais a fonte de verdade.
+      // O backend guarda a agenda; o AsyncStorage é apenas cache/fallback
+      // para exibição quando não há rede ou a API não retorna esses campos.
       const savedConfig: PsicologoAgendaConfig = await agendaConfigService.save({
         psicologoId: user.id,
         diasAtendimento,

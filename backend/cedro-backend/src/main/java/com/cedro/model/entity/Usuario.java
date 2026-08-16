@@ -75,6 +75,14 @@ public class Usuario {
     
     @Column(name = "foto_url", columnDefinition = "VARCHAR(MAX)")
     private String fotoUrl;
+
+    @Size(max = 50)
+    @Column(name = "dias_atendimento", length = 50)
+    private String diasAtendimento;
+
+    @Size(max = 300)
+    @Column(name = "horarios_atendimento", length = 300)
+    private String horariosAtendimento;
     
     @Column(nullable = false)
     private Boolean ativo = true;
@@ -140,6 +148,12 @@ public class Usuario {
     
     public String getFotoUrl() { return fotoUrl; }
     public void setFotoUrl(String fotoUrl) { this.fotoUrl = fotoUrl; }
+
+    public String getDiasAtendimento() { return diasAtendimento; }
+    public void setDiasAtendimento(String diasAtendimento) { this.diasAtendimento = diasAtendimento; }
+
+    public String getHorariosAtendimento() { return horariosAtendimento; }
+    public void setHorariosAtendimento(String horariosAtendimento) { this.horariosAtendimento = horariosAtendimento; }
     
     public Boolean getAtivo() { return ativo; }
     public void setAtivo(Boolean ativo) { this.ativo = ativo; }

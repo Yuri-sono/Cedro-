@@ -1,6 +1,7 @@
 package com.cedro.controller;
 
 import com.cedro.model.TipoUsuario;
+import com.cedro.model.dto.PsicologoResponse;
 import com.cedro.model.entity.Sessao;
 import com.cedro.model.entity.Usuario;
 import com.cedro.repository.SessaoRepository;
@@ -58,6 +59,8 @@ public class PsicologoController {
             dto.put("precoSessao", p.getPrecoSessao());
             dto.put("avaliacao", p.getAvaliacao());
             dto.put("fotoUrl", p.getFotoUrl());
+            dto.put("diasAtendimento", PsicologoResponse.parseDias(p.getDiasAtendimento()));
+            dto.put("horariosAtendimento", PsicologoResponse.parseHorarios(p.getHorariosAtendimento()));
             // Não expor: email, telefone, senhaHash, dataCriacao, ativo
             return dto;
         }).collect(java.util.stream.Collectors.toList());
@@ -107,7 +110,7 @@ public class PsicologoController {
                 .orElseThrow(() -> new RuntimeException("Não encontrado"));
         if (p.getTipoUsuario() != TipoUsuario.psicologo)
             return ResponseEntity.badRequest().body(Map.of("error", "Não é psicólogo"));
-        return ResponseEntity.ok(p);
+        return ResponseEntity.ok(PsicologoResponse.fromUsuario(p));
     }
 
     /**
