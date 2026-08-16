@@ -1,0 +1,11 @@
+{
+  "requisicao": {
+    "email": "paciente.demo@cedro.app"
+  },
+  "resposta": {
+    "status": 200,
+    "body": {
+      "message": "Se o e-mail existir, enviaremos instrucoes"
+    }
+  }
+}

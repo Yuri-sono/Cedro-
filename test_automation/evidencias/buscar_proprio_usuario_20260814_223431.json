@@ -1,0 +1,28 @@
+{
+  "requisicao": {
+    "id": 37
+  },
+  "resposta": {
+    "status": 200,
+    "body": {
+      "id": 37,
+      "nome": "Lucas Ferreira",
+      "email": "paciente.demo@cedro.app",
+      "telefone": "(11) 98888-0000",
+      "dataNascimento": null,
+      "genero": null,
+      "endereco": null,
+      "bio": "Conta paciente de demonstração para exibir chat e chamadas.",
+      "tipoUsuario": "paciente",
+      "especialidade": null,
+      "tipoPsicologo": null,
+      "areaInteresse": null,
+      "crp": null,
+      "precoSessao": null,
+      "avaliacao": 5.0,
+      "fotoUrl": "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==",
+      "ativo": true,
+      "dataCriacao": "2026-05-25T03:57:00.9"
+    }
+  }
+}

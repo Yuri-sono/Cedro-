@@ -1,0 +1,12 @@
+{
+  "requisicao": {
+    "email": "teste.d08cf21f5f@teste.cedro",
+    "senha": "***"
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "error": "Precisa ter pelo menos 1 caractere especial"
+    }
+  }
+}

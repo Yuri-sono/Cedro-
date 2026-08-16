@@ -1,0 +1,11 @@
+{
+  "requisicao": {
+    "email": "teste.a12a38823a@teste.cedro"
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "error": "Tipo de psicologo obrigatorio para psicologo"
+    }
+  }
+}

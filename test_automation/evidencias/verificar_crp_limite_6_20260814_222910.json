@@ -1,0 +1,12 @@
+{
+  "requisicao": {
+    "crp": "06/123456"
+  },
+  "resposta": {
+    "status": 409,
+    "body": {
+      "mensagem": "Este CRP já está cadastrado na plataforma.",
+      "valido": false
+    }
+  }
+}

@@ -85,8 +85,15 @@ def gerar_relatorio(planilha: str | None = None, saida: str | None = None) -> st
     pendentes_planilha = total_casos - aprovados_planilha - reprovados_planilha
 
     funcionalidades_casos = set(caso.get("Funcionalidade") for caso in casos if caso.get("Funcionalidade"))
-    funcionalidades_sistema = {"Auth", "Usuários", "Psicólogos", "Sessões", "Mensagens",
-                               "Assinatura", "Notificações", "Telefone emergência"}
+    funcionalidades_sistema = {
+        "Cadastro de Paciente", "Cadastro de Psicólogo", "Login", "Login Social (Google)",
+        "Agendamento de Sessão", "Sessões", "Pagamento e Confirmação de Sessão",
+        "Chat (Mensagens)", "Chat em Tempo Real (WebSocket STOMP)",
+        "Verificação de CRP", "Alteração de Senha", "Perfil e Conta",
+        "Upload de Foto de Perfil", "Recuperação e Redefinição de Senha",
+        "Assinatura Premium (RevenueCat)", "Gestão de Usuários (Admin)",
+        "Lista e Detalhe de Psicólogos", "Dashboard Psicólogo", "Notificações Push",
+    }
     funcionalidades_nao_testadas = funcionalidades_sistema - funcionalidades_casos
 
     # --- Métricas dos defeitos ---
@@ -105,6 +112,11 @@ def gerar_relatorio(planilha: str | None = None, saida: str | None = None) -> st
         pytest_passed = resumo.get("passed", 0)
         pytest_failed = resumo.get("failed", 0)
         pytest_skipped = resumo.get("skipped", 0)
+
+    # --- Métricas do pytest (xfailed = bugs documentados do backend) ---
+    pytest_xfailed = 0
+    if resultado_pytest:
+        pytest_xfailed = resultado_pytest.get("summary", {}).get("xfailed", 0)
 
     # --- Montagem do relatório ---
     data_geracao = datetime.now().strftime("%d/%m/%Y %H:%M")
@@ -147,6 +159,7 @@ def gerar_relatorio(planilha: str | None = None, saida: str | None = None) -> st
     L.append(f"| Testes aprovados | {pytest_passed} |")
     L.append(f"| Testes reprovados | {pytest_failed} |")
     L.append(f"| Testes ignorados (skipped) | {pytest_skipped} |")
+    L.append(f"| Bugs documentados (xfailed) | {pytest_xfailed} |")
     L.append("")
     if pytest_total > 0:
         L.append(f"**Taxa de aprovação (pytest):** {(pytest_passed / pytest_total) * 100:.1f}%")
@@ -217,8 +230,9 @@ def gerar_relatorio(planilha: str | None = None, saida: str | None = None) -> st
         conclusao = ("**Nenhum teste foi executado.** É necessário executar os casos de teste "
                      "da planilha e/ou a suíte automatizada de API para avaliar a qualidade do sistema.")
     else:
-        total_executados = max(total_casos, pytest_total)
-        total_aprovados = max(aprovados_planilha, pytest_passed)
+        # Usa pytest como fonte primária; planilha só entra se tiver Status preenchido
+        total_executados = pytest_total if pytest_total > 0 else total_casos
+        total_aprovados = pytest_passed if pytest_total > 0 else aprovados_planilha
         if total_executados > 0:
             taxa = (total_aprovados / total_executados) * 100
             if taxa >= 90:

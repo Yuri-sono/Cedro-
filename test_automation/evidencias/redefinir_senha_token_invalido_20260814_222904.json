@@ -1,0 +1,12 @@
+{
+  "requisicao": {
+    "token": "***",
+    "novaSenha": "***"
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "error": "Token invalido ou expirado"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "requisicao": {
+    "periodo": "mes"
+  },
+  "resposta": {
+    "status": 500,
+    "body": "{\"error\":\"Algo deu errado\"}"
+  }
+}

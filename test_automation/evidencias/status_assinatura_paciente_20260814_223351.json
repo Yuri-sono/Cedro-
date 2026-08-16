@@ -1,0 +1,11 @@
+{
+  "requisicao": {},
+  "resposta": {
+    "status": 200,
+    "body": {
+      "chamadasRealizadas": 12,
+      "limiteMensal": 2147483647,
+      "isPremium": true
+    }
+  }
+}

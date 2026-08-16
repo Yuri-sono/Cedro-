@@ -1,0 +1,12 @@
+{
+  "requisicao": {
+    "email": "teste.72eb28e40c@teste.cedro",
+    "crp": "06/123456"
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "error": "Esse email ja ta em uso"
+    }
+  }
+}

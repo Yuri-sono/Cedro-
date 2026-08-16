@@ -1,0 +1,12 @@
+{
+  "requisicao": {
+    "senhaAtual": "***",
+    "novaSenha": "***"
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "novaSenha": "Nova senha deve ter no mínimo 6 caracteres"
+    }
+  }
+}

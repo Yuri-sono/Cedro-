@@ -1,0 +1,9 @@
+{
+  "requisicao": {},
+  "resposta": {
+    "status": 401,
+    "body": {
+      "error": "Webhook nao autorizado"
+    }
+  }
+}

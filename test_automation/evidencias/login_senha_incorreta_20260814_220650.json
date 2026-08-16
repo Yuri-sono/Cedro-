@@ -1,0 +1,12 @@
+{
+  "requisicao": {
+    "email": "paciente.demo@cedro.app",
+    "senha": "***"
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "error": "Email ou senha incorretos"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "requisicao": {
+    "email": "naoexiste@teste.cedro"
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "error": "Email ou senha incorretos"
+    }
+  }
+}

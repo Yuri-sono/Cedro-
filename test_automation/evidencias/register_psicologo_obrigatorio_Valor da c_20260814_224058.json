@@ -1,0 +1,11 @@
+{
+  "requisicao": {
+    "email": "teste.91f899c315@teste.cedro"
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "error": "Valor da consulta obrigatorio para psicologo"
+    }
+  }
+}

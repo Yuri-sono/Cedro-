@@ -1,0 +1,9 @@
+{
+  "requisicao": {
+    "sessaoId": 1
+  },
+  "resposta": {
+    "status": 403,
+    "body": ""
+  }
+}

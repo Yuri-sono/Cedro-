@@ -1,0 +1,11 @@
+{
+  "requisicao": {
+    "email": "naoexiste@teste.cedro"
+  },
+  "resposta": {
+    "status": 200,
+    "body": {
+      "message": "Se o e-mail existir, enviaremos instrucoes"
+    }
+  }
+}

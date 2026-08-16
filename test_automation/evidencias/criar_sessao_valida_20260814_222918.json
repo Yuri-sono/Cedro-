@@ -1,0 +1,12 @@
+{
+  "requisicao": {
+    "psicologoId": 36,
+    "dataSessao": "2026-08-24T15:00:00"
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "error": "Horario indisponivel"
+    }
+  }
+}

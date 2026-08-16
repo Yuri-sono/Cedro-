@@ -1,0 +1,10 @@
+{
+  "requisicao": {
+    "dataSessao": "2026-01-01T10:00:00",
+    "duracao": 60
+  },
+  "resposta": {
+    "status": 400,
+    "body": "{\"error\":\"Erro ao processar sua solicitação\"}"
+  }
+}

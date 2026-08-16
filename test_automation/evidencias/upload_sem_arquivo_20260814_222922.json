@@ -1,0 +1,11 @@
+{
+  "requisicao": {
+    "file": "<vazio>"
+  },
+  "resposta": {
+    "status": 500,
+    "body": {
+      "error": "Algo deu errado"
+    }
+  }
+}

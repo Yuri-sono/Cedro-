@@ -1,0 +1,12 @@
+{
+  "requisicao": {
+    "crp": "06/47D470"
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "mensagem": "Formato de CRP inválido. Use: XX/XXXXXX",
+      "valido": false
+    }
+  }
+}

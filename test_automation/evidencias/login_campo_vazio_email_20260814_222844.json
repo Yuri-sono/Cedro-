@@ -1,0 +1,10 @@
+{
+  "requisicao": {
+    "email": "",
+    "senha": "Cedro@123"
+  },
+  "resposta": {
+    "status": 400,
+    "body": "{\"email\":\"must not be blank\"}"
+  }
+}

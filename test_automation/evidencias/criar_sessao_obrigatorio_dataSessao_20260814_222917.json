@@ -1,0 +1,10 @@
+{
+  "requisicao": {
+    "psicologoId": 1,
+    "duracao": 60
+  },
+  "resposta": {
+    "status": 400,
+    "body": "{\"error\":\"Nao foi possivel salvar os dados. Verifique o tamanho da imagem e tente novamente.\"}"
+  }
+}

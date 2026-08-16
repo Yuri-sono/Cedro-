@@ -1,0 +1,10 @@
+{
+  "requisicao": {
+    "psicologoId": 36,
+    "data": "2026-08-23"
+  },
+  "resposta": {
+    "status": 403,
+    "body": ""
+  }
+}

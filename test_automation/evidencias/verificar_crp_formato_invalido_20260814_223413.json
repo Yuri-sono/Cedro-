@@ -1,0 +1,12 @@
+{
+  "requisicao": {
+    "crp": "12345"
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "mensagem": "Formato de CRP inválido. Use: XX/XXXXXX",
+      "valido": false
+    }
+  }
+}

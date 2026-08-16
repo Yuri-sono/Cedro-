@@ -1,0 +1,11 @@
+{
+  "requisicao": {
+    "email": ""
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "error": "Informe o email"
+    }
+  }
+}

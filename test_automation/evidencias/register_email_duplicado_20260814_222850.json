@@ -1,0 +1,11 @@
+{
+  "requisicao": {
+    "email": "paciente.demo@cedro.app"
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "error": "Esse email ja ta em uso"
+    }
+  }
+}

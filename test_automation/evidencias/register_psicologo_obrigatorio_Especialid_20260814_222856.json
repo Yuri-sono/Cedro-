@@ -1,0 +1,11 @@
+{
+  "requisicao": {
+    "email": "teste.8685fef658@teste.cedro"
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "error": "Este CRP ja esta cadastrado"
+    }
+  }
+}

@@ -1198,6 +1198,256 @@ def _gerar_casos_recuperar_senha() -> list:
 # Montagem da lista completa de casos de teste
 # ---------------------------------------------------------------------------
 
+def _gerar_casos_sessoes_extras() -> list:
+    """Casos de teste para endpoints de sessão não cobertos: listar, cancelar, disponibilidade."""
+    data_futura = _data_futura(7)
+    return [
+        {
+            "funcionalidade": "Sessões",
+            "objetivo": "Verificar listagem das sessões do paciente autenticado",
+            "pre_condicao": "Paciente autenticado (JWT) com ao menos uma sessão criada.",
+            "dados_entrada": "Nenhum (GET)",
+            "procedimento": "1. Obter token JWT do paciente demo. "
+                            "2. Enviar GET /api/sessoes/minhas com o token. "
+                            "3. Verificar o código HTTP e o corpo da resposta.",
+            "resultado_esperado": "HTTP 200 com lista de sessões onde pacienteId = id do token",
+            "observacoes": "Cenário Positivo",
+        },
+        {
+            "funcionalidade": "Sessões",
+            "objetivo": "Verificar listagem de sessões sem token JWT",
+            "pre_condicao": "Sistema no ar.",
+            "dados_entrada": "Nenhum (GET, sem token)",
+            "procedimento": "1. Enviar GET /api/sessoes/minhas sem header Authorization. "
+                            "2. Verificar o código HTTP.",
+            "resultado_esperado": "HTTP 401 (endpoint exige JWT)",
+            "observacoes": "Acesso não autorizado",
+        },
+        {
+            "funcionalidade": "Sessões",
+            "objetivo": "Verificar cancelamento de sessão pelo paciente dono",
+            "pre_condicao": "Paciente autenticado (JWT). Sessão existente pertencente ao paciente.",
+            "dados_entrada": "sessaoId=<id_sessao_do_paciente>",
+            "procedimento": "1. Obter token JWT do paciente demo. "
+                            "2. Enviar DELETE /api/sessoes/{id} com o token. "
+                            "3. Verificar o código HTTP e o corpo da resposta.",
+            "resultado_esperado": f"HTTP 200 com body {{\"message\": \"{MSG_DELETADA}\"}}",
+            "observacoes": "Cenário Positivo",
+        },
+        {
+            "funcionalidade": "Sessões",
+            "objetivo": "Verificar rejeição de cancelamento de sessão de outro paciente",
+            "pre_condicao": "Paciente A autenticado. Sessão pertencente ao Paciente B.",
+            "dados_entrada": "sessaoId=<id_sessao_paciente_B> (token do paciente A)",
+            "procedimento": "1. Obter token JWT do paciente A. "
+                            "2. Enviar DELETE /api/sessoes/{id} da sessão do paciente B. "
+                            "3. Verificar o código HTTP.",
+            "resultado_esperado": "HTTP 403 (apenas o paciente dono ou admin pode cancelar)",
+            "observacoes": "Acesso não autorizado",
+        },
+        {
+            "funcionalidade": "Sessões",
+            "objetivo": "Verificar consulta de disponibilidade de horários do psicólogo",
+            "pre_condicao": "Sistema no ar. Psicólogo demo cadastrado.",
+            "dados_entrada": f"psicologoId=<id_psicologo_demo>, data='{data_futura}'",
+            "procedimento": "1. Enviar GET /api/sessoes/disponibilidade/{{psicologoId}}?data={data_futura}. "
+                            "2. Verificar o código HTTP e o corpo da resposta.",
+            "resultado_esperado": "HTTP 200 com body {data, horariosDisponiveis: [...], horariosOcupados: [...]} "
+                                  "— horários base: 08:00, 09:00, 10:00, 11:00, 14:00, 15:00, 16:00, 17:00, 18:00",
+            "observacoes": "Cenário Positivo — endpoint público",
+        },
+        {
+            "funcionalidade": "Sessões",
+            "objetivo": "Verificar disponibilidade de psicólogo inexistente",
+            "pre_condicao": "Sistema no ar.",
+            "dados_entrada": f"psicologoId=999999, data='{data_futura}'",
+            "procedimento": "1. Enviar GET /api/sessoes/disponibilidade/999999?data={data_futura}. "
+                            "2. Verificar o código HTTP.",
+            "resultado_esperado": "HTTP 400 (psicólogo não encontrado)",
+            "observacoes": "Cenário Negativo",
+        },
+    ]
+
+
+def _gerar_casos_notificacoes() -> list:
+    """Casos de teste para a funcionalidade 'Notificações Push'."""
+    return [
+        {
+            "funcionalidade": "Notificações Push",
+            "objetivo": "Verificar registro de push token válido",
+            "pre_condicao": "Paciente autenticado (JWT).",
+            "dados_entrada": "token='ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]'",
+            "procedimento": "1. Obter token JWT do paciente demo. "
+                            "2. Enviar POST /api/notificacoes/token com body {token: '...'}. "
+                            "3. Verificar o código HTTP e o corpo da resposta.",
+            "resultado_esperado": "HTTP 200 com body {\"message\": \"Token registrado\"}",
+            "observacoes": "Cenário Positivo",
+        },
+        {
+            "funcionalidade": "Notificações Push",
+            "objetivo": "Verificar remoção de push token",
+            "pre_condicao": "Paciente autenticado (JWT). Token previamente registrado.",
+            "dados_entrada": "token='ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]'",
+            "procedimento": "1. Obter token JWT do paciente demo. "
+                            "2. Enviar POST /api/notificacoes/token/remover com body {token: '...'}. "
+                            "3. Verificar o código HTTP e o corpo da resposta.",
+            "resultado_esperado": "HTTP 200 com body {\"message\": \"Token removido\"}",
+            "observacoes": "Cenário Positivo",
+        },
+        {
+            "funcionalidade": "Notificações Push",
+            "objetivo": "Verificar rejeição de registro de token sem autenticação",
+            "pre_condicao": "Sistema no ar.",
+            "dados_entrada": "token='ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]' (sem token JWT)",
+            "procedimento": "1. Enviar POST /api/notificacoes/token sem header Authorization. "
+                            "2. Verificar o código HTTP.",
+            "resultado_esperado": "HTTP 401 (endpoint exige JWT)",
+            "observacoes": "Acesso não autorizado",
+        },
+        {
+            "funcionalidade": "Notificações Push",
+            "objetivo": "Verificar que token duplicado não gera erro (idempotente)",
+            "pre_condicao": "Paciente autenticado (JWT). Token já registrado.",
+            "dados_entrada": "token='ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]' (mesmo token)",
+            "procedimento": "1. Obter token JWT do paciente demo. "
+                            "2. Enviar POST /api/notificacoes/token com o mesmo token duas vezes. "
+                            "3. Verificar o código HTTP na segunda chamada.",
+            "resultado_esperado": "HTTP 200 — o service verifica duplicidade antes de inserir "
+                                  "(índice único UX_push_tokens_usuario_token)",
+            "observacoes": "Registro duplicado — comportamento idempotente",
+        },
+    ]
+
+
+def _gerar_casos_perfil_conta() -> list:
+    """Casos de teste para atualização de perfil e exclusão de conta."""
+    return [
+        {
+            "funcionalidade": "Perfil e Conta",
+            "objetivo": "Verificar atualização de perfil com dados válidos",
+            "pre_condicao": "Paciente autenticado (JWT).",
+            "dados_entrada": "nome='Novo Nome', telefone='(11) 98888-7777', bio='Minha bio'",
+            "procedimento": "1. Obter token JWT do paciente demo. "
+                            "2. Enviar PUT /api/auth/perfil com body {nome, telefone, bio}. "
+                            "3. Verificar o código HTTP e o corpo da resposta.",
+            "resultado_esperado": f"HTTP 200 com body {{\"message\": \"{MSG_PERFIL_ATUALIZADO}\"}}",
+            "observacoes": "Cenário Positivo",
+        },
+        {
+            "funcionalidade": "Perfil e Conta",
+            "objetivo": "Verificar rejeição de atualização de perfil sem token JWT",
+            "pre_condicao": "Sistema no ar.",
+            "dados_entrada": "nome='Novo Nome' (sem token)",
+            "procedimento": "1. Enviar PUT /api/auth/perfil sem header Authorization. "
+                            "2. Verificar o código HTTP.",
+            "resultado_esperado": "HTTP 401 (endpoint exige JWT)",
+            "observacoes": "Acesso não autorizado",
+        },
+        {
+            "funcionalidade": "Perfil e Conta",
+            "objetivo": "Verificar exclusão de conta pelo próprio usuário",
+            "pre_condicao": "Usuário de teste autenticado (JWT). Conta criada exclusivamente para este teste.",
+            "dados_entrada": "Nenhum (DELETE)",
+            "procedimento": "1. Criar usuário de teste via POST /api/auth/register. "
+                            "2. Obter token JWT do usuário de teste. "
+                            "3. Enviar DELETE /api/auth/conta com o token. "
+                            "4. Verificar o código HTTP e o corpo da resposta.",
+            "resultado_esperado": "HTTP 200 com body {\"message\": \"Conta excluída\"} — "
+                                  "sessões e mensagens relacionadas são deletadas (transacional)",
+            "observacoes": "Cenário Positivo — operação destrutiva e irreversível",
+        },
+        {
+            "funcionalidade": "Perfil e Conta",
+            "objetivo": "Verificar rejeição de exclusão de conta sem token JWT",
+            "pre_condicao": "Sistema no ar.",
+            "dados_entrada": "Nenhum (DELETE, sem token)",
+            "procedimento": "1. Enviar DELETE /api/auth/conta sem header Authorization. "
+                            "2. Verificar o código HTTP.",
+            "resultado_esperado": "HTTP 401 (endpoint exige JWT)",
+            "observacoes": "Acesso não autorizado",
+        },
+    ]
+
+
+def _gerar_casos_google_login() -> list:
+    """Casos de teste para login social com Google."""
+    return [
+        {
+            "funcionalidade": "Login Social (Google)",
+            "objetivo": "Verificar rejeição de login Google com credential vazio",
+            "pre_condicao": "Sistema no ar.",
+            "dados_entrada": "credential='' (vazio)",
+            "procedimento": "1. Enviar POST /api/auth/google com body {credential: ''}. "
+                            "2. Verificar o código HTTP e o corpo da resposta.",
+            "resultado_esperado": "HTTP 400 com body {\"error\": \"Token do Google nao fornecido\"}",
+            "observacoes": "Campo obrigatório vazio",
+        },
+        {
+            "funcionalidade": "Login Social (Google)",
+            "objetivo": "Verificar rejeição de login Google com token inválido",
+            "pre_condicao": "Sistema no ar.",
+            "dados_entrada": "credential='token_invalido_nao_e_jwt'",
+            "procedimento": "1. Enviar POST /api/auth/google com credential inválido. "
+                            "2. Verificar o código HTTP e o corpo da resposta.",
+            "resultado_esperado": "HTTP 400 (falha na decodificação do JWT do Google — "
+                                  "validação manual: issuer, expiração, email_verified)",
+            "observacoes": "Cenário Negativo — token malformado",
+        },
+        {
+            "funcionalidade": "Login Social (Google)",
+            "objetivo": "Verificar que login Google cria conta automaticamente para email novo",
+            "pre_condicao": "Email Google não cadastrado no sistema.",
+            "dados_entrada": "credential=<id_token_google_válido_de_email_novo>",
+            "procedimento": "1. Obter ID token válido do Google (requer conta Google real). "
+                            "2. Enviar POST /api/auth/google com o credential. "
+                            "3. Verificar o código HTTP e o corpo da resposta.",
+            "resultado_esperado": "HTTP 200 com {token, usuario} — conta criada automaticamente "
+                                  "com senha aleatória 'google_oauth_<timestamp>'",
+            "observacoes": "Cenário Positivo — requer token Google real (teste manual)",
+        },
+    ]
+
+
+def _gerar_casos_estatisticas_psicologo() -> list:
+    """Casos de teste para estatísticas e próximas consultas do psicólogo."""
+    return [
+        {
+            "funcionalidade": "Dashboard Psicólogo",
+            "objetivo": "Verificar estatísticas do psicólogo autenticado",
+            "pre_condicao": "Psicólogo autenticado (JWT).",
+            "dados_entrada": "Nenhum (GET)",
+            "procedimento": "1. Obter token JWT do psicólogo demo. "
+                            "2. Enviar GET /api/psicologos/estatisticas com o token. "
+                            "3. Verificar o código HTTP e o corpo da resposta.",
+            "resultado_esperado": "HTTP 200 com body {consultasHoje, consultasSemana, "
+                                  "pacientesAtivos, faturamentoMes}",
+            "observacoes": "Cenário Positivo",
+        },
+        {
+            "funcionalidade": "Dashboard Psicólogo",
+            "objetivo": "Verificar próximas consultas do psicólogo",
+            "pre_condicao": "Psicólogo autenticado (JWT).",
+            "dados_entrada": "Nenhum (GET)",
+            "procedimento": "1. Obter token JWT do psicólogo demo. "
+                            "2. Enviar GET /api/psicologos/consultas/proximas com o token. "
+                            "3. Verificar o código HTTP e o corpo da resposta.",
+            "resultado_esperado": "HTTP 200 com lista de até 10 sessões futuras ordenadas por data asc, "
+                                  "cada item com {id, pacienteId, data, horario, status, tipo, pacienteNome}",
+            "observacoes": "Cenário Positivo",
+        },
+        {
+            "funcionalidade": "Dashboard Psicólogo",
+            "objetivo": "Verificar rejeição de acesso às estatísticas sem token JWT",
+            "pre_condicao": "Sistema no ar.",
+            "dados_entrada": "Nenhum (GET, sem token)",
+            "procedimento": "1. Enviar GET /api/psicologos/estatisticas sem header Authorization. "
+                            "2. Verificar o código HTTP.",
+            "resultado_esperado": "HTTP 401 (endpoint exige JWT)",
+            "observacoes": "Acesso não autorizado",
+        },
+    ]
+
+
 def gerar_todos_casos() -> list:
     """
     Gera a lista completa de casos de teste para todas as funcionalidades.
@@ -1209,17 +1459,22 @@ def gerar_todos_casos() -> list:
     casos.extend(_gerar_casos_cadastro_paciente())
     casos.extend(_gerar_casos_cadastro_psicologo())
     casos.extend(_gerar_casos_login())
+    casos.extend(_gerar_casos_google_login())
     casos.extend(_gerar_casos_agendamento())
+    casos.extend(_gerar_casos_sessoes_extras())
     casos.extend(_gerar_casos_pagamento())
     casos.extend(_gerar_casos_chat())
     casos.extend(_gerar_casos_verificar_crp())
     casos.extend(_gerar_casos_alterar_senha())
+    casos.extend(_gerar_casos_perfil_conta())
     casos.extend(_gerar_casos_upload_foto())
     casos.extend(_gerar_casos_assinatura())
     casos.extend(_gerar_casos_usuarios())
     casos.extend(_gerar_casos_psicologos())
+    casos.extend(_gerar_casos_estatisticas_psicologo())
     casos.extend(_gerar_casos_websocket())
     casos.extend(_gerar_casos_recuperar_senha())
+    casos.extend(_gerar_casos_notificacoes())
     return casos
 
 

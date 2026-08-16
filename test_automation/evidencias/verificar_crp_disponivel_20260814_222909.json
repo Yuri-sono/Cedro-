@@ -1,0 +1,12 @@
+{
+  "requisicao": {
+    "crp": "06/1DBFE2"
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "mensagem": "Formato de CRP inválido. Use: XX/XXXXXX",
+      "valido": false
+    }
+  }
+}

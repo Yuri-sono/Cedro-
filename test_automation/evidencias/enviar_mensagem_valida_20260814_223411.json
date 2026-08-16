@@ -1,0 +1,17 @@
+{
+  "requisicao": {
+    "destinatarioId": 36,
+    "mensagem": "Olá, gostaria de agendar uma sessão"
+  },
+  "resposta": {
+    "status": 200,
+    "body": {
+      "id": 48,
+      "remetenteId": 37,
+      "destinatarioId": 36,
+      "mensagem": "Olá, gostaria de agendar uma sessão",
+      "lida": false,
+      "dataCriacao": "2026-08-14T22:34:10.600834634"
+    }
+  }
+}

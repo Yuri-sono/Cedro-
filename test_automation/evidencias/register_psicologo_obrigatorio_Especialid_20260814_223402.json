@@ -1,0 +1,11 @@
+{
+  "requisicao": {
+    "email": "teste.75d61b93bb@teste.cedro"
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "error": "Especialidade obrigatoria para psicologo"
+    }
+  }
+}

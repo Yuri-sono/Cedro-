@@ -1,0 +1,12 @@
+{
+  "requisicao": {
+    "email": "teste.e6dd6f916d@teste.cedro",
+    "tipoUsuario": "admin"
+  },
+  "resposta": {
+    "status": 201,
+    "body": {
+      "message": "Conta criada!"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "requisicao": {
+    "psicologoId": 36,
+    "dataSessao": "2026-09-03T11:00:00"
+  },
+  "resposta": {
+    "status": 201,
+    "body": {
+      "id": 58,
+      "pacienteId": 37,
+      "psicologoId": 36,
+      "dataSessao": "2026-09-03T11:00:00",
+      "duracao": 60,
+      "valor": 180.0,
+      "statusSessao": "agendada",
+      "linkReuniao": null,
+      "googleEventId": null,
+      "observacoes": "Sessão de teste automatizado",
+      "dataCriacao": "2026-08-14T22:41:16.819223549"
+    }
+  }
+}

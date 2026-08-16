@@ -1,0 +1,9 @@
+{
+  "requisicao": {},
+  "resposta": {
+    "status": 403,
+    "body": {
+      "error": "Acesso negado"
+    }
+  }
+}

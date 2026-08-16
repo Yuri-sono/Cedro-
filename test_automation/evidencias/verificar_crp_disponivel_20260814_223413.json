@@ -1,0 +1,9 @@
+{
+  "requisicao": {
+    "crp": "06/532319"
+  },
+  "resposta": {
+    "status": 200,
+    "body": "{\"mensagem\":\"CRP disponível para cadastro\",\"valido\":true}"
+  }
+}

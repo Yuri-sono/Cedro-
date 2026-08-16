@@ -1,0 +1,12 @@
+{
+  "requisicao": {
+    "email": "teste.bf5f08d400@teste.cedro",
+    "crp": "06/F7CB0D"
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "error": "CRP invalido. Use o formato 06/123456"
+    }
+  }
+}

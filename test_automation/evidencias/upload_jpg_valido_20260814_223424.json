@@ -1,0 +1,9 @@
+{
+  "requisicao": {
+    "file": "foto.jpg (1024 bytes, image/jpeg)"
+  },
+  "resposta": {
+    "status": 500,
+    "body": "{\"error\":\"Algo deu errado\"}"
+  }
+}

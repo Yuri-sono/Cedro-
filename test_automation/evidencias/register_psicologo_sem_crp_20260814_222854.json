@@ -1,0 +1,11 @@
+{
+  "requisicao": {
+    "email": "teste.8ade9a86a2@teste.cedro"
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "error": "CRP obrigatorio para psicologo"
+    }
+  }
+}

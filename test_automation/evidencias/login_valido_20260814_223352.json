@@ -1,0 +1,28 @@
+{
+  "requisicao": {
+    "email": "paciente.demo@cedro.app"
+  },
+  "resposta": {
+    "status": 200,
+    "body": {
+      "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwYWNpZW50ZS5kZW1vQGNlZHJvLmFwcCIsImlkIjozNywidGlwbyI6InBhY2llbnRlIiwiaWF0IjoxNzg2NzQ2ODMyLCJleHAiOjE3ODY4MzMyMzJ9.aFxAlBQQUUgw4K5EnOhBTiv_eTCsUqs8-owSeJqFmTQ",
+      "usuario": {
+        "id": 37,
+        "nome": "Lucas Ferreira",
+        "email": "paciente.demo@cedro.app",
+        "telefone": "(11) 98888-0000",
+        "genero": null,
+        "endereco": null,
+        "bio": "Conta paciente de demonstração para exibir chat e chamadas.",
+        "especialidade": null,
+        "tipoPsicologo": null,
+        "crp": null,
+        "areaInteresse": null,
+        "tipoUsuario": "paciente",
+        "dataNascimento": null,
+        "fotoUrl": "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==",
+        "precoSessao": null
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "requisicao": {
+    "email": "teste.97cbf2f63e@teste.cedro",
+    "crp": "06/222149"
+  },
+  "resposta": {
+    "status": 201,
+    "body": {
+      "message": "Conta criada!"
+    }
+  }
+}

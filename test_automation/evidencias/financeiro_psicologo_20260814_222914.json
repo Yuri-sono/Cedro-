@@ -1,0 +1,14 @@
+{
+  "requisicao": {
+    "periodo": "mes"
+  },
+  "resposta": {
+    "status": 200,
+    "body": {
+      "transacoes": [],
+      "consultasRealizadas": 0,
+      "faturamentoMes": 0,
+      "ticketMedio": 0
+    }
+  }
+}

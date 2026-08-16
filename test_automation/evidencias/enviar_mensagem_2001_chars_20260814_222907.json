@@ -1,0 +1,12 @@
+{
+  "requisicao": {
+    "destinatarioId": 36,
+    "mensagem": "<2001 chars>"
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "mensagem": "Mensagem muito longa (máx. 2000 caracteres)"
+    }
+  }
+}

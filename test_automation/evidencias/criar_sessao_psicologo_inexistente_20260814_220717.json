@@ -1,0 +1,11 @@
+{
+  "requisicao": {
+    "psicologoId": 999999
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "error": "Psicólogo não encontrado"
+    }
+  }
+}

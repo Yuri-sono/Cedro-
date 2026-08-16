@@ -1,0 +1,28 @@
+{
+  "requisicao": {
+    "email": "psicologo.demo@cedro.app"
+  },
+  "resposta": {
+    "status": 200,
+    "body": {
+      "token": "***",
+      "usuario": {
+        "id": 36,
+        "nome": "Dra. Marina Almeida",
+        "email": "psicologo.demo@cedro.app",
+        "telefone": "(11) 99999-0000",
+        "genero": null,
+        "endereco": null,
+        "bio": "Psicologa de demonstracao para apresentacao do TCC. Atendimento acolhedor e objetivo.",
+        "especialidade": "Terapia Cognitivo-Comportamental",
+        "tipoPsicologo": null,
+        "crp": "06/123456",
+        "areaInteresse": null,
+        "tipoUsuario": "psicologo",
+        "dataNascimento": null,
+        "fotoUrl": null,
+        "precoSessao": 180.0
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "requisicao": {
+    "email": "teste.a817e52ddd@teste.cedro",
+    "senha": "***"
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "senha": "size must be between 6 and 2147483647"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "requisicao": {
+    "id": 1,
+    "ativo": false
+  },
+  "resposta": {
+    "status": 403,
+    "body": ""
+  }
+}

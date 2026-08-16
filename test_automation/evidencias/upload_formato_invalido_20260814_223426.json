@@ -1,0 +1,9 @@
+{
+  "requisicao": {
+    "file": "arquivo.txt (text/plain)"
+  },
+  "resposta": {
+    "status": 500,
+    "body": "{\"error\":\"Algo deu errado\"}"
+  }
+}

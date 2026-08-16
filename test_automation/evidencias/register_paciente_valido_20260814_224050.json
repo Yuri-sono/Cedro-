@@ -1,0 +1,17 @@
+{
+  "requisicao": {
+    "nome": "Maria Teste",
+    "email": "teste.c49aac5020@teste.cedro",
+    "senha": "Teste@123",
+    "dataNascimento": "1990-01-01",
+    "genero": "Feminino",
+    "telefone": "(11) 99999-0000",
+    "tipoUsuario": "paciente"
+  },
+  "resposta": {
+    "status": 201,
+    "body": {
+      "message": "Conta criada!"
+    }
+  }
+}

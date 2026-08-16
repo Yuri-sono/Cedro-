@@ -1,0 +1,12 @@
+{
+  "requisicao": {
+    "id": 36,
+    "ativo": false
+  },
+  "resposta": {
+    "status": 403,
+    "body": {
+      "error": "Acesso negado"
+    }
+  }
+}

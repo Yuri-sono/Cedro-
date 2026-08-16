@@ -1,0 +1,11 @@
+{
+  "requisicao": {
+    "novaSenha": "***"
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "error": "Token e nova senha sao obrigatorios"
+    }
+  }
+}

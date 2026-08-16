@@ -1,0 +1,11 @@
+{
+  "requisicao": {
+    "sessaoId": 999999
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "error": "Erro ao processar sua solicitação"
+    }
+  }
+}

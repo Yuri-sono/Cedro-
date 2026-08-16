@@ -1,0 +1,9 @@
+{
+  "requisicao": {
+    "psicologoId": 36
+  },
+  "resposta": {
+    "status": 403,
+    "body": ""
+  }
+}

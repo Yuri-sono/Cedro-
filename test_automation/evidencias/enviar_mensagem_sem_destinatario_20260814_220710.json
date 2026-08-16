@@ -1,0 +1,9 @@
+{
+  "requisicao": {
+    "mensagem": "Olá"
+  },
+  "resposta": {
+    "status": 400,
+    "body": "{\"destinatarioId\":\"must not be null\"}"
+  }
+}

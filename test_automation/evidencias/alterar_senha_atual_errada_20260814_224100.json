@@ -1,0 +1,12 @@
+{
+  "requisicao": {
+    "senhaAtual": "***",
+    "novaSenha": "***"
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "error": "Senha atual ta errada"
+    }
+  }
+}

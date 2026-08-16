@@ -139,15 +139,15 @@ def admin_headers(admin_token: str) -> dict:
 # Fixtures de dados de teste
 # ---------------------------------------------------------------------------
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def email_unico() -> str:
-    """Email único para testes de registro (evita conflitos em execuções repetidas)."""
+    """Email único por teste (evita conflitos entre testes de registro)."""
     return f"teste.{uuid.uuid4().hex[:10]}@teste.cedro"
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def crp_unico() -> str:
-    """CRP único para testes de registro de psicólogo."""
+    """CRP único por teste de registro de psicólogo."""
     return f"06/{uuid.uuid4().hex[:6].upper()}"
 
 

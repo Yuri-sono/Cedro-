@@ -1,0 +1,9 @@
+{
+  "requisicao": {},
+  "resposta": {
+    "status": 200,
+    "body": {
+      "count": 0
+    }
+  }
+}
