@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .requestMatchers("/ws-chat").permitAll()
                 .requestMatchers("/api/psicologos").permitAll()
                 .requestMatchers("/api/psicologos/{id}").permitAll()
+                .requestMatchers("/api/sessoes/disponibilidade/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/", "/api/auth/health").permitAll()
                 .anyRequest().authenticated()
