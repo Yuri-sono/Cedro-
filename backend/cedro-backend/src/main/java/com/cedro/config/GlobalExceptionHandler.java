@@ -3,12 +3,10 @@ package com.cedro.config;
 import org.springframework.http.ResponseEntity;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
@@ -16,13 +14,14 @@ public class GlobalExceptionHandler {
     
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return ResponseEntity.badRequest().body(errors);
+        // Padrão uniforme: retornar a mensagem de validação no campo "error",
+        // igual aos demais tratadores (RuntimeException, ResponseStatusException, etc.).
+        String message = ex.getBindingResult().getAllErrors().stream()
+                .findFirst()
+                .map(org.springframework.validation.FieldError.class::cast)
+                .map(org.springframework.validation.FieldError::getDefaultMessage)
+                .orElse("Erro de validação");
+        return ResponseEntity.badRequest().body(Map.of("error", message));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

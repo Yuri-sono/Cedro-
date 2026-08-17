@@ -121,7 +121,7 @@ public class SessaoService {
 
     public Map<String, Object> consultarDisponibilidade(Integer psicologoId, LocalDate data) {
         Usuario psicologo = usuarioRepository.findById(psicologoId)
-                .orElseThrow(() -> new RuntimeException("Psicologo nao encontrado"));
+                .orElseThrow(() -> new RuntimeException("Psicólogo não encontrado"));
 
         int diaDaSemana = data.getDayOfWeek().getValue() % 7; // 0=Domingo a 6=Sábado
 

@@ -1,0 +1,36 @@
+[
+  {
+    "id": "DEF-F634DCE2",
+    "codigo_erro": "HTTP 400",
+    "titulo": "GET /api/sessoes/disponibilidade/{psicologoId} retorna 200 com lista de horários para psicologoId inexistente",
+    "funcionalidade": "Sessões - Consulta de disponibilidade do psicólogo",
+    "descricao": "O endpoint GET /api/sessoes/disponibilidade/{psicologoId} retorna HTTP 200 com a lista de horários mesmo quando o psicologoId não existe no banco, em vez de retornar HTTP 400. Comportamento inconsistente com POST /api/sessoes, que corretamente retorna 400 \u0022Psicólogo não encontrado\u0022 para o mesmo cenário.",
+    "passos_reproducao": "1. Enviar GET /api/sessoes/disponibilidade/{idInexistente}?data=YYYY-MM-DD. 2. Verificar o código HTTP retornado.",
+    "resultado_esperado": "HTTP 400 com erro \u0022Psicólogo não encontrado\u0022",
+    "resultado_obtido": "HTTP 200 com lista de horários disponíveis mesmo para psicologoId inexistente",
+    "gravidade": "Médio",
+    "responsavel": "",
+    "situacao": "Corrigido",
+    "evidencia": "",
+    "data_registro": "2026-08-17",
+    "data_correcao": "2026-08-17",
+    "resultado_novo_teste": "Endpoint agora retorna 400 Psicólogo não encontrado para ID inexistente, aguardando reteste automatizado"
+  },
+  {
+    "id": "DEF-7AC67BAD",
+    "codigo_erro": "HTTP 400",
+    "titulo": "POST /api/auth/register retorna mensagem crua do Bean Validation para senha curta",
+    "funcionalidade": "Autenticação - Registro (validação de senha)",
+    "descricao": "POST /api/auth/register retorna a mensagem crua do Bean Validation (\"size must be between 6 and 2147483647\") quando a senha tem menos de 6 caracteres, em vez de uma mensagem customizada em português como os outros critérios de senha já têm (\"Senha muito curta (min. 6 caracteres)\").",
+    "passos_reproducao": "1. Enviar POST /api/auth/register com senha de menos de 6 caracteres (ex: Ab@12). 2. Verificar a mensagem de erro retornada.",
+    "resultado_esperado": "HTTP 400 com erro customizado \"Senha muito curta (min. 6 caracteres)\" no campo error",
+    "resultado_obtido": "HTTP 400 com a mensagem crua \"size must be between 6 and 2147483647\" no corpo (sem chave error)",
+    "gravidade": "Médio",
+    "responsavel": "",
+    "situacao": "Corrigido",
+    "evidencia": "",
+    "data_registro": "2026-08-17",
+    "data_correcao": "2026-08-17",
+    "resultado_novo_teste": "Mensagem customizada confirmada no build, aguardando reteste automatizado"
+  }
+]

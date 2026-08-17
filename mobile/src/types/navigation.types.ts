@@ -41,6 +41,7 @@ export type ProfileStackParamList = {
   PsychologistSettings: undefined;
   ChangePassword: undefined;
   MySessions: undefined;
+  NewSessionPsicologo: undefined;
   Subscription: undefined; // Sprint 6
 };
 

@@ -20,7 +20,7 @@ public class RegisterRequest {
     private String email;
     
     @NotBlank
-    @Size(min = 6)
+    @Size(min = 6, message = "Senha muito curta (min. 6 caracteres)")
     private String senha;
     
     @JsonProperty("dataNascimento")
