@@ -179,7 +179,14 @@ function Chat() {
     return () => {
       closedByComponent = true;
       clearTimeout(reconnectTimerRef.current);
-      socketRef.current?.close();
+      // O client do @stomp/stompjs (instância de Client) NÃO possui .close();
+      // o método correto para encerrar a conexão é .deactivate().
+      // Checagem defensiva para evitar erro se o objeto for undefined nesse
+      // momento do ciclo de vida do componente.
+      const client = socketRef.current;
+      if (client && typeof client.deactivate === 'function') {
+        client.deactivate();
+      }
     };
   }, [handleIncomingSignal]);
 

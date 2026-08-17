@@ -7,11 +7,13 @@ function AgendarSessao() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     data: '',
-    hora: '',
     duracao: 60,
     observacoes: ''
   });
   const [loading, setLoading] = useState(false);
+  const [disponibilidade, setDisponibilidade] = useState(null);
+  const [carregandoHorarios, setCarregandoHorarios] = useState(false);
+  const [horarioSelecionado, setHorarioSelecionado] = useState('');
 
   const handleChange = (e) => {
     setFormData({
@@ -20,12 +22,41 @@ function AgendarSessao() {
     });
   };
 
+  // Ao escolher a data, consulta a disponibilidade real do psicólogo
+  // (GET /api/sessoes/disponibilidade/{psicologoId}?data=YYYY-MM-DD).
+  const handleDataChange = async (e) => {
+    const data = e.target.value;
+    setFormData((prev) => ({ ...prev, data }));
+    setHorarioSelecionado('');
+    setDisponibilidade(null);
+
+    if (!data) {
+      setCarregandoHorarios(false);
+      return;
+    }
+
+    setCarregandoHorarios(true);
+    try {
+      const response = await api.get(
+        `/api/sessoes/disponibilidade/${psicologoId}`,
+        { params: { data } }
+      );
+      setDisponibilidade(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar disponibilidade:', error);
+      setDisponibilidade(null);
+    } finally {
+      setCarregandoHorarios(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.data || !horarioSelecionado) return;
     setLoading(true);
 
     try {
-      const dataSessao = `${formData.data}T${formData.hora}:00`;
+      const dataSessao = `${formData.data}T${horarioSelecionado}:00`;
       
       const response = await api.post('/api/sessoes', {
         psicologoId: parseInt(psicologoId),
@@ -70,7 +101,7 @@ function AgendarSessao() {
                     className="form-control"
                     name="data"
                     value={formData.data}
-                    onChange={handleChange}
+                    onChange={handleDataChange}
                     min={new Date().toISOString().split('T')[0]}
                     required
                   />
@@ -81,14 +112,41 @@ function AgendarSessao() {
                     <i className="bi bi-clock me-2"></i>
                     Horário
                   </label>
-                  <input
-                    type="time"
-                    className="form-control"
-                    name="hora"
-                    value={formData.hora}
-                    onChange={handleChange}
-                    required
-                  />
+
+                  {carregandoHorarios ? (
+                    <div className="text-muted">
+                      <span className="spinner-border spinner-border-sm me-2"></span>
+                      Carregando horários...
+                    </div>
+                  ) : !formData.data ? (
+                    <p className="text-muted mb-0">
+                      Selecione uma data para ver os horários disponíveis.
+                    </p>
+                  ) : disponibilidade?.atendeNesteDia === false ? (
+                    <div className="alert alert-warning mb-0">
+                      Este psicólogo não atende neste dia da semana. Escolha outra data.
+                    </div>
+                  ) : (disponibilidade?.horariosDisponiveis?.length || 0) === 0 ? (
+                    <div className="alert alert-warning mb-0">
+                      Nenhum horário disponível nesta data. Escolha outra data.
+                    </div>
+                  ) : disponibilidade ? (
+                    <div className="d-flex flex-wrap gap-2">
+                      {disponibilidade.horariosDisponiveis.map((horario) => {
+                        const selected = horarioSelecionado === horario;
+                        return (
+                          <button
+                            key={horario}
+                            type="button"
+                            className={`btn btn-sm rounded-pill px-3 ${selected ? 'btn-primary' : 'btn-outline-secondary'}`}
+                            onClick={() => setHorarioSelecionado(horario)}
+                          >
+                            {horario}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="mb-3">
@@ -128,7 +186,7 @@ function AgendarSessao() {
                   <button 
                     type="submit" 
                     className="btn btn-primary btn-lg"
-                    disabled={loading}
+                    disabled={loading || !horarioSelecionado}
                   >
                     {loading ? (
                       <>
