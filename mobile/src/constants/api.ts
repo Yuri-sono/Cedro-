@@ -23,6 +23,7 @@ export const API_ENDPOINTS = {
   PSICOLOGOS: {
     LISTAR: '/api/psicologos',
     POR_ID: (id: number) => `/api/psicologos/${id}`,
+    PACIENTES: (id: number) => `/api/psicologos/${id}/pacientes`,
     ESTATISTICAS: '/api/psicologos/estatisticas',
     PROXIMAS_CONSULTAS: '/api/psicologos/consultas/proximas',
   },
@@ -52,6 +53,7 @@ export const API_ENDPOINTS = {
       `/api/sessoes/disponibilidade/${psicologoId}?data=${data}`,
     CRIAR: '/api/sessoes',
     DELETAR: (id: number) => `/api/sessoes/${id}`,
+    STATUS: (id: number) => `/api/sessoes/${id}/status`,
   },
 
   // ── Usuários ──

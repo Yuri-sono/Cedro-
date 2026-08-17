@@ -107,8 +107,10 @@ export interface Mensagem {
 }
 
 // ── SessaoRequest (SessaoRequest.java) ──
+// psicologoId é obrigatório para pacientes; para psicólogos o backend usa
+// o id do próprio psicólogo logado (qualquer valor enviado é ignorado).
 export interface SessaoRequest {
-  psicologoId: number;
+  psicologoId?: number;
   pacienteId?: number;
   dataSessao: string;
   duracao?: number;
@@ -135,6 +137,12 @@ export interface DisponibilidadeResponse {
   atendeNesteDia: boolean;
   horariosDisponiveis: string[];
   horariosOcupados: string[];
+}
+// ── PacienteResumo (GET /api/psicologos/{id}/pacientes) ──
+export interface PacienteResumo {
+  id: number;
+  nome: string;
+  email: string;
 }
 
 export interface LinkReuniaoResponse {

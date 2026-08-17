@@ -227,4 +227,9 @@ public class SessaoService {
         sessao.setStatusSessao("cancelada");
         return sessaoRepository.save(sessao);
     }
+
+    public Sessao atualizarStatusRealizada(Sessao sessao) {
+        sessao.setStatusSessao("realizada");
+        return sessaoRepository.save(sessao);
+    }
 }

@@ -1,5 +1,6 @@
 package com.cedro.controller;
 
+import com.cedro.model.TipoUsuario;
 import com.cedro.model.dto.SessaoRequest;
 import com.cedro.model.entity.Sessao;
 import com.cedro.model.entity.Usuario;
@@ -49,6 +50,12 @@ public class SessaoController {
         try {
             return "admin".equals(jwtUtil.extractTipoUsuario(authHeader.replace("Bearer ", "")));
         } catch (Exception e) { return false; }
+    }
+
+    private String getTipoUsuario(String authHeader) {
+        try {
+            return jwtUtil.extractTipoUsuario(authHeader.replace("Bearer ", ""));
+        } catch (Exception e) { return null; }
     }
 
     private Map<String, Object> mapearSessaoComNomes(Sessao sessao) {
@@ -139,9 +146,55 @@ public class SessaoController {
             @RequestBody SessaoRequest request,
             @RequestHeader("Authorization") String authHeader) {
         Integer userId = getUserId(authHeader);
-        request.setPacienteId(userId);
+        String tipo = getTipoUsuario(authHeader);
+
+        if ("psicologo".equals(tipo)) {
+            // Psicólogo: pacienteId OBRIGATÓRIO no body e deve referenciar um paciente real.
+            if (request.getPacienteId() == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Paciente não encontrado"));
+            }
+            boolean pacienteValido = usuarioRepository.findById(request.getPacienteId())
+                    .map(u -> u.getTipoUsuario() == TipoUsuario.paciente)
+                    .orElse(false);
+            if (!pacienteValido) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Paciente não encontrado"));
+            }
+            // Segurança: psicologoId é SEMPRE o do psicólogo logado (ignora qualquer valor do body).
+            request.setPsicologoId(userId);
+        } else if ("paciente".equals(tipo)) {
+            // Paciente: mantém o comportamento atual (pacienteId do token, psicologoId do body).
+            request.setPacienteId(userId);
+        } else {
+            return ResponseEntity.status(403).body(
+                    Map.of("error", "Apenas paciente ou psicólogo podem criar sessões diretamente")
+            );
+        }
+
         Sessao sessao = sessaoService.criar(request);
         return ResponseEntity.status(201).body(sessao);
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> atualizarStatus(
+            @PathVariable Integer id,
+            @RequestBody Map<String, String> body,
+            @RequestHeader("Authorization") String authHeader) {
+        String status = body.get("status");
+        if (!"realizada".equals(status) && !"cancelada".equals(status)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Status inválido"));
+        }
+
+        Integer requesterId = getUserId(authHeader);
+        Sessao sessao = sessaoService.buscarPorId(id);
+        if (!isAdmin(authHeader) && !sessao.getPsicologoId().equals(requesterId)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Acesso negado"));
+        }
+
+        Sessao atualizada = "cancelada".equals(status)
+                ? sessaoService.atualizarStatusCancelado(sessao)
+                : sessaoService.atualizarStatusRealizada(sessao);
+
+        return ResponseEntity.ok(mapearSessaoComNomes(atualizada));
     }
 
     @PutMapping("/{id}")
@@ -232,7 +285,9 @@ public class SessaoController {
             @RequestHeader("Authorization") String authHeader) {
         Integer userId = getUserId(authHeader);
         Sessao sessao = sessaoService.buscarPorId(id);
-        if (!isAdmin(authHeader) && !sessao.getPacienteId().equals(userId)) { //TODO: adicionar verificação se o psicólogo pode deletar
+        if (!isAdmin(authHeader)
+                && !sessao.getPacienteId().equals(userId)
+                && !sessao.getPsicologoId().equals(userId)) {
             return ResponseEntity.status(403).body(Map.of("error", "Acesso negado"));
         }
         sessaoService.deletar(id);

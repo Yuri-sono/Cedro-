@@ -55,6 +55,18 @@ export const useSessoes = () => {
     },
   });
 
+  const atualizarStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: number; status: 'realizada' | 'cancelada' }) =>
+      sessaoService.atualizarStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessoes'] });
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error);
+      showToast.error('Erro ao atualizar', message || 'Nao foi possivel atualizar a sessao.');
+    },
+  });
+
   return {
     sessoes: minhasSessoesQuery.data || [],
     isLoading: minhasSessoesQuery.isLoading,
@@ -64,6 +76,8 @@ export const useSessoes = () => {
     isAgendando: criarSessaoMutation.isPending,
     cancelarSessao: cancelarSessaoMutation.mutateAsync,
     isCancelando: cancelarSessaoMutation.isPending,
+    atualizarStatus: atualizarStatusMutation.mutateAsync,
+    isAtualizandoStatus: atualizarStatusMutation.isPending,
   };
 };
 

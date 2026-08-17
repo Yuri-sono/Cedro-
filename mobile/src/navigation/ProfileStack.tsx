@@ -6,6 +6,7 @@ import { EditProfileScreen } from '../screens/profile/EditProfileScreen';
 import { PsychologistSettingsScreen } from '../screens/profile/PsychologistSettingsScreen';
 import { ChangePasswordScreen } from '../screens/profile/ChangePasswordScreen';
 import { SessionsScreen } from '../screens/sessions/SessionsScreen';
+import { NewSessionPsicologoScreen } from '../screens/sessions/NewSessionPsicologoScreen';
 import { PaywallScreen } from '../screens/subscription/PaywallScreen';
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
@@ -37,6 +38,11 @@ export const ProfileStack = () => {
         name="MySessions" 
         component={SessionsScreen} 
         options={{ title: 'Minhas Sessões' }} 
+      />
+      <Stack.Screen
+        name="NewSessionPsicologo"
+        component={NewSessionPsicologoScreen}
+        options={{ title: 'Nova Consulta' }}
       />
       <Stack.Screen 
         name="Subscription" 

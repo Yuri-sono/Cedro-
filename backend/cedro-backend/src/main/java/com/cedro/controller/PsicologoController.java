@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.text.Normalizer;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -111,6 +112,36 @@ public class PsicologoController {
         if (p.getTipoUsuario() != TipoUsuario.psicologo)
             return ResponseEntity.badRequest().body(Map.of("error", "Não é psicólogo"));
         return ResponseEntity.ok(PsicologoResponse.fromUsuario(p));
+    }
+
+    /**
+     * Lista pacientes DISTINTOS que já têm pelo menos uma sessão com o psicólogo.
+     * Autorização: apenas o próprio psicólogo (id do token) ou admin.
+     */
+    @GetMapping("/{id}/pacientes")
+    public ResponseEntity<?> listarPacientes(
+            @PathVariable Integer id,
+            @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        Integer requesterId = jwtUtil.extractUserId(token);
+        String tipo = jwtUtil.extractTipoUsuario(token);
+        if (!"admin".equals(tipo) && !requesterId.equals(id)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Acesso negado"));
+        }
+
+        List<Integer> pacienteIds = sessaoRepository.findDistinctPacienteIdsByPsicologo(id);
+        List<Map<String, Object>> pacientes = pacienteIds.stream()
+                .flatMap(pacienteId -> usuarioRepository.findById(pacienteId).stream())
+                .sorted(Comparator.comparing(Usuario::getNome))
+                .map(p -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("id", p.getId());
+                    item.put("nome", p.getNome());
+                    item.put("email", p.getEmail());
+                    return item;
+                })
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(pacientes);
     }
 
     /**

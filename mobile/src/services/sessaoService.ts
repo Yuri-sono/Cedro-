@@ -38,4 +38,9 @@ export const sessaoService = {
   deletar: async (id: number): Promise<void> => {
     await api.delete(API_ENDPOINTS.SESSOES.DELETAR(id));
   },
+
+  atualizarStatus: async (id: number, status: 'realizada' | 'cancelada'): Promise<Sessao> => {
+    const response = await api.put<Sessao>(API_ENDPOINTS.SESSOES.STATUS(id), { status });
+    return response.data;
+  },
 };

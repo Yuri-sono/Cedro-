@@ -1,6 +1,6 @@
 import api from './api';
 import { API_ENDPOINTS } from '../constants/api';
-import { PsicologoListItem, PsicologoResponse, PsicologoEstatisticas, ProximaConsulta } from '../types/api.types';
+import { PsicologoListItem, PsicologoResponse, PsicologoEstatisticas, ProximaConsulta, PacienteResumo } from '../types/api.types';
 import { agendaConfigService } from './agendaConfigService';
 import { mergeAgendaConfig } from '../utils/psychologistAgenda';
 
@@ -17,6 +17,11 @@ export const psicologoService = {
   buscarPorId: async (id: number): Promise<PsicologoResponse> => {
     const response = await api.get<PsicologoResponse>(API_ENDPOINTS.PSICOLOGOS.POR_ID(id));
     return mergeAgendaConfig(response.data, await agendaConfigService.get(id));
+  },
+
+  pacientes: async (id: number): Promise<PacienteResumo[]> => {
+    const response = await api.get<PacienteResumo[]>(API_ENDPOINTS.PSICOLOGOS.PACIENTES(id));
+    return response.data;
   },
 
   estatisticas: async (): Promise<PsicologoEstatisticas> => {

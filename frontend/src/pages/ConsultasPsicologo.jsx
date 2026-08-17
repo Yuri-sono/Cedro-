@@ -1,32 +1,183 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useAuth } from '../contexts/AuthContext.jsx';
 import NavbarPsicologo from '../components/NavbarPsicologo.jsx';
 import SidebarPsicologo from '../components/SidebarPsicologo.jsx';
 import ReuniaoModal from '../components/ReuniaoModal.jsx';
+import api from '../services/api.js';
+
+const STATUS_LABEL = {
+  realizada: 'Realizada',
+  agendada: 'Agendada',
+  confirmada: 'Confirmada',
+  cancelada: 'Cancelada'
+};
+
+const STATUS_COLOR = {
+  realizada: 'success',
+  agendada: 'primary',
+  confirmada: 'warning',
+  cancelada: 'danger'
+};
+
+const initialFormNova = {
+  pacienteId: '',
+  data: '',
+  observacoes: ''
+};
 
 const ConsultasPsicologo = () => {
+  const { user, loading: authLoading } = useAuth();
+  const [consultas, setConsultas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState('');
   const [filtroStatus, setFiltroStatus] = useState('todas');
   const [sessaoReuniao, setSessaoReuniao] = useState(null);
-  
-  const consultas = [
-    { id: 1, paciente: 'Maria Silva', data: '2024-01-15', horario: '09:00', tipo: 'Individual', status: 'Concluída', valor: 150 },
-    { id: 2, paciente: 'João Santos', data: '2024-01-15', horario: '10:30', tipo: 'Casal', status: 'Concluída', valor: 200 },
-    { id: 3, paciente: 'Ana Costa', data: '2024-01-16', horario: '14:00', tipo: 'Individual', status: 'Agendada', valor: 150 },
-    { id: 4, paciente: 'Carlos Oliveira', data: '2024-01-16', horario: '15:30', tipo: 'Individual', status: 'Confirmada', valor: 150 }
-  ];
+  const [detalhesSessao, setDetalhesSessao] = useState(null);
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Concluída': return 'success';
-      case 'Confirmada': return 'primary';
-      case 'Agendada': return 'warning';
-      case 'Cancelada': return 'danger';
-      default: return 'secondary';
+  // ── Modal "Nova Consulta" ──
+  const [modalNova, setModalNova] = useState(false);
+  const [salvando, setSalvando] = useState(false);
+  const [pacientes, setPacientes] = useState([]);
+  const [carregandoPacientes, setCarregandoPacientes] = useState(false);
+  const [formNova, setFormNova] = useState(initialFormNova);
+  const [disponibilidade, setDisponibilidade] = useState(null);
+  const [carregandoHorarios, setCarregandoHorarios] = useState(false);
+  const [horarioSelecionado, setHorarioSelecionado] = useState('');
+
+  const carregarConsultas = useCallback(async () => {
+    if (!user) return;
+    try {
+      setLoading(true);
+      setErro('');
+      const response = await api.get(`/api/sessoes/psicologo/${user.id}`);
+      setConsultas(response.data || []);
+    } catch (error) {
+      console.error('Erro ao carregar consultas:', error);
+      setErro(error?.response?.data?.error || 'Não foi possível carregar as consultas.');
+      setConsultas([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) return;
+    carregarConsultas();
+  }, [user, authLoading, carregarConsultas]);
+
+  // ── Estatísticas reais (statuses do backend: agendada | confirmada | realizada | cancelada) ──
+  const consultasRealizadas = consultas.filter((c) => c.statusSessao === 'realizada').length;
+  const consultasConfirmadas = consultas.filter((c) => c.statusSessao === 'confirmada').length;
+  const consultasAgendadas = consultas.filter((c) => c.statusSessao === 'agendada').length;
+  const valorTotal = consultas.reduce((total, c) => total + (Number(c.valor) || 0), 0);
+
+  const filteredConsultas = filtroStatus === 'todas'
+    ? consultas
+    : consultas.filter((c) => c.statusSessao === filtroStatus);
+
+  const getStatusColor = (status) => STATUS_COLOR[status] || 'secondary';
+  const getStatusLabel = (status) => STATUS_LABEL[status] || status || '-';
+
+  const formatarHora = (dataStr) => {
+    if (!dataStr) return '-';
+    const parte = String(dataStr).split('T')[1];
+    return parte ? parte.slice(0, 5) : new Date(dataStr).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const formatarValor = (valor) => `R$ ${(Number(valor) || 0).toFixed(2)}`;
+
+  // ── Ações ──
+  const confirmarStatus = async (sessao, novoStatus) => {
+    const acao = novoStatus === 'realizada'
+      ? 'marcar esta consulta como realizada'
+      : 'cancelar esta consulta';
+    if (!window.confirm(`Deseja ${acao}?`)) return;
+
+    try {
+      await api.put(`/api/sessoes/${sessao.id}/status`, { status: novoStatus });
+      await carregarConsultas();
+    } catch (error) {
+      console.error('Erro ao atualizar status:', error);
+      window.alert(error?.response?.data?.error || 'Não foi possível atualizar a consulta.');
     }
   };
 
-  const filteredConsultas = filtroStatus === 'todas' 
-    ? consultas 
-    : consultas.filter(consulta => consulta.status.toLowerCase() === filtroStatus);
+  const abrirNovaConsulta = async () => {
+    setModalNova(true);
+    setCarregandoPacientes(true);
+    try {
+      const response = await api.get(`/api/psicologos/${user.id}/pacientes`);
+      setPacientes(response.data || []);
+    } catch (error) {
+      console.error('Erro ao carregar pacientes:', error);
+      window.alert(error?.response?.data?.error || 'Não foi possível carregar os pacientes.');
+      setPacientes([]);
+    } finally {
+      setCarregandoPacientes(false);
+    }
+  };
+
+  const fecharNovaConsulta = () => {
+    setModalNova(false);
+    setFormNova(initialFormNova);
+    setDisponibilidade(null);
+    setHorarioSelecionado('');
+  };
+
+  const handleNovaChange = (e) => {
+    setFormNova((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  // Ao escolher a data, busca a disponibilidade real do psicólogo
+  // (GET /api/sessoes/disponibilidade/{id}?data=YYYY-MM-DD — mesmo padrão de AgendarSessao).
+  const handleDataChange = async (e) => {
+    const data = e.target.value;
+    setFormNova((prev) => ({ ...prev, data }));
+    setHorarioSelecionado('');
+    setDisponibilidade(null);
+
+    if (!data) {
+      setCarregandoHorarios(false);
+      return;
+    }
+
+    setCarregandoHorarios(true);
+    try {
+      const response = await api.get(`/api/sessoes/disponibilidade/${user.id}`, { params: { data } });
+      setDisponibilidade(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar disponibilidade:', error);
+      setDisponibilidade(null);
+    } finally {
+      setCarregandoHorarios(false);
+    }
+  };
+
+  const confirmarNovaConsulta = async (e) => {
+    e.preventDefault();
+    if (!formNova.pacienteId || !formNova.data || !horarioSelecionado) return;
+    setSalvando(true);
+
+    try {
+      const dataSessao = `${formNova.data}T${horarioSelecionado}:00`;
+      await api.post('/api/sessoes', {
+        pacienteId: parseInt(formNova.pacienteId, 10),
+        dataSessao,
+        duracao: 60,
+        observacoes: formNova.observacoes
+      });
+      fecharNovaConsulta();
+      await carregarConsultas();
+    } catch (error) {
+      console.error('Erro ao criar consulta:', error);
+      window.alert(error?.response?.data?.error || 'Erro ao criar consulta.');
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  const hoje = new Date().toISOString().split('T')[0];
 
   return (
     <div className="dashboard-terapeuta">
@@ -39,7 +190,7 @@ const ConsultasPsicologo = () => {
           <div className="col-md-9 col-lg-10">
             <div className="d-flex justify-content-between align-items-center mb-4">
               <h1 className="h3 fw-bold">Consultas</h1>
-              <button className="btn btn-primary">
+              <button className="btn btn-primary" onClick={abrirNovaConsulta} disabled={!user}>
                 <i className="bi bi-plus-circle me-2"></i>Nova Consulta
               </button>
             </div>
@@ -48,7 +199,7 @@ const ConsultasPsicologo = () => {
               <div className="col-md-3">
                 <div className="card border-0 shadow-sm">
                   <div className="card-body text-center">
-                    <h3 className="h4 fw-bold text-success">{consultas.filter(c => c.status === 'Concluída').length}</h3>
+                    <h3 className="h4 fw-bold text-success">{consultasRealizadas}</h3>
                     <p className="text-muted mb-0">Concluídas</p>
                   </div>
                 </div>
@@ -56,7 +207,7 @@ const ConsultasPsicologo = () => {
               <div className="col-md-3">
                 <div className="card border-0 shadow-sm">
                   <div className="card-body text-center">
-                    <h3 className="h4 fw-bold text-primary">{consultas.filter(c => c.status === 'Confirmada').length}</h3>
+                    <h3 className="h4 fw-bold text-primary">{consultasConfirmadas}</h3>
                     <p className="text-muted mb-0">Confirmadas</p>
                   </div>
                 </div>
@@ -64,7 +215,7 @@ const ConsultasPsicologo = () => {
               <div className="col-md-3">
                 <div className="card border-0 shadow-sm">
                   <div className="card-body text-center">
-                    <h3 className="h4 fw-bold text-warning">{consultas.filter(c => c.status === 'Agendada').length}</h3>
+                    <h3 className="h4 fw-bold text-warning">{consultasAgendadas}</h3>
                     <p className="text-muted mb-0">Agendadas</p>
                   </div>
                 </div>
@@ -72,7 +223,7 @@ const ConsultasPsicologo = () => {
               <div className="col-md-3">
                 <div className="card border-0 shadow-sm">
                   <div className="card-body text-center">
-                    <h3 className="h4 fw-bold text-success">R$ {consultas.reduce((total, c) => total + c.valor, 0)}</h3>
+                    <h3 className="h4 fw-bold text-success">{formatarValor(valorTotal)}</h3>
                     <p className="text-muted mb-0">Total</p>
                   </div>
                 </div>
@@ -83,15 +234,16 @@ const ConsultasPsicologo = () => {
               <div className="card-body">
                 <div className="row">
                   <div className="col-md-6">
-                    <select 
-                      className="form-select" 
-                      value={filtroStatus} 
+                    <select
+                      className="form-select"
+                      value={filtroStatus}
                       onChange={(e) => setFiltroStatus(e.target.value)}
                     >
                       <option value="todas">Todas as consultas</option>
-                      <option value="concluída">Concluídas</option>
+                      <option value="realizada">Concluídas</option>
                       <option value="confirmada">Confirmadas</option>
                       <option value="agendada">Agendadas</option>
+                      <option value="cancelada">Canceladas</option>
                     </select>
                   </div>
                 </div>
@@ -100,70 +252,291 @@ const ConsultasPsicologo = () => {
 
             <div className="card border-0 shadow-sm">
               <div className="card-body p-0">
-                <div className="table-responsive">
-                  <table className="table table-hover mb-0">
-                    <thead className="bg-light">
-                      <tr>
-                        <th>Paciente</th>
-                        <th>Data</th>
-                        <th>Horário</th>
-                        <th>Tipo</th>
-                        <th>Status</th>
-                        <th>Valor</th>
-                        <th>Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredConsultas.map(consulta => (
-                        <tr key={consulta.id}>
-                          <td>
-                            <div className="d-flex align-items-center">
-                              <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
-                                <i className="bi bi-person text-primary"></i>
-                              </div>
-                              <strong>{consulta.paciente}</strong>
-                            </div>
-                          </td>
-                          <td>{new Date(consulta.data).toLocaleDateString('pt-BR')}</td>
-                          <td>{consulta.horario}</td>
-                          <td>{consulta.tipo}</td>
-                          <td>
-                            <span className={`badge bg-${getStatusColor(consulta.status)}`}>
-                              {consulta.status}
-                            </span>
-                          </td>
-                          <td>R$ {consulta.valor}</td>
-                          <td>
-                            <div className="dropdown">
-                              <button className="btn btn-outline-secondary btn-sm" data-bs-toggle="dropdown">
-                                <i className="bi bi-three-dots-vertical"></i>
-                              </button>
-                              <ul className="dropdown-menu">
-                                <li><a className="dropdown-item" href="#">Ver Detalhes</a></li>
-                                <li><a className="dropdown-item" href="#">Editar</a></li>
-                                <li>
-                                  <button
-                                    className="dropdown-item"
-                                    type="button"
-                                    onClick={() => setSessaoReuniao(consulta.id)}
-                                  >
-                                    Entrar na sessão
-                                  </button>
-                                </li>
-                                <li><a className="dropdown-item" href="#">Cancelar</a></li>
-                              </ul>
-                            </div>
-                          </td>
+                {loading ? (
+                  <div className="text-center py-5">
+                    <div className="spinner-border text-primary" role="status"></div>
+                    <p className="text-muted mt-2 mb-0">Carregando consultas...</p>
+                  </div>
+                ) : erro ? (
+                  <div className="text-center py-5">
+                    <div className="alert alert-danger mx-4 mb-0">{erro}</div>
+                  </div>
+                ) : (
+                  <div className="table-responsive">
+                    <table className="table table-hover mb-0">
+                      <thead className="bg-light">
+                        <tr>
+                          <th>Paciente</th>
+                          <th>Data</th>
+                          <th>Horário</th>
+                          <th>Duração</th>
+                          <th>Status</th>
+                          <th>Valor</th>
+                          <th>Ações</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {filteredConsultas.length === 0 ? (
+                          <tr>
+                            <td colSpan="7" className="text-center text-muted py-4">
+                              Nenhuma consulta encontrada.
+                            </td>
+                          </tr>
+                        ) : (
+                          filteredConsultas.map((consulta) => (
+                            <tr key={consulta.id}>
+                              <td>
+                                <div className="d-flex align-items-center">
+                                  <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i className="bi bi-person text-primary"></i>
+                                  </div>
+                                  <strong>{consulta.pacienteNome || `Paciente #${consulta.pacienteId}`}</strong>
+                                </div>
+                              </td>
+                              <td>{new Date(consulta.dataSessao).toLocaleDateString('pt-BR')}</td>
+                              <td>{formatarHora(consulta.dataSessao)}</td>
+                              <td>{consulta.duracao || 60} min</td>
+                              <td>
+                                <span className={`badge bg-${getStatusColor(consulta.statusSessao)}`}>
+                                  {getStatusLabel(consulta.statusSessao)}
+                                </span>
+                              </td>
+                              <td>{formatarValor(consulta.valor)}</td>
+                              <td>
+                                <div className="dropdown">
+                                  <button className="btn btn-outline-secondary btn-sm" data-bs-toggle="dropdown">
+                                    <i className="bi bi-three-dots-vertical"></i>
+                                  </button>
+                                  <ul className="dropdown-menu">
+                                    <li>
+                                      <button
+                                        className="dropdown-item"
+                                        type="button"
+                                        onClick={() => setDetalhesSessao(consulta)}
+                                      >
+                                        Ver Detalhes
+                                      </button>
+                                    </li>
+                                    {consulta.statusSessao === 'agendada' && (
+                                      <li>
+                                        <button
+                                          className="dropdown-item"
+                                          type="button"
+                                          onClick={() => confirmarStatus(consulta, 'realizada')}
+                                        >
+                                          Marcar como realizada
+                                        </button>
+                                      </li>
+                                    )}
+                                    {(consulta.statusSessao === 'agendada' || consulta.statusSessao === 'confirmada') && (
+                                      <li>
+                                        <button
+                                          className="dropdown-item text-danger"
+                                          type="button"
+                                          onClick={() => confirmarStatus(consulta, 'cancelada')}
+                                        >
+                                          Cancelar
+                                        </button>
+                                      </li>
+                                    )}
+                                    <li>
+                                      <button
+                                        className="dropdown-item"
+                                        type="button"
+                                        onClick={() => setSessaoReuniao(consulta.id)}
+                                      >
+                                        Entrar na sessão
+                                      </button>
+                                    </li>
+                                  </ul>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* ── Modal: Ver Detalhes ── */}
+      {detalhesSessao && (
+        <>
+          <div className="modal-backdrop fade show" onClick={() => setDetalhesSessao(null)} aria-hidden="true" />
+          <div className="modal d-block" tabIndex="-1" role="dialog" aria-modal="true">
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content border-0 shadow-lg">
+                <div className="modal-header border-0">
+                  <h5 className="modal-title fw-bold">Detalhes da Consulta</h5>
+                  <button type="button" className="btn-close" aria-label="Fechar" onClick={() => setDetalhesSessao(null)} />
+                </div>
+                <div className="modal-body">
+                  <div className="mb-2">
+                    <strong>Paciente:</strong> {detalhesSessao.pacienteNome || `Paciente #${detalhesSessao.pacienteId}`}
+                  </div>
+                  <div className="mb-2">
+                    <strong>Psicólogo:</strong> {detalhesSessao.psicologoNome || `Psicólogo #${detalhesSessao.psicologoId}`}
+                  </div>
+                  <div className="mb-2">
+                    <strong>Data:</strong> {new Date(detalhesSessao.dataSessao).toLocaleString('pt-BR')}
+                  </div>
+                  <div className="mb-2">
+                    <strong>Duração:</strong> {detalhesSessao.duracao || 60} minutos
+                  </div>
+                  <div className="mb-2">
+                    <strong>Status:</strong> {getStatusLabel(detalhesSessao.statusSessao)}
+                  </div>
+                  <div className="mb-2">
+                    <strong>Valor:</strong> {formatarValor(detalhesSessao.valor)}
+                  </div>
+                  <div className="mb-2">
+                    <strong>Observações:</strong> {detalhesSessao.observacoes || '—'}
+                  </div>
+                  <div className="mb-0">
+                    <strong>Link da reunião:</strong> {detalhesSessao.linkReuniao || 'Não gerado'}
+                  </div>
+                </div>
+                <div className="modal-footer border-0">
+                  <button type="button" className="btn btn-outline-secondary" onClick={() => setDetalhesSessao(null)}>
+                    Fechar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ── Modal: Nova Consulta ── */}
+      {modalNova && (
+        <>
+          <div className="modal-backdrop fade show" onClick={fecharNovaConsulta} aria-hidden="true" />
+          <div className="modal d-block" tabIndex="-1" role="dialog" aria-modal="true">
+            <div className="modal-dialog modal-dialog-centered modal-lg">
+              <div className="modal-content border-0 shadow-lg">
+                <div className="modal-header border-0">
+                  <h5 className="modal-title fw-bold">Nova Consulta</h5>
+                  <button type="button" className="btn-close" aria-label="Fechar" onClick={fecharNovaConsulta} />
+                </div>
+                <form onSubmit={confirmarNovaConsulta}>
+                  <div className="modal-body">
+                    <div className="mb-3">
+                      <label className="form-label">
+                        <i className="bi bi-person me-2"></i>Paciente
+                      </label>
+                      <select
+                        className="form-select"
+                        name="pacienteId"
+                        value={formNova.pacienteId}
+                        onChange={handleNovaChange}
+                        required
+                        disabled={carregandoPacientes}
+                      >
+                        <option value="">{carregandoPacientes ? 'Carregando pacientes...' : 'Selecione o paciente...'}</option>
+                        {pacientes.map((paciente) => (
+                          <option key={paciente.id} value={paciente.id}>
+                            {paciente.nome}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">
+                        <i className="bi bi-calendar3 me-2"></i>Data da Consulta
+                      </label>
+                      <input
+                        type="date"
+                        className="form-control"
+                        name="data"
+                        value={formNova.data}
+                        onChange={handleDataChange}
+                        min={hoje}
+                        required
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">
+                        <i className="bi bi-clock me-2"></i>Horário
+                      </label>
+                      {carregandoHorarios ? (
+                        <div className="d-flex align-items-center gap-2 text-muted">
+                          <span className="spinner-border spinner-border-sm"></span>
+                          Carregando horários...
+                        </div>
+                      ) : (disponibilidade?.horariosDisponiveis?.length || 0) === 0 && disponibilidade ? (
+                        <div className="alert alert-warning mb-0">
+                          Nenhum horário disponível nesta data. Escolha outra data.
+                        </div>
+                      ) : disponibilidade ? (
+                        <div className="d-flex flex-wrap gap-2">
+                          {disponibilidade.horariosDisponiveis.map((horario) => {
+                            const selected = horarioSelecionado === horario;
+                            return (
+                              <button
+                                key={horario}
+                                type="button"
+                                className={`btn btn-sm rounded-pill px-3 ${selected ? 'btn-primary' : 'btn-outline-secondary'}`}
+                                onClick={() => setHorarioSelecionado(horario)}
+                              >
+                                {horario}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <small className="text-muted">Escolha uma data para ver os horários disponíveis.</small>
+                      )}
+                    </div>
+
+                    <div className="mb-2">
+                      <label className="form-label">
+                        <i className="bi bi-chat-left-text me-2"></i>Observações (opcional)
+                      </label>
+                      <textarea
+                        className="form-control"
+                        name="observacoes"
+                        value={formNova.observacoes}
+                        onChange={handleNovaChange}
+                        rows="3"
+                        placeholder="Alguma informação adicional..."
+                      ></textarea>
+                    </div>
+                  </div>
+                  <div className="modal-footer border-0">
+                    <button type="button" className="btn btn-outline-secondary" onClick={fecharNovaConsulta}>
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={salvando || !formNova.pacienteId || !formNova.data || !horarioSelecionado}
+                    >
+                      {salvando ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2"></span>
+                          Salvando...
+                        </>
+                      ) : (
+                        <>
+                          <i className="bi bi-check-circle me-2"></i>
+                          Confirmar Consulta
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       <ReuniaoModal
         show={Boolean(sessaoReuniao)}

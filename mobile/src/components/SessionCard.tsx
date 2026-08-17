@@ -7,9 +7,17 @@ interface Props {
   sessao: Sessao;
   onPress?: () => void;
   isPaciente?: boolean;
+  onMarcarRealizada?: () => void;
+  onCancelar?: () => void;
 }
 
-export const SessionCard = ({ sessao, onPress, isPaciente = true }: Props) => {
+export const SessionCard = ({
+  sessao,
+  onPress,
+  isPaciente = true,
+  onMarcarRealizada,
+  onCancelar,
+}: Props) => {
   // Parse data
   const data = new Date(sessao.dataSessao);
   const dia = data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
@@ -41,6 +49,29 @@ export const SessionCard = ({ sessao, onPress, isPaciente = true }: Props) => {
         {/* Futuro: Exibir nome do psicólogo ou paciente dependendo de quem está logado */}
         <Text style={styles.title} numberOfLines={1}>Consulta de terapia</Text>
         <Text style={styles.subtitle}>{sessao.duracao} minutos</Text>
+
+        {!isPaciente && (onMarcarRealizada || onCancelar) && (
+          <View style={styles.actionsRow}>
+            {onMarcarRealizada && (
+              <TouchableOpacity
+                style={[styles.actionBtn, styles.actionRealizar]}
+                onPress={onMarcarRealizada}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.actionRealizarText}>Marcar realizada</Text>
+              </TouchableOpacity>
+            )}
+            {onCancelar && (
+              <TouchableOpacity
+                style={[styles.actionBtn, styles.actionCancelar]}
+                onPress={onCancelar}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.actionCancelarText}>Cancelar</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
       </View>
       
       <View style={[styles.statusBadge, { backgroundColor: getStatusColor(sessao.statusSessao) + '20' }]}>
@@ -106,5 +137,34 @@ const styles = StyleSheet.create({
     fontSize: typography.size.xs,
     fontWeight: typography.weight.bold,
     textTransform: 'uppercase',
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  actionBtn: {
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    borderRadius: borderRadius.full,
+  },
+  actionRealizar: {
+    backgroundColor: colors.mint,
+  },
+  actionRealizarText: {
+    fontSize: typography.size.xs,
+    fontWeight: typography.weight.bold,
+    color: colors.primary,
+  },
+  actionCancelar: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.error,
+  },
+  actionCancelarText: {
+    fontSize: typography.size.xs,
+    fontWeight: typography.weight.bold,
+    color: colors.error,
   },
 });
