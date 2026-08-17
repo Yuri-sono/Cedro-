@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api.js';
+import API_BASE_URL from '../config.js';
 import { Client } from '@stomp/stompjs';
 import '../styles/chat.css';
 
@@ -57,13 +58,50 @@ function Chat() {
   }, [marcarComoLidas, userId]);
 
   const carregarDestinatario = useCallback(async () => {
+    const ehPsicologoLogado = user?.tipoUsuario === 'psicologo';
+
     try {
-      const response = await api.get(`/api/usuarios/${userId}`);
-      setDestinatario(response.data);
+      // Caso 1) Destinatário é psicólogo (paciente/admin conversando com psicólogo).
+      // Usa o endpoint público GET /api/psicologos/{id} — evita o 403 de
+      // /api/usuarios/{id}, que é restrito a admin ou ao próprio usuário.
+      if (!ehPsicologoLogado) {
+        try {
+          const resp = await api.get(`/api/psicologos/${userId}`);
+          if (resp.data?.nome) {
+            setDestinatario(resp.data);
+            return;
+          }
+        } catch (err) {
+          // Endpoint devolve 400 ("Não é psicólogo") se o id não for psicólogo.
+          console.warn('Destinatário não é psicólogo nesse id; tentando outra fonte.', err);
+        }
+      }
+
+      // Caso 2) Destinatário é paciente (psicólogo logado). Não existe endpoint
+      // público único de paciente, então a lista de conversas fornece o nome
+      // (GET /api/mensagens/conversas, já usada pelas telas de listagem).
+      if (ehPsicologoLogado) {
+        try {
+          const resp = await api.get('/api/mensagens/conversas');
+          const conversa = (resp.data || []).find(
+            (c) => Number(c.userId) === destinatarioId
+          );
+          if (conversa?.nome) {
+            setDestinatario(conversa);
+            return;
+          }
+        } catch (err) {
+          console.warn('Não foi possível obter o nome pela lista de conversas.', err);
+        }
+      }
+
+      // Caso 3) Fallback: admin ou o próprio usuário (quando permitido).
+      const resp = await api.get(`/api/usuarios/${userId}`);
+      setDestinatario(resp.data);
     } catch (error) {
       console.error('Erro ao carregar destinatário:', error);
     }
-  }, [userId]);
+  }, [user, userId, destinatarioId]);
 
   const sendRealtime = useCallback((payload) => {
     const client = socketRef.current;
@@ -103,7 +141,11 @@ function Chat() {
       const token = getTokenForWebSocket();
       if (!token) return;
 
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+      // Constrói a URL do WebSocket a partir da MESMA base da API usada pelo
+      // resto do projeto (config.js), convertendo o protocolo:
+      //   http:// -> ws://   e   https:// -> wss://
+      // Assim funciona em desenvolvimento (http://localhost:8080 -> ws://localhost:8080)
+      // e em produção (https://cedro-vc32.onrender.com -> wss://cedro-vc32.onrender.com).
       const wsUrl = `${API_BASE_URL.replace(/^http/, 'ws')}/ws-chat?token=${encodeURIComponent(token)}`;
 
       const client = new Client({
