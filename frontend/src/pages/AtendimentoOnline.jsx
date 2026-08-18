@@ -1,55 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext.jsx';
+import api from '../services/api.js';
 
 const AtendimentoOnline = () => {
   const [activeTab, setActiveTab] = useState('agendar');
-  const [formData, setFormData] = useState({
-    nome: '',
-    email: '',
-    telefone: '',
-    data: '',
-    horario: '',
-    terapeuta: '',
-    modalidade: 'individual',
-    plataforma: 'zoom',
-    observacoes: ''
-  });
-  const [testResult, setTestResult] = useState(null);
+  const [psicologos, setPsicologos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState('');
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
-  const terapeutas = [
-    { id: 1, nome: 'Dra. Ana Silva', especialidade: 'Ansiedade e Depressão', valor: 150 },
-    { id: 2, nome: 'Dr. Carlos Santos', especialidade: 'Terapia de Casal', valor: 180 },
-    { id: 3, nome: 'Dra. Maria Costa', especialidade: 'Terapia Familiar', valor: 160 },
-    { id: 4, nome: 'Dr. João Oliveira', especialidade: 'Trauma e PTSD', valor: 170 }
-  ];
-
-  const horarios = [
-    '08:00', '09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'
-  ];
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const buscarPsicologos = async () => {
+    setLoading(true);
+    setErro('');
+    try {
+      const response = await api.get('/api/psicologos');
+      setPsicologos(response.data || []);
+    } catch (error) {
+      console.error('Erro ao buscar psicólogos:', error);
+      setErro('Não foi possível carregar a lista de psicólogos. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    window.dispatchEvent(new CustomEvent('showNotification', {
-      detail: {
-        message: `💻 Consulta online agendada para ${formData.data} às ${formData.horario}!`,
-        type: 'success'
-      }
-    }));
-    setFormData({
-      nome: '', email: '', telefone: '', data: '', horario: '', terapeuta: '',
-      modalidade: 'individual', plataforma: 'zoom', observacoes: ''
-    });
+  useEffect(() => {
+    buscarPsicologos();
+  }, []);
+
+  const agendarComPsicologo = (psicologoId) => {
+    if (isAuthenticated) {
+      navigate(`/agendar-sessao/${psicologoId}`);
+      return;
+    }
+    // Visitante não logado: guarda a escolha e vai para o login, retornando
+    // ao fluxo de agendamento após autenticar (via location.state.returnTo).
+    sessionStorage.setItem('psicologoIdPendente', String(psicologoId));
+    navigate('/login', { state: { returnTo: `/agendar-sessao/${psicologoId}` } });
   };
 
-  const testarConexao = () => {
-    setTestResult('testando');
-    setTimeout(() => {
-      setTestResult('sucesso');
-    }, 2000);
+  const formatarPreco = (valor) => {
+    const numero = parseFloat(valor);
+    return Number.isFinite(numero) ? numero.toFixed(2) : '0.00';
   };
 
   return (
@@ -73,14 +66,6 @@ const AtendimentoOnline = () => {
                   </li>
                   <li className="nav-item">
                     <button 
-                      className={`nav-link ${activeTab === 'teste' ? 'active' : ''}`}
-                      onClick={() => setActiveTab('teste')}
-                    >
-                      <i className="bi bi-wifi me-2"></i>Teste de Conexão
-                    </button>
-                  </li>
-                  <li className="nav-item">
-                    <button 
                       className={`nav-link ${activeTab === 'info' ? 'active' : ''}`}
                       onClick={() => setActiveTab('info')}
                     >
@@ -92,184 +77,106 @@ const AtendimentoOnline = () => {
 
               <div className="card-body p-4">
                 {activeTab === 'agendar' && (
-                  <form onSubmit={handleSubmit}>
-                    <div className="row g-3">
-                      <div className="col-md-6">
-                        <label className="form-label">Nome Completo *</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          name="nome"
-                          value={formData.nome}
-                          onChange={handleInputChange}
-                          required
-                        />
-                      </div>
-                      <div className="col-md-6">
-                        <label className="form-label">Email *</label>
-                        <input
-                          type="email"
-                          className="form-control"
-                          name="email"
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          required
-                        />
-                      </div>
-                      <div className="col-md-6">
-                        <label className="form-label">Telefone *</label>
-                        <input
-                          type="tel"
-                          className="form-control"
-                          name="telefone"
-                          value={formData.telefone}
-                          onChange={handleInputChange}
-                          required
-                        />
-                      </div>
-                      <div className="col-md-6">
-                        <label className="form-label">Data *</label>
-                        <input
-                          type="date"
-                          className="form-control"
-                          name="data"
-                          value={formData.data}
-                          onChange={handleInputChange}
-                          min={new Date().toISOString().split('T')[0]}
-                          required
-                        />
-                      </div>
-                      <div className="col-md-6">
-                        <label className="form-label">Horário *</label>
-                        <select
-                          className="form-select"
-                          name="horario"
-                          value={formData.horario}
-                          onChange={handleInputChange}
-                          required
-                        >
-                          <option value="">Selecione</option>
-                          {horarios.map(h => (
-                            <option key={h} value={h}>{h}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="col-md-6">
-                        <label className="form-label">Terapeuta *</label>
-                        <select
-                          className="form-select"
-                          name="terapeuta"
-                          value={formData.terapeuta}
-                          onChange={handleInputChange}
-                          required
-                        >
-                          <option value="">Selecione</option>
-                          {terapeutas.map(t => (
-                            <option key={t.id} value={t.nome}>
-                              {t.nome} - {t.especialidade} (R$ {t.valor})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="col-md-6">
-                        <label className="form-label">Modalidade</label>
-                        <select
-                          className="form-select"
-                          name="modalidade"
-                          value={formData.modalidade}
-                          onChange={handleInputChange}
-                        >
-                          <option value="individual">Individual</option>
-                          <option value="casal">Casal</option>
-                          <option value="familia">Família</option>
-                        </select>
-                      </div>
-                      <div className="col-md-6">
-                        <label className="form-label">Plataforma Preferida</label>
-                        <select
-                          className="form-select"
-                          name="plataforma"
-                          value={formData.plataforma}
-                          onChange={handleInputChange}
-                        >
-                          <option value="zoom">Zoom</option>
-                          <option value="meet">Google Meet</option>
-                          <option value="teams">Microsoft Teams</option>
-                          <option value="cedro">Plataforma Cedro</option>
-                        </select>
-                      </div>
-                      <div className="col-12">
-                        <label className="form-label">Observações</label>
-                        <textarea
-                          className="form-control"
-                          name="observacoes"
-                          value={formData.observacoes}
-                          onChange={handleInputChange}
-                          rows="3"
-                          placeholder="Conte um pouco sobre o que gostaria de trabalhar na terapia"
-                        />
-                      </div>
-                      <div className="col-12 text-center">
-                        <button type="submit" className="btn btn-primary btn-lg">
-                          <i className="bi bi-calendar-check me-2"></i>Agendar Consulta
-                        </button>
-                      </div>
-                    </div>
-                  </form>
-                )}
-
-                {activeTab === 'teste' && (
-                  <div className="text-center">
-                    <h3 className="mb-4">Teste sua Conexão</h3>
-                    <p className="mb-4">Verifique se seu equipamento está funcionando corretamente para a consulta online.</p>
-                    
-                    <div className="row g-4 mb-4">
-                      <div className="col-md-4">
-                        <div className="card border-0 bg-light">
-                          <div className="card-body">
-                            <i className="bi bi-wifi text-primary fs-1 mb-3"></i>
-                            <h5>Internet</h5>
-                            <p className="small text-muted">Velocidade mínima: 1 Mbps</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="col-md-4">
-                        <div className="card border-0 bg-light">
-                          <div className="card-body">
-                            <i className="bi bi-camera-video text-success fs-1 mb-3"></i>
-                            <h5>Câmera</h5>
-                            <p className="small text-muted">Resolução mínima: 480p</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="col-md-4">
-                        <div className="card border-0 bg-light">
-                          <div className="card-body">
-                            <i className="bi bi-mic text-info fs-1 mb-3"></i>
-                            <h5>Microfone</h5>
-                            <p className="small text-muted">Audio claro e sem ruídos</p>
-                          </div>
-                        </div>
-                      </div>
+                  <div>
+                    <div className="text-center mb-4">
+                      <h3 className="fw-bold">Escolha um psicólogo</h3>
+                      <p className="text-muted">
+                        Selecione o profissional e finalize o agendamento em poucos cliques.
+                      </p>
                     </div>
 
-                    <button 
-                      className="btn btn-primary btn-lg"
-                      onClick={testarConexao}
-                      disabled={testResult === 'testando'}
-                    >
-                      {testResult === 'testando' ? (
-                        <><i className="bi bi-arrow-clockwise me-2"></i>Testando...</>
-                      ) : (
-                        <><i className="bi bi-play-circle me-2"></i>Iniciar Teste</>
-                      )}
-                    </button>
-
-                    {testResult === 'sucesso' && (
-                      <div className="alert alert-success mt-4">
-                        <i className="bi bi-check-circle me-2"></i>
-                        Tudo funcionando perfeitamente! Você está pronto para sua consulta online.
+                    {loading ? (
+                      <div className="text-center py-5">
+                        <div className="spinner-border text-primary" role="status">
+                          <span className="visually-hidden">Carregando...</span>
+                        </div>
+                        <p className="text-muted mt-3">Carregando psicólogos...</p>
                       </div>
+                    ) : erro ? (
+                      <div className="text-center py-4">
+                        <div className="alert alert-danger d-inline-block">
+                          <i className="bi bi-exclamation-triangle me-2"></i>
+                          {erro}
+                        </div>
+                        <div className="mt-3">
+                          <button className="btn btn-primary" onClick={buscarPsicologos}>
+                            <i className="bi bi-arrow-clockwise me-2"></i>Tentar novamente
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="row g-4">
+                          {psicologos.map((psicologo) => (
+                            <div key={psicologo.id} className="col-md-6">
+                              <div className="card h-100 shadow-sm border-0">
+                                <div className="card-body p-4">
+                                  <div className="d-flex align-items-start mb-3">
+                                    <div
+                                      className="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0 me-3"
+                                      style={{
+                                        width: '56px',
+                                        height: '56px',
+                                        ...((psicologo.fotoUrl || psicologo.foto_url) ? {
+                                          backgroundImage: `url(${psicologo.fotoUrl || psicologo.foto_url})`,
+                                          backgroundSize: 'cover',
+                                          backgroundPosition: 'center'
+                                        } : {})
+                                      }}
+                                    >
+                                      {!(psicologo.fotoUrl || psicologo.foto_url) && (
+                                        <i className="bi bi-person-fill text-white"></i>
+                                      )}
+                                    </div>
+                                    <div>
+                                      <h5 className="card-title fw-bold mb-1">{psicologo.nome}</h5>
+                                      {psicologo.especialidade && (
+                                        <p className="text-muted mb-1 small">
+                                          <i className="bi bi-bookmark-fill text-primary me-2"></i>
+                                          {psicologo.especialidade}
+                                        </p>
+                                      )}
+                                      {psicologo.avaliacao && (
+                                        <small className="text-warning">
+                                          <i className="bi bi-star-fill me-1"></i>
+                                          {parseFloat(psicologo.avaliacao).toFixed(1)}
+                                        </small>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="d-flex justify-content-between align-items-center border-top pt-3">
+                                    <div>
+                                      <small className="text-muted d-block">Valor da sessão</small>
+                                      <span className="h5 text-success mb-0 fw-bold">
+                                        R$ {formatarPreco(psicologo.precoSessao || psicologo.preco_sessao)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="card-footer bg-transparent border-0 p-4 pt-0">
+                                  <div className="d-grid">
+                                    <button
+                                      className="btn btn-success w-100 py-2"
+                                      onClick={() => agendarComPsicologo(psicologo.id)}
+                                    >
+                                      <i className="bi bi-calendar-plus me-2"></i>
+                                      Agendar com este psicólogo
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {psicologos.length === 0 && (
+                          <div className="text-center py-5">
+                            <i className="bi bi-person-x fs-1 text-muted"></i>
+                            <h4 className="fw-bold mt-3">Nenhum psicólogo disponível</h4>
+                            <p className="text-muted">Tente novamente mais tarde.</p>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 )}

@@ -108,7 +108,8 @@ function Login() {
       });
       
       login(res.data.usuario, res.data.token);
-      navigate('/');
+      // Se veio de uma escolha pendente (ex.: /atendimento-online), volta para lá
+      navigate(location.state?.returnTo || '/');
     } catch (error) {
       console.error('Erro no login Google:', error);
       setErrorMsg(error.response?.data?.error || 'Erro ao fazer login com Google. Tente novamente.');
@@ -144,7 +145,9 @@ function Login() {
       
       if (isLogin) {
         login(response.data.usuario, response.data.token);
-        navigate('/');
+        // Se o usuário foi redirecionado para o login para finalizar uma ação
+        // (ex.: escolheu um psicólogo em /atendimento-online), retorna para lá.
+        navigate(location.state?.returnTo || '/');
       } else {
         setSuccessMsg('Conta criada com sucesso! Faça login para continuar.');
         setIsLogin(true);
