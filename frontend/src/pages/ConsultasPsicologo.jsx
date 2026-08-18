@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 import NavbarPsicologo from '../components/NavbarPsicologo.jsx';
 import SidebarPsicologo from '../components/SidebarPsicologo.jsx';
 import ReuniaoModal from '../components/ReuniaoModal.jsx';
+import NovaConsultaModal from '../components/NovaConsultaModal.jsx';
 import api from '../services/api.js';
 
 const STATUS_LABEL = {
@@ -19,12 +20,6 @@ const STATUS_COLOR = {
   cancelada: 'danger'
 };
 
-const initialFormNova = {
-  pacienteId: '',
-  data: '',
-  observacoes: ''
-};
-
 const ConsultasPsicologo = () => {
   const { user, loading: authLoading } = useAuth();
   const [consultas, setConsultas] = useState([]);
@@ -34,15 +29,8 @@ const ConsultasPsicologo = () => {
   const [sessaoReuniao, setSessaoReuniao] = useState(null);
   const [detalhesSessao, setDetalhesSessao] = useState(null);
 
-  // ── Modal "Nova Consulta" ──
+  // ── Modal "Nova Consulta" (compartilhado — NovaConsultaModal.jsx) ──
   const [modalNova, setModalNova] = useState(false);
-  const [salvando, setSalvando] = useState(false);
-  const [pacientes, setPacientes] = useState([]);
-  const [carregandoPacientes, setCarregandoPacientes] = useState(false);
-  const [formNova, setFormNova] = useState(initialFormNova);
-  const [disponibilidade, setDisponibilidade] = useState(null);
-  const [carregandoHorarios, setCarregandoHorarios] = useState(false);
-  const [horarioSelecionado, setHorarioSelecionado] = useState('');
 
   const carregarConsultas = useCallback(async () => {
     if (!user) return;
@@ -103,81 +91,8 @@ const ConsultasPsicologo = () => {
     }
   };
 
-  const abrirNovaConsulta = async () => {
-    setModalNova(true);
-    setCarregandoPacientes(true);
-    try {
-      const response = await api.get(`/api/psicologos/${user.id}/pacientes`);
-      setPacientes(response.data || []);
-    } catch (error) {
-      console.error('Erro ao carregar pacientes:', error);
-      window.alert(error?.response?.data?.error || 'Não foi possível carregar os pacientes.');
-      setPacientes([]);
-    } finally {
-      setCarregandoPacientes(false);
-    }
-  };
-
-  const fecharNovaConsulta = () => {
-    setModalNova(false);
-    setFormNova(initialFormNova);
-    setDisponibilidade(null);
-    setHorarioSelecionado('');
-  };
-
-  const handleNovaChange = (e) => {
-    setFormNova((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  // Ao escolher a data, busca a disponibilidade real do psicólogo
-  // (GET /api/sessoes/disponibilidade/{id}?data=YYYY-MM-DD — mesmo padrão de AgendarSessao).
-  const handleDataChange = async (e) => {
-    const data = e.target.value;
-    setFormNova((prev) => ({ ...prev, data }));
-    setHorarioSelecionado('');
-    setDisponibilidade(null);
-
-    if (!data) {
-      setCarregandoHorarios(false);
-      return;
-    }
-
-    setCarregandoHorarios(true);
-    try {
-      const response = await api.get(`/api/sessoes/disponibilidade/${user.id}`, { params: { data } });
-      setDisponibilidade(response.data);
-    } catch (error) {
-      console.error('Erro ao carregar disponibilidade:', error);
-      setDisponibilidade(null);
-    } finally {
-      setCarregandoHorarios(false);
-    }
-  };
-
-  const confirmarNovaConsulta = async (e) => {
-    e.preventDefault();
-    if (!formNova.pacienteId || !formNova.data || !horarioSelecionado) return;
-    setSalvando(true);
-
-    try {
-      const dataSessao = `${formNova.data}T${horarioSelecionado}:00`;
-      await api.post('/api/sessoes', {
-        pacienteId: parseInt(formNova.pacienteId, 10),
-        dataSessao,
-        duracao: 60,
-        observacoes: formNova.observacoes
-      });
-      fecharNovaConsulta();
-      await carregarConsultas();
-    } catch (error) {
-      console.error('Erro ao criar consulta:', error);
-      window.alert(error?.response?.data?.error || 'Erro ao criar consulta.');
-    } finally {
-      setSalvando(false);
-    }
-  };
-
-  const hoje = new Date().toISOString().split('T')[0];
+  // (Lógica do modal "Nova Consulta" extraída para o componente compartilhado
+  // NovaConsultaModal.jsx — renderizado ao final do JSX.)
 
   return (
     <div className="dashboard-terapeuta">
@@ -190,7 +105,7 @@ const ConsultasPsicologo = () => {
           <div className="col-md-9 col-lg-10">
             <div className="d-flex justify-content-between align-items-center mb-4">
               <h1 className="h3 fw-bold">Consultas</h1>
-              <button className="btn btn-primary" onClick={abrirNovaConsulta} disabled={!user}>
+              <button className="btn btn-primary" onClick={() => setModalNova(true)} disabled={!user}>
                 <i className="bi bi-plus-circle me-2"></i>Nova Consulta
               </button>
             </div>
@@ -412,131 +327,14 @@ const ConsultasPsicologo = () => {
         </>
       )}
 
-      {/* ── Modal: Nova Consulta ── */}
-      {modalNova && (
-        <>
-          <div className="modal-backdrop fade show" onClick={fecharNovaConsulta} aria-hidden="true" />
-          <div className="modal d-block" tabIndex="-1" role="dialog" aria-modal="true">
-            <div className="modal-dialog modal-dialog-centered modal-lg">
-              <div className="modal-content border-0 shadow-lg">
-                <div className="modal-header border-0">
-                  <h5 className="modal-title fw-bold">Nova Consulta</h5>
-                  <button type="button" className="btn-close" aria-label="Fechar" onClick={fecharNovaConsulta} />
-                </div>
-                <form onSubmit={confirmarNovaConsulta}>
-                  <div className="modal-body">
-                    <div className="mb-3">
-                      <label className="form-label">
-                        <i className="bi bi-person me-2"></i>Paciente
-                      </label>
-                      <select
-                        className="form-select"
-                        name="pacienteId"
-                        value={formNova.pacienteId}
-                        onChange={handleNovaChange}
-                        required
-                        disabled={carregandoPacientes}
-                      >
-                        <option value="">{carregandoPacientes ? 'Carregando pacientes...' : 'Selecione o paciente...'}</option>
-                        {pacientes.map((paciente) => (
-                          <option key={paciente.id} value={paciente.id}>
-                            {paciente.nome}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+      {/* ── Modal: Nova Consulta (compartilhado — NovaConsultaModal.jsx) ── */}
+      <NovaConsultaModal
+        show={modalNova}
+        onClose={() => setModalNova(false)}
+        psicologoId={user?.id}
+        onSuccess={carregarConsultas}
+      />
 
-                    <div className="mb-3">
-                      <label className="form-label">
-                        <i className="bi bi-calendar3 me-2"></i>Data da Consulta
-                      </label>
-                      <input
-                        type="date"
-                        className="form-control"
-                        name="data"
-                        value={formNova.data}
-                        onChange={handleDataChange}
-                        min={hoje}
-                        required
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label">
-                        <i className="bi bi-clock me-2"></i>Horário
-                      </label>
-                      {carregandoHorarios ? (
-                        <div className="d-flex align-items-center gap-2 text-muted">
-                          <span className="spinner-border spinner-border-sm"></span>
-                          Carregando horários...
-                        </div>
-                      ) : (disponibilidade?.horariosDisponiveis?.length || 0) === 0 && disponibilidade ? (
-                        <div className="alert alert-warning mb-0">
-                          Nenhum horário disponível nesta data. Escolha outra data.
-                        </div>
-                      ) : disponibilidade ? (
-                        <div className="d-flex flex-wrap gap-2">
-                          {disponibilidade.horariosDisponiveis.map((horario) => {
-                            const selected = horarioSelecionado === horario;
-                            return (
-                              <button
-                                key={horario}
-                                type="button"
-                                className={`btn btn-sm rounded-pill px-3 ${selected ? 'btn-primary' : 'btn-outline-secondary'}`}
-                                onClick={() => setHorarioSelecionado(horario)}
-                              >
-                                {horario}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <small className="text-muted">Escolha uma data para ver os horários disponíveis.</small>
-                      )}
-                    </div>
-
-                    <div className="mb-2">
-                      <label className="form-label">
-                        <i className="bi bi-chat-left-text me-2"></i>Observações (opcional)
-                      </label>
-                      <textarea
-                        className="form-control"
-                        name="observacoes"
-                        value={formNova.observacoes}
-                        onChange={handleNovaChange}
-                        rows="3"
-                        placeholder="Alguma informação adicional..."
-                      ></textarea>
-                    </div>
-                  </div>
-                  <div className="modal-footer border-0">
-                    <button type="button" className="btn btn-outline-secondary" onClick={fecharNovaConsulta}>
-                      Cancelar
-                    </button>
-                    <button
-                      type="submit"
-                      className="btn btn-primary"
-                      disabled={salvando || !formNova.pacienteId || !formNova.data || !horarioSelecionado}
-                    >
-                      {salvando ? (
-                        <>
-                          <span className="spinner-border spinner-border-sm me-2"></span>
-                          Salvando...
-                        </>
-                      ) : (
-                        <>
-                          <i className="bi bi-check-circle me-2"></i>
-                          Confirmar Consulta
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
 
       <ReuniaoModal
         show={Boolean(sessaoReuniao)}
