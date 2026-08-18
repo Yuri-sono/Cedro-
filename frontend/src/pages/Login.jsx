@@ -163,7 +163,7 @@ function Login() {
 
   return (
     <div className="login-page-wrapper">
-      {/* Lado Esquerdo - Imagem e Branding */}
+      {/* Lado Esquerdo - Imagem e Branding (oculto em mobile: d-none d-lg-flex) */}
       <div className="login-side-image d-none d-lg-flex">
         <div className="login-overlay"></div>
         <div className="login-brand-content text-white text-center">
@@ -175,7 +175,7 @@ function Login() {
       
       {/* Lado Direito - Formulário */}
       <div className="login-side-form d-flex align-items-center justify-content-center w-100">
-        <div className="login-form-container w-100" style={{ maxWidth: '480px', padding: '2rem' }}>
+        <div className="login-form-container w-100" style={{ maxWidth: '480px', padding: '1.5rem' }}>
           <div className="text-center mb-5">
             <i className="bi bi-heart-pulse text-primary d-lg-none mb-3" style={{ fontSize: '3rem' }}></i>
             <h2 className="fw-bold mb-2" style={{ letterSpacing: '-0.5px' }}>{isLogin ? 'Bem-vindo de volta' : 'Crie sua conta'}</h2>

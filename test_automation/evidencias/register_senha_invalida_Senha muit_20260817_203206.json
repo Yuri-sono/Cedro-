@@ -1,0 +1,12 @@
+{
+  "requisicao": {
+    "email": "teste.1918ad8005@teste.cedro",
+    "senha": "***"
+  },
+  "resposta": {
+    "status": 400,
+    "body": {
+      "error": "Senha muito curta (min. 6 caracteres)"
+    }
+  }
+}

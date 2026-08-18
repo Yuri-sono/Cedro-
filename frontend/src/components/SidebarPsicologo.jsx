@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 const SidebarPsicologo = () => {
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const menuItems = [
     { path: '/psicologo/dashboard', icon: 'bi-speedometer2', label: 'Dashboard' },
@@ -16,25 +17,45 @@ const SidebarPsicologo = () => {
   ];
 
   return (
-    <div className="col-md-3 col-lg-2">
-      <div className="card border-0 shadow-sm">
-        <div className="card-body p-0">
-          <div className="list-group list-group-flush">
-            {menuItems.map(item => (
-              <Link 
-                key={item.path}
-                to={item.path} 
-                className={`list-group-item list-group-item-action ${
-                  location.pathname === item.path ? 'active' : ''
-                }`}
-              >
-                <i className={`bi ${item.icon} me-2`}></i>{item.label}
-              </Link>
-            ))}
+    <>
+      {/* Toggle do menu — visível apenas em mobile (d-md-none) */}
+      <div className="col-12 d-md-none">
+        <button
+          type="button"
+          className="btn btn-primary w-100 mb-3 d-flex align-items-center justify-content-between"
+          onClick={() => setIsMobileMenuOpen(prev => !prev)}
+          aria-expanded={isMobileMenuOpen}
+          aria-controls="sidebar-psicologo-menu"
+        >
+          <span><i className="bi bi-list me-2"></i>Menu do Psicólogo</span>
+          <i className={`bi ${isMobileMenuOpen ? 'bi-chevron-up' : 'bi-chevron-down'}`}></i>
+        </button>
+      </div>
+
+      <div className="col-md-3 col-lg-2">
+        <div
+          className={`card border-0 shadow-sm ${isMobileMenuOpen ? '' : 'd-none d-md-block'}`}
+          id="sidebar-psicologo-menu"
+        >
+          <div className="card-body p-0">
+            <div className="list-group list-group-flush">
+              {menuItems.map(item => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`list-group-item list-group-item-action ${
+                    location.pathname === item.path ? 'active' : ''
+                  }`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <i className={`bi ${item.icon} me-2`}></i>{item.label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

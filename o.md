@@ -1,210 +1,80 @@
-Faz total sentido — modelo local mais fraco precisa de tarefas atômicas, sem ambiguidade, e de preferência só **executando código que eu já escrevi**, não criando lógica do zero (é aí que modelo fraco costuma quebrar tudo). Vou te dar os scripts prontos e você entrega em pedaços pequenos pro Qwen, um de cada vez.
+CONTEXTO
+Cedro Plus. Melhorar a configuração de disponibilidade do psicólogo (tela
+Configurações no web, PsychologistSettingsScreen no mobile). Hoje o psicólogo só
+escolhe entre 9 horários fixos pré-definidos. Objetivo: dar liberdade de definir
+uma faixa de horário customizada (início/fim), gerando os horários automaticamente,
+mantendo a possibilidade de desmarcar horários individuais dentro da faixa.
 
-**Regra pra você seguir:** manda **uma tarefa por vez**, espera ela rodar e confirmar o resultado, só depois manda a próxima. Não cola a lista inteira de uma vez.
+NÃO alterar backend, banco de dados nem os endpoints — essa mudança é só de UI/UX
+no frontend, reaproveitando os campos diasAtendimento/horariosAtendimento e o
+payload já existente em PUT /api/auth/perfil.
 
----
+=== WEB: frontend/src/pages/ConfiguracoesPsicologo.jsx ===
 
-### TAREFA 1 — Preparar a pasta
+1. Em frontend/src/utils/psicologoAgenda.js, adicione uma nova função:
 
-```
-Crie a pasta scripts/teste-stomp/ na raiz do projeto.
-Dentro dela, rode exatamente estes comandos, nesta ordem:
-npm init -y
-npm install @stomp/stompjs ws node-fetch@2
+   export function gerarHorariosPorFaixa(horaInicio, horaFim) {
+     // horaInicio e horaFim no formato "HH:mm" (ex: "07:00", "20:00")
+     // Retorna array de strings "HH:mm" de hora em hora, incluindo horaInicio
+     // e excluindo horaFim (horaFim é o fim do último atendimento, não um
+     // horário de início válido). Ex: gerarHorariosPorFaixa("08:00","12:00")
+     // retorna ["08:00","09:00","10:00","11:00"].
+     // Validar: se horaFim <= horaInicio, retornar array vazio.
+   }
 
-Não crie nenhum arquivo .js ainda. Só confirme que o npm install terminou sem erro.
-```
+2. No componente, adicione dois estados novos: faixaInicio e faixaFim (strings
+   "HH:mm", inicializados vazios ou com o menor/maior valor de
+   horariosAtendimento já salvo, se houver).
 
----
+3. Na seção "Dias e Horários de Atendimento", ACIMA dos chips de horário atuais,
+   adicione dois inputs type="time":
+   - "Atender a partir de" (faixaInicio)
+   - "Atender até" (faixaFim)
+   - Um botão pequeno "Gerar horários" ao lado, que ao clicar chama
+     gerarHorariosPorFaixa(faixaInicio, faixaFim) e SUBSTITUI o array
+     horariosAtendimento pelo resultado (sobrescreve a seleção anterior).
+   - Mostrar uma mensagem de erro inline se horaFim <= horaInicio ao tentar gerar.
 
+4. Mantenha os chips de horário exatamente como estão hoje (clicáveis,
+   toggleTimeSlot), mas agora eles devem renderizar dinamicamente a partir do
+   array horariosAtendimento atual (que pode ter sido gerado pela faixa OU ainda
+   conter os 9 horários fixos antigos se o psicólogo nunca usou a faixa nova) —
+   ou seja, troque a fonte dos chips renderizados de DEFAULT_TIME_SLOTS fixo para
+   horariosAtendimento (ordenado), permitindo desmarcar (toggleTimeSlot já
+   remove do array) qualquer horário gerado.
+   IMPORTANTE: se o psicólogo desmarcar um chip, o horário deve sumir da lista
+   E não reaparecer se ele gerar a faixa de novo com os mesmos valores (ou seja,
+   ao clicar "Gerar horários" de novo, é uma substituição total consciente,
+   não uma mesclagem — isso já é o comportamento natural pedido no item 3).
 
+5. Adicione um texto de ajuda pequeno abaixo dos inputs: "Os horários serão
+   gerados de hora em hora dentro da faixa escolhida. Você pode remover horários
+   específicos clicando neles depois de gerar (ex: para um horário de almoço)."
 
+=== MOBILE: mobile/src/utils/psychologistAgenda.ts ===
 
-### TAREFA 3 — Teste de chat (as duas direções)
+1. Adicione a mesma função gerarHorariosPorFaixa (ou generateSlotsByRange, em
+   inglês seguindo o padrão do arquivo), com a mesma lógica e assinatura.
 
-```
-Crie o arquivo scripts/teste-stomp/chat-test.js com EXATAMENTE este conteúdo:
+2. Em mobile/src/screens/profile/PsychologistSettingsScreen.tsx:
+   - Adicione dois estados: faixaInicio e faixaFim.
+   - Adicione dois inputs de horário ANTES da grade de chips "Horarios
+     disponiveis" (usar o componente Input já existente no projeto, com
+     keyboardType apropriado, ou se houver um time picker nativo já usado em
+     outra tela do projeto, reaproveitar o mesmo padrão — verifique antes de
+     escolher).
+   - Botão "Gerar horários" que substitui horariosAtendimento pelo resultado da
+     função, mesma lógica do web.
+   - Os chips de horário (DEFAULT_TIME_SLOTS hoje fixo) devem passar a renderizar
+     a partir de horariosAtendimento (ordenado), mesma mudança do web.
+   - Mesma mensagem de ajuda abaixo dos inputs.
 
-const { Client } = require('@stomp/stompjs');
-const WebSocket = require('ws');
-const fs = require('fs');
+=== VALIDAÇÃO ===
+- Build web: npm run build
+- Build mobile: npx tsc --noEmit
+- Teste manual (documentar, não precisa executar): psicólogo define faixa
+  07:00-20:00, clica "Gerar horários", vê 13 chips aparecerem (07h a 19h),
+  desmarca o 12:00 (almoço), salva. Ao reabrir a tela, os 12 horários
+  restantes devem aparecer marcados, sem o 12:00.
 
-const tokens = JSON.parse(fs.readFileSync('tokens.json', 'utf-8'));
-const WS_URL = 'ws://localhost:8080/ws-chat';
-
-function criarClient(token) {
-  return new Client({
-    webSocketFactory: () => new WebSocket(`${WS_URL}?token=${token}`),
-    reconnectDelay: 3000,
-    debug: () => {},
-  });
-}
-
-async function testarEnvio(remetente, destinatario, mensagemTexto) {
-  return new Promise((resolve) => {
-    const clientRemetente = criarClient(remetente.token);
-    const clientDestinatario = criarClient(destinatario.token);
-    let recebeu = false;
-
-    const timeout = setTimeout(() => {
-      if (!recebeu) {
-        clientRemetente.deactivate();
-        clientDestinatario.deactivate();
-        resolve(false);
-      }
-    }, 5000);
-
-    clientDestinatario.onConnect = () => {
-      clientDestinatario.subscribe('/user/queue/mensagens', (msg) => {
-        console.log('[destinatario] Recebeu:', msg.body);
-        recebeu = true;
-        clearTimeout(timeout);
-        clientRemetente.deactivate();
-        clientDestinatario.deactivate();
-        resolve(true);
-      });
-
-      clientRemetente.onConnect = () => {
-        setTimeout(() => {
-          clientRemetente.publish({
-            destination: '/app/chat.send',
-            body: JSON.stringify({ destinatarioId: destinatario.id, mensagem: mensagemTexto }),
-          });
-        }, 500);
-      };
-      clientRemetente.activate();
-    };
-
-    clientDestinatario.activate();
-  });
-}
-
-(async () => {
-  console.log('=== TESTE 1: Paciente -> Psicologo ===');
-  const teste1 = await testarEnvio(tokens.paciente, tokens.psicologo, 'Teste automatico 1');
-  console.log(teste1 ? 'PASS' : 'FAIL');
-
-  console.log('\n=== TESTE 2: Psicologo -> Paciente ===');
-  const teste2 = await testarEnvio(tokens.psicologo, tokens.paciente, 'Teste automatico 2');
-  console.log(teste2 ? 'PASS' : 'FAIL');
-
-  console.log('\n=== RESUMO ===');
-  console.log(`[${teste1 ? 'PASS' : 'FAIL'}] Paciente -> Psicologo`);
-  console.log(`[${teste2 ? 'PASS' : 'FAIL'}] Psicologo -> Paciente`);
-  process.exit(0);
-})();
-
-Rode: node chat-test.js
-Me mostre a saída completa.
-```
-
----
-
-### TAREFA 4 — Teste de token inválido
-
-```
-Crie o arquivo scripts/teste-stomp/invalid-token-test.js com EXATAMENTE este conteúdo:
-
-const { Client } = require('@stomp/stompjs');
-const WebSocket = require('ws');
-
-const WS_URL = 'ws://localhost:8080/ws-chat';
-
-const client = new Client({
-  webSocketFactory: () => new WebSocket(`${WS_URL}?token=token_invalido_123`),
-  reconnectDelay: 0,
-  debug: () => {},
-});
-
-let conectou = false;
-
-client.onConnect = () => {
-  conectou = true;
-  console.log('FAIL: conseguiu conectar com token invalido (nao deveria)');
-  client.deactivate();
-  process.exit(1);
-};
-
-client.onWebSocketClose = () => {
-  if (!conectou) {
-    console.log('PASS: conexao recusada como esperado (token invalido)');
-    process.exit(0);
-  }
-};
-
-client.activate();
-
-setTimeout(() => {
-  if (!conectou) {
-    console.log('PASS (timeout): conexao nunca completou com token invalido');
-    process.exit(0);
-  }
-}, 5000);
-
-Rode: node invalid-token-test.js
-Me mostre a saída completa.
-```
-
----
-
-### TAREFA 5 — Teste de reconexão automática
-
-```
-Crie o arquivo scripts/teste-stomp/reconnect-test.js com EXATAMENTE este conteúdo:
-
-const { Client } = require('@stomp/stompjs');
-const WebSocket = require('ws');
-const fs = require('fs');
-
-const tokens = JSON.parse(fs.readFileSync('tokens.json', 'utf-8'));
-const WS_URL = 'ws://localhost:8080/ws-chat';
-
-const client = new Client({
-  webSocketFactory: () => new WebSocket(`${WS_URL}?token=${tokens.paciente.token}`),
-  reconnectDelay: 2000,
-  debug: () => {},
-});
-
-let primeiraConexao = true;
-let reconectou = false;
-
-client.onConnect = () => {
-  if (primeiraConexao) {
-    console.log('Conectado pela primeira vez. Forcando desconexao em 2s...');
-    primeiraConexao = false;
-    setTimeout(() => client.forceDisconnect(), 2000);
-  } else {
-    reconectou = true;
-    console.log('PASS: reconectou automaticamente apos queda forcada');
-    client.deactivate();
-    process.exit(0);
-  }
-};
-
-client.activate();
-
-setTimeout(() => {
-  if (!reconectou) {
-    console.log('FAIL: nao reconectou dentro do tempo esperado');
-    process.exit(1);
-  }
-}, 15000);
-
-Rode: node reconnect-test.js
-Me mostre a saída completa.
-```
-
----
-
-### TAREFA 6 — Resumo final
-
-```
-Depois de rodar as 4 tarefas acima, me responda só com este resumo:
-
-login.js: OK ou ERRO (qual erro)
-chat-test.js: PASS/FAIL em cada teste
-invalid-token-test.js: PASS/FAIL
-reconnect-test.js: PASS/FAIL
-```
-
-Lembra de deixar o backend (`java -jar target\cedro-backend-0.0.1-SNAPSHOT.jar`) rodando em outro terminal antes de começar a Tarefa 2. Me manda os resultados conforme forem saindo — se travar em algum teste eu já te ajudo a debugar ali mesmo, sem precisar mexer no resto.
+Ao final, resumo por arquivo alterado + resultado dos builds.

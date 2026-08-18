@@ -528,4 +528,550 @@ section {
 .custom-toggler:hover .icon-bar:nth-child(3) {
     transform: translateY(2px);
     width: 26px;
-}
+}/* ========================================
+   MOBILE IMPROVEMENTS - Cedro Platform
+   ======================================== */
+
+/* === HOME PAGE MOBILE === */
+/* Regras do .home-hero / .highlight-banner / .stat-number vivem em
+   frontend/src/styles/home.css (arquivo dono do componente Home).
+   Mantidas aqui apenas as regras de escopo global. */
+/* === EMERGENCY BUTTON MOBILE === */
+
+@media (max-width: 576px) {
+  .emergency-btn {
+    width: 56px !important;
+    height: 56px !important;
+    bottom: 12px !important;
+    left: 12px !important;
+  }
+  
+  .emergency-btn i {
+    font-size: 16px !important;
+  }
+  
+  .emergency-btn span {
+    font-size: 8px !important;
+  }
+}
+
+/* === FOOTER MOBILE === */
+
+@media (max-width: 576px) {
+  footer .row.g-4 {
+    text-align: center;
+  }
+  
+  footer .input-group {
+    flex-direction: column;
+  }
+  
+  footer .input-group input {
+    border-radius: 8px !important;
+    margin-bottom: 8px;
+  }
+  
+  footer .input-group button {
+    border-radius: 8px !important;
+    width: 100%;
+  }
+  
+  footer .text-md-end {
+    text-align: center !important;
+    margin-top: 1rem;
+  }
+}
+
+/* === CARDS LISTA PSICÓLOGOS MOBILE === */
+
+@media (max-width: 576px) {
+  .card-footer .d-grid.gap-2 {
+    gap: 0.5rem !important;
+  }
+  
+  .card-footer .btn {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* === DASHBOARD PSICÓLOGO MOBILE === */
+
+@media (max-width: 768px) {
+  .dashboard-psicologo .sidebar {
+    position: static !important;
+    margin-bottom: 1.5rem;
+  }
+  
+  .dashboard-psicologo .row > .col-md-9.col-lg-10 {
+    width: 100%;
+  }
+  
+  /* Cards de estatísticas empilhados */
+  .dashboard-psicologo .row.g-4 > [class*="col-"] {
+    margin-bottom: 1rem;
+  }
+}
+
+/* === CHAT MOBILE ENHANCEMENTS === */
+
+@media (max-width: 360px) {
+  .chat-page-wrapper {
+    padding: 0 !important;
+  }
+  
+  .chat-main-container {
+    border-radius: 0 !important;
+    height: calc(100vh - 60px) !important;
+  }
+  
+  .chat-msg-bubble {
+    max-width: 92% !important;
+    font-size: 0.85rem !important;
+  }
+  
+  .chat-input-area {
+    padding: 10px 12px !important;
+  }
+  
+  .chat-premium-header {
+    padding: 12px 14px !important;
+  }
+}
+
+/* === NOTIFICATIONS MOBILE === */
+
+@media (max-width: 360px) {
+  .notification {
+    min-width: unset !important;
+    max-width: calc(100vw - 16px) !important;
+    right: 8px !important;
+    left: 8px !important;
+  }
+}
+
+/* === ADS BANNER MOBILE === */
+
+@media (max-width: 360px) {
+  .ad-banner {
+    width: calc(100% - 16px) !important;
+    left: 8px !important;
+    right: 8px !important;
+  }
+}
+
+/* === LOGIN PAGE MOBILE === */
+
+@media (max-width: 768px) {
+  .login-side-brand {
+    display: none !important;
+  }
+  
+  .login-page-wrapper {
+    flex-direction: column;
+  }
+  
+  .login-side-form {
+    width: 100%;
+  }
+}
+
+/* === TOUCH TARGETS (melhorar acessibilidade) === */
+
+@media (max-width: 768px) {
+  /* Garantir que todos os botões tenham pelo menos 44px de altura */
+  .btn {
+    min-height: 44px;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+  
+  /* Links de navegação */
+  .nav-link, .offcanvas-body a, .offcanvas-body button {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Inputs com tamanho adequado */
+  .form-control, .form-select {
+    min-height: 44px;
+    font-size: 16px; /* Evita zoom no iOS */
+  }
+}
+
+/* === SAÚDE MENTAL MOBILE === */
+
+@media (max-width: 576px) {
+  .sm-hero {
+    padding: 3rem 0 2rem !important;
+  }
+  
+  .sm-hero-img {
+    max-width: 180px !important;
+  }
+  
+  .sm-detail-hero {
+    height: 200px !important;
+  }
+  
+  .sm-detail-content {
+    padding: 1.25rem !important;
+  }
+  
+  .sm-cta {
+    padding: 2rem 1.25rem !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .sm-detail-hero {
+    height: 160px !important;
+  }
+  
+  .sm-hero-img {
+    max-width: 140px !important;
+  }
+}
+
+/* === PREMIUM PAGE MOBILE === */
+
+@media (max-width: 576px) {
+  .plan-card {
+    margin-bottom: 1.5rem;
+  }
+  
+  .plan-header {
+    padding: 1.5rem !important;
+  }
+  
+  .plan-body {
+    padding: 1.5rem !important;
+  }
+  
+  .plan-price .price {
+    font-size: 2.2rem !important;
+  }
+  
+  .premium-badge {
+    font-size: 9px !important;
+    padding: 4px 30px !important;
+    right: -30px !important;
+  }
+}
+
+/* === CUSTOM MODAL MOBILE === */
+
+@media (max-width: 360px) {
+  .custom-modal-content {
+    max-width: calc(100vw - 16px) !important;
+    margin: 8px !important;
+  }
+  
+  .custom-modal-footer {
+    flex-direction: column;
+  }
+  
+  .custom-modal-footer .btn {
+    width: 100%;
+    min-width: unset !important;
+  }
+}
+
+/* === FEATURE CARDS MOBILE === */
+
+@media (max-width: 576px) {
+  .feature-card {
+    border-radius: 16px !important;
+    padding: 1.25rem !important;
+  }
+  
+  .feature-icon-wrapper {
+    width: 56px !important;
+    height: 56px !important;
+    font-size: 1.5rem !important;
+  }
+}
+
+/* === BACK TO TOP BUTTON MOBILE === */
+
+@media (max-width: 576px) {
+  .back-to-top {
+    width: 44px !important;
+    height: 44px !important;
+    bottom: 12px !important;
+    right: 12px !important;
+  }
+}
+
+/* === PERIL PAGE MOBILE === */
+
+@media (max-width: 576px) {
+  .profile-avatar {
+    width: 100px !important;
+    height: 100px !important;
+    font-size: 2.5rem !important;
+  }
+}
+
+/* === PREVENT HORIZONTAL SCROLL === */
+
+@media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden;
+  }
+  
+  .container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  
+  .row {
+    margin-left: -12px;
+    margin-right: -12px;
+  }
+  
+  [class*="col-"] {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+/* === FONT SIZE SCALING FOR READABILITY === */
+
+@media (max-width: 576px) {
+  body {
+    font-size: 15px;
+  }
+  
+  h1 {
+    font-size: 1.75rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+  
+  h3 {
+    font-size: 1.25rem;
+  }
+  
+  h4 {
+    font-size: 1.1rem;
+  }
+  
+  .lead {
+    font-size: 1rem !important;
+  }
+}
+
+/* ========================================
+   MOBILE REVIEW 2.0 - Correções e novas melhorias
+   (Revisão da 1a versão mobile: safe-areas, touch targets,
+    acessibilidade, FullCalendar, tabelas e modais)
+   ======================================== */
+
+/* --- 1. Safe Areas (notch / home indicator de iPhones) --- */
+/* Requer viewport-fit=cover no index.html (já aplicado) */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .navbar.sticky-top {
+    padding-top: calc(env(safe-area-inset-top) + 0.5rem);
+    padding-bottom: 0.5rem;
+  }
+
+  .emergency-btn {
+    bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+
+  .back-to-top {
+    bottom: calc(15px + env(safe-area-inset-bottom));
+  }
+
+  .notification-container {
+    top: calc(80px + env(safe-area-inset-top));
+  }
+
+  .ad-banner {
+    bottom: calc(20px + env(safe-area-inset-bottom));
+  }
+
+  .chat-input-area {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .offcanvas.offcanvas-end {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+@media (max-width: 768px) {
+  @supports (padding: env(safe-area-inset-bottom)) {
+    .emergency-btn { bottom: calc(12px + env(safe-area-inset-bottom)); }
+    .back-to-top { bottom: calc(12px + env(safe-area-inset-bottom)); }
+    .notification-container { top: calc(70px + env(safe-area-inset-top)); }
+    .ad-banner { bottom: calc(10px + env(safe-area-inset-bottom)); }
+  }
+}
+
+/* --- 2. Touch target do hambúrguer (navbar) --- */
+/* theme.css define 36x26 (e 32x22 em mobile) — abaixo dos 44px do WCAG 2.1 */
+@media (max-width: 991.98px) {
+  .navbar .custom-toggler {
+    width: 44px !important;
+    height: 44px !important;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* --- 3. Âncoras (#sobre, #servicos, #ajuda) sob a navbar sticky --- */
+html {
+  scroll-padding-top: 80px;
+}
+
+@media (max-width: 768px) {
+  html {
+    scroll-padding-top: 72px;
+  }
+}
+
+/* --- 4. FullCalendar responsivo (Agenda do psicólogo) --- */
+@media (max-width: 768px) {
+  .fc .fc-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem !important;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 1rem !important;
+    text-align: center;
+  }
+
+  .fc .fc-toolbar-chunk {
+    display: flex;
+    justify-content: center;
+    gap: 0.375rem;
+    flex-wrap: wrap;
+  }
+
+  .fc .fc-button {
+    padding: 0.375rem 0.5rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  .fc-daygrid-day-number {
+    font-size: 0.8rem;
+  }
+}
+
+/* --- 5. Tabelas com scroll suave em mobile --- */
+@media (max-width: 768px) {
+  .table-responsive {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(46, 125, 50, 0.4) transparent;
+  }
+
+  .table-responsive::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .table-responsive::-webkit-scrollbar-thumb {
+    background: rgba(46, 125, 50, 0.4);
+    border-radius: 3px;
+  }
+}
+
+/* --- 6. Modais em telas pequenas --- */
+@media (max-width: 576px) {
+  .modal-dialog {
+    margin: 0.5rem;
+  }
+
+  .modal-dialog.modal-lg {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .modal-body {
+    padding: 1.25rem;
+  }
+
+  .modal-footer {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .modal-footer .btn {
+    flex: 1 1 auto;
+  }
+}
+
+/* --- 7. Headings display em mobile --- */
+@media (max-width: 576px) {
+  .display-5 {
+    font-size: 2rem !important;
+  }
+
+  .display-6 {
+    font-size: 1.6rem !important;
+  }
+}
+
+/* --- 8. Formulário de login em telas pequenas --- */
+@media (max-width: 576px) {
+  .login-form-container {
+    padding: 1.25rem !important;
+  }
+}
+
+/* --- 9. Touch targets extras em mobile --- */
+@media (max-width: 768px) {
+  .list-group-item-action {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  .notification-close {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .ad-close {
+    padding: 12px;
+  }
+}
+
+/* --- 10. Reduced motion ampliado (acessibilidade) --- */
+@media (prefers-reduced-motion: reduce) {
+  .emergency-btn,
+  .streak-tree,
+  .growth-particles::before,
+  .growth-particles::after,
+  .loading-shimmer,
+  .spinner-border,
+  .custom-toggler .icon-bar,
+  .sm-hero::before,
+  .sm-hero::after,
+  .theme-toggle-track,
+  .theme-toggle-thumb {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  html {
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --- 11. CTA .btn-lg em mobile --- */
+@media (max-width: 576px) {
+  .btn-lg {
+    min-height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}

@@ -1,0 +1,75 @@
+﻿*** Begin Patch
+*** Update File: C:\Cedro-\Cedro-\frontend\src\components\SidebarPsicologo.jsx
+@@
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+
+const SidebarPsicologo = () => {
+  const location = useLocation();
+@@
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+
+const SidebarPsicologo = () => {
+  const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+@@
+  return (
+    <div className="col-md-3 col-lg-2">
+      <div className="card border-0 shadow-sm">
+        <div className="card-body p-0">
+          <div className="list-group list-group-flush">
+            {menuItems.map(item => (
+              <Link 
+                key={item.path}
+                to={item.path} 
+                className={list-group-item list-group-item-action }
+              >
+                <i className={i  me-2}></i>{item.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+@@
+  return (
+    <>
+      {/* Mobile Toggle Button */}
+      <button 
+        className="btn btn-primary d-md-none w-100 mb-3 d-flex align-items-center justify-content-between"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        aria-expanded={isMobileMenuOpen}
+        aria-controls="sidebar-menu"
+      >
+        <span><i className="bi bi-list me-2"></i>Menu</span>
+        <i className={i }></i>
+      </button>
+
+      <div className="col-md-3 col-lg-2">
+        <div 
+          className={card border-0 shadow-sm }
+          id="sidebar-menu"
+        >
+          <div className="card-body p-0">
+            <div className="list-group list-group-flush">
+              {menuItems.map(item => (
+                <Link 
+                  key={item.path}
+                  to={item.path} 
+                  className={list-group-item list-group-item-action }
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <i className={i  me-2}></i>{item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+*** End Patch

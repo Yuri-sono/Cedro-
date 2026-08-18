@@ -1,0 +1,21 @@
+﻿*** Begin Patch
+*** Update File: C:\Cedro-\Cedro-\frontend\src\pages\Login.jsx
+@@
+  return (
+    <div className="login-page-wrapper">
+      {/* Lado Esquerdo - Imagem e Branding */}
+      <div className="login-side-image d-none d-lg-flex">
+@@
+  return (
+    <div className="login-page-wrapper">
+      {/* Lado Esquerdo - Imagem e Branding - Oculto em mobile */}
+      <div className="login-side-image d-none d-lg-flex">
+@@
+      {/* Lado Direito - Formulário */}
+      <div className="login-side-form d-flex align-items-center justify-content-center w-100">
+        <div className="login-form-container w-100" style={{ maxWidth: '480px', padding: '2rem' }}>
+@@
+      {/* Lado Direito - Formulário */}
+      <div className="login-side-form d-flex align-items-center justify-content-center w-100">
+        <div className="login-form-container w-100" style={{ maxWidth: '480px', padding: '1.5rem' }}>
+*** End Patch

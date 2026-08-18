@@ -1,0 +1,10 @@
+{
+  "requisicao": {
+    "psicologoId": 36,
+    "data": "2026-08-24"
+  },
+  "resposta": {
+    "status": 200,
+    "body": "{\"horariosDisponiveis\":[\"08:00\",\"09:00\",\"10:00\",\"11:00\",\"14:00\",\"16:00\",\"17:00\",\"18:00\"],\"data\":\"2026-08-24\",\"atendeNesteDia\":true,\"horariosOcupados\":[\"15:00\"]}"
+  }
+}

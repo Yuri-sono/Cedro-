@@ -141,25 +141,102 @@
   margin-bottom: 0.5rem;
 }
 
-/* Responsive */
+/* ========================================
+   MOBILE - HOME PAGE
+   Fonte única das regras mobile da Home.
+   (As mesmas regras duplicadas em index.css
+    foram removidas para evitar conflitos.)
+   ======================================== */
+
 @media (max-width: 992px) {
   .home-hero {
     min-height: 70vh;
   }
   .home-hero h1 {
-    font-size: 3rem;
+    font-size: 2.8rem;
   }
   .home-hero-overlay {
     background: linear-gradient(90deg, rgba(10, 61, 31, 0.95) 0%, rgba(13, 79, 42, 0.85) 100%);
   }
 }
 
+/* Performance iOS: background-attachment: fixed causa repaints constantes no Safari */
 @media (max-width: 768px) {
+  .home-hero {
+    background-attachment: scroll;
+    min-height: 65vh;
+  }
   .home-hero h1 {
     font-size: 2.5rem;
   }
   .highlight-banner {
     padding: 2.5rem 1.5rem;
+  }
+}
+
+/* Botões empilhados + escala de fontes (smartphones) */
+@media (max-width: 576px) {
+  .home-hero .d-flex.gap-3 {
+    flex-direction: column;
+    gap: 0.75rem !important;
+  }
+
+  .home-hero .btn-lg {
+    width: 100%;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.95rem;
+  }
+
+  .home-hero h1 {
+    font-size: 2rem !important;
+  }
+
+  .home-hero .lead {
+    font-size: 1rem !important;
+  }
+
+  .service-img-card img {
+    height: 220px !important;
+  }
+
+  .highlight-banner {
+    padding: 2rem 1.25rem !important;
+    border-radius: 16px !important;
+  }
+
+  .highlight-banner h2 {
+    font-size: 1.4rem !important;
+  }
+
+  .highlight-banner p {
+    font-size: 0.95rem !important;
+  }
+
+  .stat-number {
+    font-size: 2.2rem !important;
+  }
+}
+
+/* Smartphones muito pequenos (< 360px) */
+@media (max-width: 360px) {
+  .home-hero {
+    min-height: 50vh !important;
+  }
+
+  .home-hero h1 {
+    font-size: 1.6rem !important;
+  }
+
+  .home-hero .lead {
+    font-size: 0.9rem !important;
+  }
+
+  .service-img-card img {
+    height: 180px !important;
+  }
+
+  .stat-number {
+    font-size: 1.8rem !important;
   }
 }
 
@@ -177,3 +254,4 @@
   border-color: #198754;
   box-shadow: 0 10px 30px rgba(32, 201, 151, 0.1);
 }
+
