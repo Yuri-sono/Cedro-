@@ -31,7 +31,8 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/google",
+                        "/api/auth/recuperar-senha", "/api/auth/redefinir-senha").permitAll()
                 .requestMatchers("/api/assinatura/webhook").permitAll()
                 .requestMatchers("/ws-chat").permitAll()
                 .requestMatchers("/api/psicologos").permitAll()

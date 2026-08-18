@@ -32,5 +32,22 @@
     "data_registro": "2026-08-17",
     "data_correcao": "2026-08-17",
     "resultado_novo_teste": "Mensagem customizada confirmada no build, aguardando reteste automatizado"
+  },
+  {
+    "id": "DEF-58462985",
+    "codigo_erro": "HTTP 500",
+    "titulo": "PUT /api/auth/alterar-senha sem header Authorization retorna HTTP 500 em vez de 401/403",
+    "funcionalidade": "Autenticação - Alterar senha",
+    "descricao": "O endpoint PUT /api/auth/alterar-senha retorna HTTP 500 (erro interno não tratado) quando a requisição é enviada sem o header Authorization. Causa raiz: o SecurityConfig liberava toda a árvore /api/auth/** como pública (permitAll), então a requisição sem token chegava ao controller, onde a ausência do header obrigatório disparava MissingRequestHeaderException, tratada como 500 pelo GlobalExceptionHandler. Com a correção, apenas as rotas públicas de autenticação ficam liberadas; /api/auth/alterar-senha passou a exigir autenticação e o Spring Security bloqueia a requisição antes do controller com 401/403.",
+    "passos_reproducao": "1. Enviar PUT /api/auth/alterar-senha com body válido e SEM o header Authorization. 2. Verificar o código HTTP retornado.",
+    "resultado_esperado": "HTTP 401/403 (rota protegida bloqueia antes de chegar ao controller), sem erro 500",
+    "resultado_obtido": "HTTP 500 com erro interno genérico (Algo deu errado)",
+    "gravidade": "Alta",
+    "responsavel": "",
+    "situacao": "Corrigido",
+    "evidencia": "",
+    "data_registro": "2026-08-17",
+    "data_correcao": "2026-08-17",
+    "resultado_novo_teste": "Endpoint agora retorna 401/403 sem autenticacao, aguardando reteste automatizado"
   }
 ]

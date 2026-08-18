@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -319,6 +320,54 @@ public class PsicologoController {
                     .ifPresent(p -> item.put("pacienteNome", p.getNome()));
             return item;
         }).collect(Collectors.toList());
+        return ResponseEntity.ok(resultado);
+    }
+
+    /**
+     * Retorna as últimas 5 atividades do psicólogo logado, derivadas da tabela
+     * de sessões (sem criar tabela de log):
+     * a) Sessões "realizada" → tipo "consulta_finalizada", data = data_sessao;
+     * b) Sessões "agendada" → tipo "novo_agendamento", data = data_criacao.
+     * Combina os dois tipos, ordena pela data (mais recente primeiro) e limita a 5.
+     */
+    @GetMapping("/atividades-recentes")
+    public ResponseEntity<?> getAtividadesRecentes(@RequestHeader("Authorization") String authHeader) {
+        Integer psicologoId = jwtUtil.extractUserId(authHeader.replace("Bearer ", ""));
+
+        List<Sessao> realizadas = sessaoRepository
+                .findByPsicologoIdAndStatusSessaoOrderByDataSessaoDesc(psicologoId, "realizada");
+        List<Sessao> agendadas = sessaoRepository
+                .findByPsicologoIdAndStatusSessaoOrderByDataCriacaoDesc(psicologoId, "agendada");
+
+        List<Map<String, Object>> atividades = new ArrayList<>();
+
+        realizadas.stream().limit(20).forEach(s ->
+                usuarioRepository.findById(s.getPacienteId()).ifPresent(p -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("tipo", "consulta_finalizada");
+                    item.put("pacienteNome", p.getNome());
+                    item.put("data", s.getDataSessao());
+                    item.put("sessaoId", s.getId());
+                    atividades.add(item);
+                }));
+
+        agendadas.stream().limit(20).forEach(s ->
+                usuarioRepository.findById(s.getPacienteId()).ifPresent(p -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("tipo", "novo_agendamento");
+                    item.put("pacienteNome", p.getNome());
+                    item.put("data", s.getDataCriacao() != null ? s.getDataCriacao() : s.getDataSessao());
+                    item.put("dataSessao", s.getDataSessao());
+                    item.put("sessaoId", s.getId());
+                    atividades.add(item);
+                }));
+
+        List<Map<String, Object>> resultado = atividades.stream()
+                .sorted(Comparator.comparing((Map<String, Object> m) -> (LocalDateTime) m.get("data"),
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .limit(5)
+                .collect(Collectors.toList());
+
         return ResponseEntity.ok(resultado);
     }
 }

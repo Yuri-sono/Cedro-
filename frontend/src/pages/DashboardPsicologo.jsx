@@ -14,6 +14,7 @@ const DashboardPsicologo = () => {
     faturamentoMes: 0
   });
   const [proximasConsultas, setProximasConsultas] = useState([]);
+  const [atividadesRecentes, setAtividadesRecentes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState('');
 
@@ -27,12 +28,14 @@ const DashboardPsicologo = () => {
     setLoading(true);
     setErro('');
     try {
-      const [estatisticasResponse, consultasResponse] = await Promise.all([
+      const [estatisticasResponse, consultasResponse, atividadesResponse] = await Promise.all([
         api.get('/api/psicologos/estatisticas'),
-        api.get('/api/psicologos/consultas/proximas')
+        api.get('/api/psicologos/consultas/proximas'),
+        api.get('/api/psicologos/atividades-recentes')
       ]);
       setStats(estatisticasResponse.data);
       setProximasConsultas((consultasResponse.data || []).slice(0, 3));
+      setAtividadesRecentes(atividadesResponse.data || []);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
       setErro(
@@ -47,6 +50,7 @@ const DashboardPsicologo = () => {
         faturamentoMes: 0
       });
       setProximasConsultas([]);
+      setAtividadesRecentes([]);
     } finally {
       setLoading(false);
     }
@@ -71,6 +75,39 @@ const DashboardPsicologo = () => {
     if (data.toDateString() === hoje.toDateString()) return 'Hoje';
     if (data.toDateString() === amanha.toDateString()) return 'Amanhã';
     return data.toLocaleDateString('pt-BR');
+  };
+
+  const formatarTempoRelativo = (dataStr) => {
+    if (!dataStr) return '';
+    const data = new Date(dataStr);
+    const agora = new Date();
+    const diffMs = agora.getTime() - data.getTime();
+
+    if (diffMs < 60000) return 'Agora mesmo';
+
+    const minutos = Math.floor(diffMs / 60000);
+    if (minutos < 60) return `Há ${minutos} ${minutos === 1 ? 'minuto' : 'minutos'}`;
+
+    const horas = Math.floor(minutos / 60);
+    if (horas < 24) return `Há ${horas} ${horas === 1 ? 'hora' : 'horas'}`;
+
+    const ontem = new Date(agora);
+    ontem.setDate(ontem.getDate() - 1);
+    if (data.toDateString() === ontem.toDateString()) return 'Ontem';
+
+    const dias = Math.floor(horas / 24);
+    if (dias < 30) return `Há ${dias} ${dias === 1 ? 'dia' : 'dias'}`;
+    return data.toLocaleDateString('pt-BR');
+  };
+
+  const formatarMensagemAtividade = (atividade) => {
+    if (atividade.tipo === 'consulta_finalizada') {
+      return `Consulta finalizada com ${atividade.pacienteNome}`;
+    }
+    if (atividade.tipo === 'novo_agendamento') {
+      return `${atividade.pacienteNome} agendou consulta para ${formatarData(atividade.dataSessao || atividade.data)}`;
+    }
+    return '';
   };
 
   return (
@@ -279,44 +316,31 @@ const DashboardPsicologo = () => {
                 </h5>
               </div>
               <div className="card-body">
-                <div className="timeline">
-                  <div className="d-flex mb-4">
-                    <div className="flex-shrink-0">
-                      <div className="bg-success rounded-circle p-2" style={{ width: '40px', height: '40px' }}>
-                        <i className="bi bi-check-circle text-white"></i>
+                {atividadesRecentes.length > 0 ? (
+                  <div className="timeline">
+                    {atividadesRecentes.map((atividade) => (
+                      <div key={atividade.sessaoId} className="d-flex mb-4">
+                        <div className="flex-shrink-0">
+                          <div className={`${atividade.tipo === 'consulta_finalizada' ? 'bg-success' : 'bg-primary'} rounded-circle p-2`} style={{ width: '40px', height: '40px' }}>
+                            <i className={`${atividade.tipo === 'consulta_finalizada' ? 'bi bi-check-circle' : 'bi bi-calendar-plus'} text-white`}></i>
+                          </div>
+                        </div>
+                        <div className="flex-grow-1 ms-3">
+                          <h6 className="mb-1 fw-bold">
+                            {atividade.tipo === 'consulta_finalizada' ? 'Consulta finalizada' : 'Novo agendamento'}
+                          </h6>
+                          <p className="text-muted mb-1 small">{formatarMensagemAtividade(atividade)}</p>
+                          <small className="text-muted"><i className="bi bi-clock me-1"></i>{formatarTempoRelativo(atividade.data)}</small>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex-grow-1 ms-3">
-                      <h6 className="mb-1 fw-bold">Consulta finalizada</h6>
-                      <p className="text-muted mb-1 small">Sessão com Maria Silva concluída</p>
-                      <small className="text-muted"><i className="bi bi-clock me-1"></i>Há 2 horas</small>
-                    </div>
+                    ))}
                   </div>
-                  <div className="d-flex mb-4">
-                    <div className="flex-shrink-0">
-                      <div className="bg-primary rounded-circle p-2" style={{ width: '40px', height: '40px' }}>
-                        <i className="bi bi-calendar-plus text-white"></i>
-                      </div>
-                    </div>
-                    <div className="flex-grow-1 ms-3">
-                      <h6 className="mb-1 fw-bold">Novo agendamento</h6>
-                      <p className="text-muted mb-1 small">Carlos Oliveira agendou consulta para amanhã</p>
-                      <small className="text-muted"><i className="bi bi-clock me-1"></i>Há 4 horas</small>
-                    </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <i className="bi bi-inbox text-muted" style={{ fontSize: '3rem' }}></i>
+                    <p className="text-muted mt-3">Nenhuma atividade recente</p>
                   </div>
-                  <div className="d-flex">
-                    <div className="flex-shrink-0">
-                      <div className="bg-info rounded-circle p-2" style={{ width: '40px', height: '40px' }}>
-                        <i className="bi bi-file-earmark-text text-white"></i>
-                      </div>
-                    </div>
-                    <div className="flex-grow-1 ms-3">
-                      <h6 className="mb-1 fw-bold">Relatório gerado</h6>
-                      <p className="text-muted mb-1 small">Relatório mensal de atividades criado</p>
-                      <small className="text-muted"><i className="bi bi-clock me-1"></i>Ontem</small>
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>

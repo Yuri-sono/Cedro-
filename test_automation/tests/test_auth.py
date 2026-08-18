@@ -167,6 +167,7 @@ class TestRegisterPaciente:
     @pytest.mark.parametrize("senha,msg_erro", [
         ("Teste@abc", MSG_SENHA_SEM_NUMERO),
         ("Teste123", MSG_SENHA_SEM_ESPECIAL),
+        ("Ab@12", MSG_SENHA_CURTA),
     ])
     def test_register_senha_invalida(self, http_session, email_unico, evidencia, senha, msg_erro):
         """CT: Registro com senha inválida → 400 com mensagem exata."""
@@ -319,7 +320,7 @@ class TestAlterarSenha:
     """Testes do endpoint PUT /api/auth/alterar-senha."""
 
     def test_alterar_senha_sem_token(self, http_session, evidencia):
-        """CT: Alterar senha sem token JWT → 401, 403 ou 500 (Spring Security / bug backend)."""
+        """CT: Alterar senha sem token JWT → 401 ou 403 (Spring Security)."""
         resp = http_session.put(
             f"{config.BASE_URL}/api/auth/alterar-senha",
             json={"senhaAtual": config.PACIENTE_SENHA, "novaSenha": "NovaSenha@123"},
@@ -328,7 +329,7 @@ class TestAlterarSenha:
             "requisicao": {"senhaAtual": "***", "novaSenha": "***"},
             "resposta": {"status": resp.status_code, "body": resp.text},
         })
-        assert resp.status_code in (401, 403, 500)
+        assert resp.status_code in (401, 403)
 
     def test_alterar_senha_senha_atual_errada(self, http_session, auth_headers, evidencia):
         """CT: Alterar senha com senha atual incorreta → 400 com mensagem exata."""

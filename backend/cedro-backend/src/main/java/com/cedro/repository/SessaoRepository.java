@@ -32,6 +32,10 @@ public interface SessaoRepository extends JpaRepository<Sessao, Integer> {
 
     List<Sessao> findByPsicologoIdAndDataSessaoAfterOrderByDataSessaoAsc(Integer psicologoId, LocalDateTime after);
 
+    List<Sessao> findByPsicologoIdAndStatusSessaoOrderByDataSessaoDesc(Integer psicologoId, String statusSessao);
+
+    List<Sessao> findByPsicologoIdAndStatusSessaoOrderByDataCriacaoDesc(Integer psicologoId, String statusSessao);
+
     @Modifying
     @Query("DELETE FROM Sessao s WHERE s.pacienteId = ?1")
     void deleteByPacienteId(Integer pacienteId);
