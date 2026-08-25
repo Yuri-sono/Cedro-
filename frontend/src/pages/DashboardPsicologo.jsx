@@ -143,6 +143,31 @@ const DashboardPsicologo = () => {
               </div>
             )}
 
+            {/* Onboarding: configurar horários de atendimento */}
+            {(() => {
+              const semDias = !user.diasAtendimento || user.diasAtendimento.length === 0;
+              const semHorarios = !user.horariosAtendimento || user.horariosAtendimento.length === 0;
+              if (!semDias && !semHorarios) return null;
+              return (
+                <div className="alert alert-success d-flex align-items-center gap-3 flex-wrap mb-4" role="alert">
+                  <span className="onboarding-icone"><i className="bi bi-calendar-range"></i></span>
+                  <div className="flex-grow-1">
+                    <strong className="d-block">
+                      <i className="bi bi-magic me-1"></i>
+                      Finalize seu cadastro: defina os horários que você atende!
+                    </strong>
+                    <small>
+                      Isso permite que pacientes vejam sua disponibilidade e agendem consultas nos dias e horários corretos.
+                      Horários já ocupados aparecem bloqueados automaticamente.
+                    </small>
+                  </div>
+                  <Link to="/psicologo/configuracoes" className="btn btn-success btn-sm">
+                    <i className="bi bi-gear me-1"></i>Configurar horários
+                  </Link>
+                </div>
+              );
+            })()}
+
             {/* Stats Cards */}
             <div className="row g-4 mb-4">
               <div className="col-md-6 col-lg-3">

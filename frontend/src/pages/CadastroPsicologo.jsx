@@ -144,9 +144,10 @@ const CadastroPsicologo = () => {
         precoSessao: parseFloat(formData.preco_sessao)
       };
       
-      await api.post('/api/auth/register', payload);
-      alert('Cadastro realizado com sucesso!');
-      navigate('/login-psicologo');
+      const res = await api.post('/api/auth/register', payload);
+      // Faz login automático para redirecionar para configurar horários
+      alert('Cadastro realizado! Agora configure seus horários de atendimento.');
+      navigate('/login-psicologo?cadastro=1');
     } catch (error) {
       setError(error.response?.data?.error || 'Erro ao cadastrar');
     } finally {
@@ -179,7 +180,7 @@ const CadastroPsicologo = () => {
   };
 
   return (
-    <div className="cadastro-section py-5 page-transition" style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
+    <div className="cadastro-section py-5 page-transition">
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-md-8 col-lg-6">

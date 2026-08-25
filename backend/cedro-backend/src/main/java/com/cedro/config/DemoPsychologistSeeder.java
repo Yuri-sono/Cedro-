@@ -24,6 +24,7 @@ public class DemoPsychologistSeeder implements CommandLineRunner {
     public void run(String... args) {
         createPsychologistDemo();
         createPatientDemo();
+        createAdminDemo();
     }
 
     private void createPsychologistDemo() {
@@ -69,5 +70,23 @@ public class DemoPsychologistSeeder implements CommandLineRunner {
 
         usuarioRepository.save(paciente);
         System.out.println("[Cedro] Usuario paciente demo criado: " + email);
+    }
+private void createAdminDemo() {
+        String email = "admin@cedro.app";
+
+        if (usuarioRepository.existsByEmailIgnoreCase(email)) {
+            return;
+        }
+
+        Usuario admin = new Usuario();
+        admin.setNome("Administrador Cedro");
+        admin.setEmail(email);
+        admin.setSenhaHash(passwordEncoder.encode("Admin@2026"));
+        admin.setTipoUsuario(TipoUsuario.admin);
+        admin.setBio("Administrador da plataforma Cedro.");
+        admin.setAtivo(true);
+
+        usuarioRepository.save(admin);
+        System.out.println("[Cedro] Usuario admin demo criado: " + email);
     }
 }

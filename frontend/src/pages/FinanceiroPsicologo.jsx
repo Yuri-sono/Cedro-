@@ -1,22 +1,39 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import NavbarPsicologo from '../components/NavbarPsicologo.jsx';
 import SidebarPsicologo from '../components/SidebarPsicologo.jsx';
+import { useAuth } from '../contexts/AuthContext.jsx';
 import api from '../services/api.js';
 
 const FinanceiroPsicologo = () => {
+  const { user } = useAuth();
   const [periodo, setPeriodo] = useState('mes');
   const [dados, setDados] = useState(null);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState('');
+  const [atualizando, setAtualizando] = useState(false);
 
-  useEffect(() => {
+  const carregar = useCallback(async () => {
     setLoading(true);
     setErro('');
-    api.get(`/api/psicologos/financeiro?periodo=${periodo}`)
-      .then(res => setDados(res.data))
-      .catch(() => setErro('Não foi possível carregar os dados financeiros.'))
-      .finally(() => setLoading(false));
+    try {
+      const res = await api.get(`/api/psicologos/financeiro?periodo=${periodo}`);
+      setDados(res.data);
+    } catch (error) {
+      setErro('Não foi possível carregar os dados financeiros.');
+    } finally {
+      setLoading(false);
+    }
   }, [periodo]);
+
+  useEffect(() => {
+    carregar();
+  }, [carregar]);
+
+  const atualizar = async () => {
+    setAtualizando(true);
+    await carregar();
+    setAtualizando(false);
+  };
 
   const getStatusColor = (status) => {
     if (status === 'Pago') return 'success';
@@ -26,23 +43,32 @@ const FinanceiroPsicologo = () => {
 
   return (
     <div className="dashboard-terapeuta">
-      <NavbarPsicologo />
+      <NavbarPsicologo psicologo={user} />
       <div className="container-fluid py-4">
         <div className="row">
           <SidebarPsicologo />
           <div className="col-md-9 col-lg-10">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-              <h1 className="h3 fw-bold">Financeiro</h1>
-              <select
-                className="form-select"
-                style={{ width: 'auto' }}
-                value={periodo}
-                onChange={(e) => setPeriodo(e.target.value)}
-              >
-                <option value="mes">Este mês</option>
-                <option value="trimestre">Trimestre</option>
-                <option value="ano">Ano</option>
-              </select>
+            <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+              <div>
+                <h1 className="h3 fw-bold mb-0">Financeiro</h1>
+                <small className="text-muted">Olá, {user?.nome || user?.email || 'Psícologo'} — acompanhe seus ganhos por período</small>
+              </div>
+              <div className="d-flex gap-2">
+                <button className="btn btn-success" onClick={atualizar} disabled={atualizando || loading}>
+                  <i className={`bi ${atualizando ? 'bi-arrow-repeat spin' : 'bi-arrow-repeat'} me-1`}></i>
+                  {atualizando ? 'Atualizando...' : 'Atualizar'}
+                </button>
+                <select
+                  className="form-select"
+                  style={{ width: 'auto' }}
+                  value={periodo}
+                  onChange={(e) => setPeriodo(e.target.value)}
+                >
+                  <option value="mes">Este mês</option>
+                  <option value="trimestre">Trimestre</option>
+                  <option value="ano">Ano</option>
+                </select>
+              </div>
             </div>
 
             {erro && <div className="alert alert-danger">{erro}</div>}

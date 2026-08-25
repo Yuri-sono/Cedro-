@@ -22,11 +22,9 @@ const EstatisticasPsicologo = () => {
       <NavbarPsicologo psicologo={user} />
       <div className="container-fluid">
         <div className="row">
-          <div className="col-md-3 col-lg-2 p-0">
-            <SidebarPsicologo />
-          </div>
+          <SidebarPsicologo />
           <div className="col-md-9 col-lg-10">
-            <div className="main-content p-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+            <div className="main-content p-4 estatisticas-content">
               <div className="mb-4">
                 <h2 className="text-primary fw-bold">
                   <i className="bi bi-graph-up me-2"></i>Estatísticas

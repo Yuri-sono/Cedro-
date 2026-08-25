@@ -137,71 +137,139 @@ function AdminUsuarios() {
     });
   };
 
+  const [busca, setBusca] = useState('');
+
+  const iniciais = (nome) => {
+    if (!nome) return '?';
+    return nome.trim().split(/\s+/).slice(0, 2).map(n => n[0]).join('').toUpperCase();
+  };
+
+  const badgeTipo = (tipo) => {
+    const map = { admin: 'admin', psicologo: 'psicologo', paciente: 'paciente' };
+    return map[tipo] || 'outro';
+  };
+
+  const badgeStatus = (ativo) => (ativo ? 'ativo' : 'inativo');
+
+  const filtrar = (lista, campos) => {
+    const termo = busca.trim().toLowerCase();
+    if (!termo) return lista;
+    return lista.filter(item => campos.some(campo => String(item[campo] || '').toLowerCase().includes(termo)));
+  };
+
+  const usuariosFiltrados = filtrar(usuarios, ['nome', 'email', 'tipoUsuario']);
+  const psicologosFiltrados = filtrar(psicologos, ['nome', 'email', 'especialidade']);
+  const pacientesFiltrados = filtrar(pacientes, ['nome', 'email', 'telefone']);
+
+  const tipoLabel = (tipo) => {
+    const map = { admin: 'Admin', psicologo: 'Psicólogo', paciente: 'Paciente' };
+    return map[tipo] || tipo;
+  };
+
   if (loading) return <div className="container mt-5 text-center"><div className="spinner-border"></div></div>;
 
   return (
-    <div className="container mt-5">
-      <h1 className="mb-4">Administração</h1>
-      
-      <ul className="nav nav-tabs mb-4">
+    <div className="container mt-5 admin-page">
+      <nav aria-label="breadcrumb" className="mb-3">
+        <ol className="breadcrumb mb-1">
+          <li className="breadcrumb-item"><a href="/admin/dashboard" className="text-decoration-none">Dashboard</a></li>
+          <li className="breadcrumb-item active" aria-current="page">Administração</li>
+        </ol>
+      </nav>
+
+      <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <h1 className="admin-page-title mb-0">
+          <i className="bi bi-sliders2 me-2"></i>Administração
+        </h1>
+        <div className="d-flex gap-2 flex-wrap">
+          <span className="badge admin-count-badge">👥 {usuarios.length} usuários</span>
+          <span className="badge admin-count-badge">🧑‍⚕️ {psicologos.length} psicólogos</span>
+          <span className="badge admin-count-badge">🙋 {pacientes.length} pacientes</span>
+        </div>
+      </div>
+
+      <ul className="nav nav-pills admin-tabs mb-4">
         <li className="nav-item">
-          <button className={`nav-link ${tab === 'usuarios' ? 'active' : ''}`} onClick={() => setTab('usuarios')}>Usuários</button>
+          <button className={`nav-link ${tab === 'usuarios' ? 'active' : ''}`} onClick={() => { setTab('usuarios'); setBusca(''); }}>
+            <i className="bi bi-people me-1"></i> Usuários
+            <span className="tab-count">{usuarios.length}</span>
+          </button>
         </li>
         <li className="nav-item">
-          <button className={`nav-link ${tab === 'psicologos' ? 'active' : ''}`} onClick={() => setTab('psicologos')}>Psicólogos</button>
+          <button className={`nav-link ${tab === 'psicologos' ? 'active' : ''}`} onClick={() => { setTab('psicologos'); setBusca(''); }}>
+            <i className="bi bi-person-badge me-1"></i> Psicólogos
+            <span className="tab-count">{psicologos.length}</span>
+          </button>
         </li>
         <li className="nav-item">
-          <button className={`nav-link ${tab === 'pacientes' ? 'active' : ''}`} onClick={() => setTab('pacientes')}>Pacientes</button>
+          <button className={`nav-link ${tab === 'pacientes' ? 'active' : ''}`} onClick={() => { setTab('pacientes'); setBusca(''); }}>
+            <i className="bi bi-person-heart me-1"></i> Pacientes
+            <span className="tab-count">{pacientes.length}</span>
+          </button>
         </li>
       </ul>
 
-      {tab === 'usuarios' && (
-
-
-      <div className="table-responsive">
-        <table className="table table-striped">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nome</th>
-              <th>Email</th>
-              <th>Tipo</th>
-              <th>Status</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {usuarios.map(user => (
-              <tr key={user.id}>
-                <td>{user.id}</td>
-                <td>{user.nome}</td>
-                <td>{user.email}</td>
-                <td><span className="badge bg-primary">{user.tipoUsuario}</span></td>
-                <td>
-                  <span className={`badge ${user.ativo ? 'bg-success' : 'bg-danger'}`}>
-                    {user.ativo ? 'Ativo' : 'Inativo'}
-                  </span>
-                </td>
-                <td>
-                  <button className="btn btn-sm btn-warning me-2" onClick={() => toggleAtivo(user.id, user.ativo)}>
-                    {user.ativo ? 'Desativar' : 'Ativar'}
-                  </button>
-                  <button className="btn btn-sm btn-danger" onClick={() => deletarUsuario(user.id)}>
-                    Deletar
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="admin-busca mb-4">
+        <i className="bi bi-search"></i>
+        <input
+          type="text"
+          className="form-control"
+          placeholder={`Buscar ${tab === 'usuarios' ? 'usuários' : tab === 'psicologos' ? 'psicólogos' : 'pacientes'} por nome, e-mail...`}
+          value={busca}
+          onChange={e => setBusca(e.target.value)}
+        />
+        {busca && <button type="button" className="btn btn-link btn-clear-busca" onClick={() => setBusca('')}><i className="bi bi-x-circle"></i></button>}
       </div>
+
+      {tab === 'usuarios' && (
+        <div className="card admin-table-card">
+          <div className="card-header admin-card-header">
+            <h5 className="mb-0"><i className="bi bi-people me-2"></i>Todos os usuários</h5>
+          </div>
+          <div className="table-responsive">
+            <table className="table admin-table mb-0">
+              <thead>
+                <tr>
+                  <th>ID</th><th>Nome</th><th>Email</th><th>Tipo</th><th>Status</th><th className="text-end">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {usuariosFiltrados.length === 0 && (
+                  <tr><td colSpan="6" className="text-center text-muted py-4"><i className="bi bi-inbox me-2"></i>Nenhum resultado encontrado</td></tr>
+                )}
+                {usuariosFiltrados.map(user => (
+                  <tr key={user.id}>
+                    <td><span className="admin-id">{user.id}</span></td>
+                    <td>
+                      <div className="d-flex align-items-center gap-2">
+                        <span className="admin-avatar">{iniciais(user.nome)}</span>
+                        <strong>{user.nome}</strong>
+                      </div>
+                    </td>
+                    <td className="admin-email">{user.email}</td>
+                    <td><span className={`badge tipo-badge tipo-${badgeTipo(user.tipoUsuario)}`}>{tipoLabel(user.tipoUsuario)}</span></td>
+                    <td><span className={`badge status-badge status-${badgeStatus(user.ativo)}`}>{user.ativo ? 'Ativo' : 'Inativo'}</span></td>
+                    <td className="text-end text-nowrap">
+                      <button className="btn btn-sm btn-action btn-toggle" onClick={() => toggleAtivo(user.id, user.ativo)}>
+                        <i className={`bi ${user.ativo ? 'bi-pause-circle' : 'bi-play-circle'} me-1`}></i>{user.ativo ? 'Desativar' : 'Ativar'}
+                      </button>
+                      <button className="btn btn-sm btn-action btn-del" onClick={() => deletarUsuario(user.id)}>
+                        <i className="bi bi-trash3 me-1"></i>Deletar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
 
       {tab === 'psicologos' && (
         <>
-          <div className="card mb-4">
+          <div className="card admin-form-card mb-4">
             <div className="card-body">
-              <h5>{editando ? 'Editar' : 'Novo'} Psicólogo</h5>
+              <h5 className="admin-form-title">{editando ? 'Editar' : 'Novo'} Psicólogo</h5>
               <form onSubmit={handleSubmit}>
                 <div className="row">
                   <div className="col-md-6 mb-3">
@@ -228,35 +296,55 @@ function AdminUsuarios() {
                     <textarea className="form-control" placeholder="Bio" value={formData.bio} onChange={(e) => setFormData({...formData, bio: e.target.value})} rows="2" />
                   </div>
                 </div>
-                <button type="submit" className="btn btn-primary me-2">{editando ? 'Atualizar' : 'Criar'}</button>
+                <button type="submit" className="btn btn-primary me-2"><i className="bi bi-check-lg me-1"></i>{editando ? 'Atualizar' : 'Criar'}</button>
                 {editando && <button type="button" className="btn btn-secondary" onClick={limparForm}>Cancelar</button>}
               </form>
             </div>
           </div>
-          <table className="table table-striped">
-            <thead>
-              <tr><th>ID</th><th>Nome</th><th>Email</th><th>Especialidade</th><th>Preço</th><th>Ações</th></tr>
-            </thead>
-            <tbody>
-              {psicologos.map(p => (
-                <tr key={p.id}>
-                  <td>{p.id}</td><td>{p.nome}</td><td>{p.email}</td><td>{p.especialidade}</td><td>R$ {p.precoSessao}</td>
-                  <td>
-                    <button className="btn btn-sm btn-warning me-2" onClick={() => handleEditar(p)}>Editar</button>
-                    <button className="btn btn-sm btn-danger" onClick={() => handleDeletar(p.id)}>Desativar</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+          <div className="card admin-table-card">
+            <div className="card-header admin-card-header">
+              <h5 className="mb-0"><i className="bi bi-person-badge me-2"></i>Psicólogos cadastrados</h5>
+            </div>
+            <div className="table-responsive">
+              <table className="table admin-table mb-0">
+                <thead>
+                  <tr><th>ID</th><th>Nome</th><th>Email</th><th>Especialidade</th><th>Preço</th><th className="text-end">Ações</th></tr>
+                </thead>
+                <tbody>
+                  {psicologosFiltrados.length === 0 && (
+                    <tr><td colSpan="6" className="text-center text-muted py-4"><i className="bi bi-inbox me-2"></i>Nenhum resultado encontrado</td></tr>
+                  )}
+                  {psicologosFiltrados.map(p => (
+                    <tr key={p.id}>
+                      <td><span className="admin-id">{p.id}</span></td>
+                      <td>
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="admin-avatar admin-avatar-psicologo">{iniciais(p.nome)}</span>
+                          <strong>{p.nome}</strong>
+                        </div>
+                      </td>
+                      <td className="admin-email">{p.email}</td>
+                      <td>{p.especialidade || '—'}</td>
+                      <td className="fw-semibold text-success">R$ {p.precoSessao ?? '—'}</td>
+                      <td className="text-end text-nowrap">
+                        <button className="btn btn-sm btn-action btn-edit" onClick={() => handleEditar(p)}><i className="bi bi-pencil me-1"></i>Editar</button>
+                        <button className="btn btn-sm btn-action btn-del" onClick={() => handleDeletar(p.id)}><i className="bi bi-stop-circle me-1"></i>Desativar</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </>
       )}
 
       {tab === 'pacientes' && (
         <>
-          <div className="card mb-4">
+          <div className="card admin-form-card mb-4">
             <div className="card-body">
-              <h5>{editando ? 'Editar' : 'Novo'} Paciente</h5>
+              <h5 className="admin-form-title">{editando ? 'Editar' : 'Novo'} Paciente</h5>
               <form onSubmit={handleSubmit}>
                 <div className="row">
                   <div className="col-md-6 mb-3">
@@ -285,27 +373,46 @@ function AdminUsuarios() {
                     </select>
                   </div>
                 </div>
-                <button type="submit" className="btn btn-primary me-2">{editando ? 'Atualizar' : 'Criar'}</button>
+                <button type="submit" className="btn btn-primary me-2"><i className="bi bi-check-lg me-1"></i>{editando ? 'Atualizar' : 'Criar'}</button>
                 {editando && <button type="button" className="btn btn-secondary" onClick={limparForm}>Cancelar</button>}
               </form>
             </div>
           </div>
-          <table className="table table-striped">
-            <thead>
-              <tr><th>ID</th><th>Nome</th><th>Email</th><th>Telefone</th><th>Ações</th></tr>
-            </thead>
-            <tbody>
-              {pacientes.map(p => (
-                <tr key={p.id}>
-                  <td>{p.id}</td><td>{p.nome}</td><td>{p.email}</td><td>{p.telefone}</td>
-                  <td>
-                    <button className="btn btn-sm btn-warning me-2" onClick={() => handleEditar(p)}>Editar</button>
-                    <button className="btn btn-sm btn-danger" onClick={() => handleDeletar(p.id)}>Deletar</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+          <div className="card admin-table-card">
+            <div className="card-header admin-card-header">
+              <h5 className="mb-0"><i className="bi bi-person-heart me-2"></i>Pacientes cadastrados</h5>
+            </div>
+            <div className="table-responsive">
+              <table className="table admin-table mb-0">
+                <thead>
+                  <tr><th>ID</th><th>Nome</th><th>Email</th><th>Telefone</th><th className="text-end">Ações</th></tr>
+                </thead>
+                <tbody>
+                  {pacientesFiltrados.length === 0 && (
+                    <tr><td colSpan="5" className="text-center text-muted py-4"><i className="bi bi-inbox me-2"></i>Nenhum resultado encontrado</td></tr>
+                  )}
+                  {pacientesFiltrados.map(p => (
+                    <tr key={p.id}>
+                      <td><span className="admin-id">{p.id}</span></td>
+                      <td>
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="admin-avatar admin-avatar-paciente">{iniciais(p.nome)}</span>
+                          <strong>{p.nome}</strong>
+                        </div>
+                      </td>
+                      <td className="admin-email">{p.email}</td>
+                      <td>{p.telefone || '—'}</td>
+                      <td className="text-end text-nowrap">
+                        <button className="btn btn-sm btn-action btn-edit" onClick={() => handleEditar(p)}><i className="bi bi-pencil me-1"></i>Editar</button>
+                        <button className="btn btn-sm btn-action btn-del" onClick={() => handleDeletar(p.id)}><i className="bi bi-trash3 me-1"></i>Deletar</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </>
       )}
     </div>

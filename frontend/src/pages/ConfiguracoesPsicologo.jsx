@@ -30,6 +30,7 @@ const ConfiguracoesPsicologo = () => {
   const [faixaInicio, setFaixaInicio] = useState('');
   const [faixaFim, setFaixaFim] = useState('');
   const [faixaErro, setFaixaErro] = useState('');
+  const [ocupados, setOcupados] = useState(new Set());
   const [senhaAtual, setSenhaAtual] = useState('');
   const [novaSenha, setNovaSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
@@ -65,6 +66,32 @@ const ConfiguracoesPsicologo = () => {
       setFaixaFim(loadedSlots[loadedSlots.length - 1]);
     }
   }, [user, navigate]);
+
+  // Busca as sessões do psicólogo e calcula quais horários já estão ocupados
+  useEffect(() => {
+    if (!user || user.tipoUsuario !== 'psicologo') return;
+    const carregarOcupados = async () => {
+      try {
+        const res = await api.get(`/api/sessoes/psicologo/${user.id}`);
+        const set = new Set();
+        (res.data || []).forEach((sessao) => {
+          if (sessao.statusSessao !== 'agendada' && sessao.statusSessao !== 'confirmada') return;
+          const dt = new Date(sessao.dataSessao);
+          if (isNaN(dt.getTime())) return;
+          const dia = dt.getDay();
+          const hora = String(dt.getHours()).padStart(2, '0');
+          const minuto = String(dt.getMinutes()).padStart(2, '0');
+          set.add(`${dia}|${hora}:${minuto}`);
+        });
+        setOcupados(set);
+      } catch (error) {
+        console.error('Erro ao carregar horários ocupados:', error);
+      }
+    };
+    carregarOcupados();
+  }, [user]);
+
+  const isSlotOcupado = (dia, slot) => ocupados.has(`${dia}|${slot}`);
 
   const handleChange = (e) => {
     setConfig({ ...config, [e.target.name]: e.target.value });
@@ -383,19 +410,68 @@ const ConfiguracoesPsicologo = () => {
 
                 <div>
                   <label className="form-label fw-semibold">Horários disponíveis</label>
-                  <div className="d-flex flex-wrap gap-2">
-                    {horariosAtendimento.map((slot) => (
-                      <button
-                        key={slot}
-                        type="button"
-                        className="btn btn-sm rounded-pill px-3 btn-primary"
-                        onClick={() => toggleTimeSlot(slot)}
-                        disabled={!editando}
-                      >
-                        {slot}
-                      </button>
-                    ))}
-                  </div>
+
+                  {horariosAtendimento.length === 0 && (
+                    <p className="text-muted small mb-2">
+                      Nenhum horário selecionado. Use a faixa acima ou selecione manualmente.
+                    </p>
+                  )}
+
+                  {diasAtendimento.length === 0 ? (
+                    <div className="d-flex flex-wrap gap-2">
+                      {horariosAtendimento.map((slot) => (
+                        <button
+                          key={slot}
+                          type="button"
+                          className="btn btn-sm rounded-pill px-3 btn-primary"
+                          onClick={() => toggleTimeSlot(slot)}
+                          disabled={!editando}
+                        >
+                          {slot}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="row g-3">
+                      {diasAtendimento.map((dia) => {
+                        const label = WEEKDAY_OPTIONS.find(o => o.value === dia)?.label || `Dia ${dia}`;
+                        return (
+                          <div className="col-md-6 col-lg-4" key={dia}>
+                            <div className="agenda-dia-card h-100">
+                              <h6 className="fw-bold mb-2">
+                                <i className="bi bi-calendar-day me-1 text-success"></i>{label}
+                              </h6>
+                              <div className="d-flex flex-wrap gap-2">
+                                {horariosAtendimento.map((slot) => {
+                                  const ocupado = isSlotOcupado(dia, slot);
+                                  return (
+                                    <button
+                                      key={`${dia}-${slot}`}
+                                      type="button"
+                                      className={`btn btn-sm rounded-pill px-3 ${ocupado ? 'btn-horario-ocupado' : 'btn-primary'}`}
+                                      onClick={() => toggleTimeSlot(slot)}
+                                      disabled={!editando}
+                                      title={ocupado
+                                        ? 'Já existe sessão agendada neste horário'
+                                        : 'Clique para remover este horário'}
+                                    >
+                                      {ocupado && <i className="bi bi-lock-fill me-1"></i>}
+                                      {slot}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  <small className="text-muted d-block mt-3">
+                    <i className="bi bi-lock-fill me-1"></i>
+                    Horários escuros com cadeado já possuem sessão agendada (não podem ser liberados até o cancelamento).
+                  </small>
                 </div>
               </div>
             </div>

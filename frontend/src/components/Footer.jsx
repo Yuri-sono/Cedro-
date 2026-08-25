@@ -37,14 +37,20 @@ const Footer = () => {
           </div>
           
           <div className="col-lg-3 col-md-6">
-            <h5 className="fw-bold mb-3">Newsletter</h5>
-            <p>Receba dicas de saúde mental e novidades sobre nossos serviços.</p>
-            <form className="mt-3" onSubmit={(e) => { e.preventDefault(); alert('Inscrição realizada com sucesso! Você receberá nossas novidades por email.'); e.target.reset(); }}>
-              <div className="input-group mb-3">
-                <input type="email" className="form-control" placeholder="Seu email" required />
-                <button className="btn btn-primary" type="submit">Inscrever</button>
-              </div>
-            </form>
+            <h5 className="fw-bold mb-3">Ajuda Imediata</h5>
+            <p className="small mb-3">Em crise? Ligue agora, é gratuito e sigiloso.</p>
+            <a href="tel:188" className="d-flex align-items-center gap-2 text-white text-decoration-none mb-2 fw-bold">
+              <span className="badge bg-danger px-2 py-1">188</span>
+              CVV — Apoio emocional 24h
+            </a>
+            <a href="tel:192" className="d-flex align-items-center gap-2 text-white text-decoration-none mb-2">
+              <span className="badge bg-warning text-dark px-2 py-1">192</span>
+              SAMU — Emergência médica
+            </a>
+            <a href="tel:190" className="d-flex align-items-center gap-2 text-white text-decoration-none">
+              <span className="badge bg-primary px-2 py-1">190</span>
+              Polícia Militar
+            </a>
           </div>
         </div>
         

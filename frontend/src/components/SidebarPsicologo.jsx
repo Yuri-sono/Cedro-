@@ -12,6 +12,7 @@ const SidebarPsicologo = () => {
     { path: '/psicologo/consultas', icon: 'bi-clipboard-pulse', label: 'Consultas' },
     { path: '/psicologo/chats', icon: 'bi-chat-dots', label: 'Mensagens' },
     { path: '/psicologo/financeiro', icon: 'bi-graph-up', label: 'Financeiro' },
+    { path: '/psicologo/estatisticas', icon: 'bi-bar-chart-line', label: 'Estatísticas' },
     { path: '/psicologo/perfil', icon: 'bi-person-circle', label: 'Perfil' },
     { path: '/psicologo/configuracoes', icon: 'bi-gear', label: 'Configurações' }
   ];
@@ -38,7 +39,7 @@ const SidebarPsicologo = () => {
           id="sidebar-psicologo-menu"
         >
           <div className="card-body p-0">
-            <div className="list-group list-group-flush">
+            <div className="list-group list-group-flush sidebar-psicologo-list">
               {menuItems.map(item => (
                 <Link
                   key={item.path}

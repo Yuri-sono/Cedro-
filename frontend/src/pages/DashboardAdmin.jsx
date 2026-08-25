@@ -129,64 +129,79 @@ const DashboardAdmin = () => {
         </div>
 
         {/* Menu de Ações */}
-        <div className="row">
-          <div className="col-md-4 mb-3">
-            <div className="card h-100">
-              <div className="card-body text-center">
-                <i className="bi bi-people text-primary" style={{ fontSize: '3rem' }}></i>
-                <h5 className="mt-3">Gerenciar Usuários</h5>
-                <p className="text-muted">Visualizar, editar e remover usuários</p>
-                <button className="btn btn-primary" onClick={() => navigate('/admin/usuarios')}>Acessar</button>
+        <h5 className="fw-bold mb-3">
+          <i className="bi bi-grid-1x2 me-2 text-success"></i>Ações rápidas
+        </h5>
+        <div className="row g-4">
+          <div className="col-md-6 col-lg-4">
+            <div className="card admin-action-card">
+              <div className="card-body">
+                <div className="admin-icon-wrapper"><i className="bi bi-people"></i></div>
+                <h5>Gerenciar Usuários</h5>
+                <p className="card-text">Visualizar, editar e remover usuários</p>
+                <button className="btn btn-success btn-admin-card" onClick={() => navigate('/admin/usuarios')}>
+                  <i className="bi bi-box-arrow-in-right me-2"></i>Acessar
+                </button>
               </div>
             </div>
           </div>
-          <div className="col-md-4 mb-3">
-            <div className="card h-100">
-              <div className="card-body text-center">
-                <i className="bi bi-person-badge text-success" style={{ fontSize: '3rem' }}></i>
-                <h5 className="mt-3">Gerenciar Psicólogos</h5>
-                <p className="text-muted">Aprovar, editar e remover psicólogos</p>
-                <button className="btn btn-success" onClick={() => navigate('/admin/usuarios')}>Acessar</button>
+          <div className="col-md-6 col-lg-4">
+            <div className="card admin-action-card">
+              <div className="card-body">
+                <div className="admin-icon-wrapper purple"><i className="bi bi-person-badge"></i></div>
+                <h5>Gerenciar Psicólogos</h5>
+                <p className="card-text">Aprovar, editar e remover psicólogos</p>
+                <button className="btn btn-primary btn-admin-card" onClick={() => navigate('/admin/usuarios')}>
+                  <i className="bi bi-box-arrow-in-right me-2"></i>Acessar
+                </button>
               </div>
             </div>
           </div>
-          <div className="col-md-4 mb-3">
-            <div className="card h-100">
-              <div className="card-body text-center">
-                <i className="bi bi-calendar-check text-warning" style={{ fontSize: '3rem' }}></i>
-                <h5 className="mt-3">Gerenciar Sessões</h5>
-                <p className="text-muted">Visualizar e gerenciar sessões</p>
-                <button className="btn btn-warning" onClick={() => navigate('/admin/sessoes')}>Acessar</button>
+          <div className="col-md-6 col-lg-4">
+            <div className="card admin-action-card">
+              <div className="card-body">
+                <div className="admin-icon-wrapper warn"><i className="bi bi-calendar-check"></i></div>
+                <h5>Gerenciar Sessões</h5>
+                <p className="card-text">Visualizar e gerenciar sessões</p>
+                <button className="btn btn-warning btn-admin-card" onClick={() => navigate('/admin/sessoes')}>
+                  <i className="bi bi-box-arrow-in-right me-2"></i>Acessar
+                </button>
               </div>
             </div>
           </div>
-          <div className="col-md-4 mb-3">
-            <div className="card h-100">
-              <div className="card-body text-center">
-                <i className="bi bi-graph-up text-info" style={{ fontSize: '3rem' }}></i>
-                <h5 className="mt-3">Relatórios</h5>
-                <p className="text-muted">Gerar relatórios e estatísticas</p>
-                <button className="btn btn-info">Acessar</button>
+          <div className="col-md-6 col-lg-4">
+            <div className="card admin-action-card">
+              <div className="card-body">
+                <div className="admin-icon-wrapper info"><i className="bi bi-graph-up"></i></div>
+                <h5>Relatórios</h5>
+                <p className="card-text">Resumo das sessões e consultas</p>
+                <button className="btn btn-info btn-admin-card" onClick={() => navigate('/admin/sessoes')}>
+                  <i className="bi bi-box-arrow-in-right me-2"></i>Acessar
+                </button>
               </div>
             </div>
           </div>
-          <div className="col-md-4 mb-3">
-            <div className="card h-100">
-              <div className="card-body text-center">
-                <i className="bi bi-gear text-secondary" style={{ fontSize: '3rem' }}></i>
-                <h5 className="mt-3">Configurações</h5>
-                <p className="text-muted">Configurações do sistema</p>
-                <button className="btn btn-secondary">Acessar</button>
+          <div className="col-md-6 col-lg-4">
+            <div className="card admin-action-card">
+              <div className="card-body">
+                <div className="admin-icon-wrapper gray"><i className="bi bi-gear"></i></div>
+                <h5>Configurações</h5>
+                <p className="card-text">Configurações do sistema</p>
+                <button className="btn btn-secondary btn-admin-card" onClick={() => navigate('/admin/configuracoes')}>
+                  <i className="bi bi-box-arrow-in-right me-2"></i>Acessar
+                </button>
               </div>
             </div>
           </div>
-          <div className="col-md-4 mb-3">
-            <div className="card h-100">
-              <div className="card-body text-center">
-                <i className="bi bi-shield-check text-danger" style={{ fontSize: '3rem' }}></i>
-                <h5 className="mt-3">Segurança</h5>
-                <p className="text-muted">Logs e auditoria do sistema</p>
-                <button className="btn btn-danger">Acessar</button>
+          <div className="col-md-6 col-lg-4">
+            <div className="card admin-action-card">
+              <div className="card-body">
+                <div className="admin-icon-wrapper danger"><i className="bi bi-shield-check"></i></div>
+                <h5>Segurança</h5>
+                <p className="card-text">Canais de ajuda e emergência</p>
+                <button className="btn btn-danger btn-admin-card" onClick={() => navigate('/admin/configuracoes')}>
+                  <i className="bi bi-box-arrow-in-right me-2"></i>Acessar
+                </button>
               </div>
             </div>
           </div>

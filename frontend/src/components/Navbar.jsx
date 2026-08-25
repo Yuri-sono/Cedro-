@@ -119,6 +119,9 @@ const Navbar = () => {
               <li className="mb-2"><a className="d-block p-2" href="/#ajuda" onClick={closeMenu}>
                 <i className="bi bi-question-circle me-2"></i>Preciso de Ajuda
               </a></li>
+              <li className="mb-2"><Link className="d-block p-2" to="/admin/login" onClick={closeMenu}>
+                <i className="bi bi-shield-lock me-2"></i>Área Administrativa
+              </Link></li>
             </ul>
           )}
         </div>

@@ -14,6 +14,8 @@ import './styles/navbar-spacing.css';
 import './styles/theme.css';
 import './styles/notifications.css';
 import './styles/cedro-colors.css';
+import './styles/lista-psicologos.css';
+import './styles/admin.css';
 import './styles/page-transitions.css';
 
 import NotificationSystem from './components/NotificationSystem.jsx';
@@ -48,6 +50,7 @@ const LoginAdmin = lazy(() => import('./pages/LoginAdmin.jsx'));
 const DashboardAdmin = lazy(() => import('./pages/DashboardAdmin.jsx'));
 const AdminUsuarios = lazy(() => import('./pages/AdminUsuarios.jsx'));
 const AdminSessoes = lazy(() => import('./pages/AdminSessoes.jsx'));
+const AdminConfiguracoes = lazy(() => import('./pages/AdminConfiguracoes.jsx'));
 const MinhasSessoes = lazy(() => import('./pages/MinhasSessoes.jsx'));
 const AgendarSessao = lazy(() => import('./pages/AgendarSessao.jsx'));
 const Chat = lazy(() => import('./pages/Chat.jsx'));
@@ -178,6 +181,11 @@ function AppContent() {
             <Route path="/admin/sessoes" element={
               <ProtectedRoute requiredUserType="admin">
                 <AdminSessoes />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/configuracoes" element={
+              <ProtectedRoute requiredUserType="admin">
+                <AdminConfiguracoes />
               </ProtectedRoute>
             } />
             <Route path="/minhas-sessoes" element={

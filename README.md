@@ -57,10 +57,16 @@ graph TD
 ### Backend (Spring Boot)
 ```bash
 cd backend/cedro-backend
-# Configure as variáveis de ambiente (ver seção abaixo)
-mvn spring-boot:run
+# Configure as variáveis de ambiente primeiro (ver seção abaixo)
+cp .env.example .env   # se ainda não existir
+# Carrega o .env e sobe o servidor. Use start.sh (Linux/macOS) — ele exporta
+# o .env antes de iniciar. `mvn spring-boot:run` NÃO lê .env automaticamente.
+./start.sh
 # Porta padrão: 8080
 ```
+> **Windows:** use `run.bat` (ou `powershell -ExecutionPolicy Bypass -File start.ps1`).
+> Não use `mvn spring-boot:run` diretamente — sem o `.env` exportado a aplicação
+> falha ao resolver variáveis como `JWT_SECRET`, `GOOGLE_MEET_CLIENT_ID`, etc.
 
 ### Frontend Web
 ```bash

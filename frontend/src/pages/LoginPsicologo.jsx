@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import api from '../services/api.js';
 
@@ -12,6 +12,8 @@ const LoginPsicologo = () => {
   const [error, setError] = useState('');
   const { login, user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const recemCadastrado = searchParams.get('cadastro') === '1';
 
   useEffect(() => {
     if (user && user.tipoUsuario === 'psicologo') {
@@ -36,7 +38,7 @@ const LoginPsicologo = () => {
       
       if (response.data.usuario.tipoUsuario === 'psicologo') {
         login(response.data.usuario, response.data.token);
-        navigate('/psicologo/dashboard');
+        navigate(recemCadastrado ? '/psicologo/configuracoes' : '/psicologo/dashboard');
       } else {
         setError('Esta conta não é de psicólogo. Use o login de paciente.');
       }
@@ -51,7 +53,7 @@ const LoginPsicologo = () => {
 
 
   return (
-    <div className="login-section py-5" style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
+    <div className="login-section py-5">
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-md-6 col-lg-5">
@@ -61,6 +63,12 @@ const LoginPsicologo = () => {
                   <i className="bi bi-person-badge text-primary" style={{ fontSize: '3rem' }}></i>
                   <h2 className="fw-bold mt-3">Login Psicólogo</h2>
                   <p className="text-muted">Acesse sua área profissional</p>
+                  {recemCadastrado && (
+                    <div className="alert alert-success py-2 mt-2">
+                      <i className="bi bi-check-circle me-1"></i>
+                      Cadastro realizado! Faça login para configurar seus horários.
+                    </div>
+                  )}
                 </div>
 
                 {error && (
