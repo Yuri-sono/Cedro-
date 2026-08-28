@@ -65,8 +65,20 @@ async function authRequest<T>(
     const data = await readResponseBody(response);
 
     if (!response.ok) {
+      const rawMessage = extractApiMessage(data);
+
+      // Backend retorna 400 genérico para credenciais inválidas no login.
+      // Traduz para uma mensagem clara para o usuário.
+      if (
+        response.status === 400 &&
+        endpoint === API_ENDPOINTS.AUTH.LOGIN &&
+        (!rawMessage || rawMessage === 'Erro ao processar sua solicitação' || rawMessage === 'Email ou senha incorretos')
+      ) {
+        throw new Error('E-mail ou senha inválidos.');
+      }
+
       throw new Error(
-        extractApiMessage(data) ||
+        rawMessage ||
           `${label}: erro ${response.status} ao processar solicitacao.`,
       );
     }

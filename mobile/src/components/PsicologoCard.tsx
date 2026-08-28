@@ -29,7 +29,7 @@ export const PsicologoCard = ({ psicologo, onPress }: Props) => {
             <Text style={styles.especialidade} numberOfLines={1}>
               {psicologo.especialidade || 'Psicologia Clínica'}
             </Text>
-            {psicologo.tipoPsicologo && (
+            {!!psicologo.tipoPsicologo && (
               <View style={styles.badge}>
                 <Text style={styles.badgeText} numberOfLines={1}>
                   {psicologo.tipoPsicologo}
@@ -57,7 +57,7 @@ export const PsicologoCard = ({ psicologo, onPress }: Props) => {
           </View>
         </View>
         
-        {psicologo.bio && (
+        {!!psicologo.bio && (
           <View style={styles.bioContainer}>
             <Text style={styles.bio} numberOfLines={2}>{psicologo.bio}</Text>
           </View>

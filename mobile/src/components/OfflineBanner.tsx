@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { useUIStore } from '../store/uiStore';
@@ -9,7 +9,10 @@ export const OfflineBanner = () => {
   const isOffline = useUIStore((state) => state.isOffline);
   const setOffline = useUIStore((state) => state.setOffline);
   const insets = useSafeAreaInsets();
-  
+
+  // Controla se o banner está montado (para não bloquear cliques quando oculto)
+  const [visible, setVisible] = useState(false);
+
   // Animação para o banner subir/descer suavemente
   const translateY = React.useRef(new Animated.Value(-100)).current;
 
@@ -24,25 +27,25 @@ export const OfflineBanner = () => {
 
   useEffect(() => {
     if (isOffline) {
+      setVisible(true);
       Animated.timing(translateY, {
         toValue: 0,
         duration: 300,
-        useNativeDriver: true,
+        useNativeDriver: false,
       }).start();
     } else {
+      // Toca a animação de saída e só então desmonta o banner.
       Animated.timing(translateY, {
         toValue: -100,
         duration: 300,
-        useNativeDriver: true,
-      }).start();
+        useNativeDriver: false,
+      }).start(({ finished }) => {
+        if (finished) setVisible(false);
+      });
     }
   }, [isOffline, translateY]);
 
-  if (!isOffline && translateY.interpolate({ inputRange: [-100, 0], outputRange: [0, 1] }) as unknown as number === 0) {
-      // Pequena otimização: não renderizar se não estiver offline E já estiver escondido.
-      // O animated value dificulta isso um pouco, mas ajuda no layout.
-      return null;
-  }
+  if (!visible) return null;
 
   return (
     <Animated.View
