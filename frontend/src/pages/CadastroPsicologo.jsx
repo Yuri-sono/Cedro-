@@ -6,6 +6,7 @@ const CadastroPsicologo = () => {
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
+    confirmarEmail: '',
     crp: '',
     senha: '',
     confirmarSenha: '',
@@ -103,6 +104,12 @@ const CadastroPsicologo = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    if (formData.email !== formData.confirmarEmail) {
+      setError('Os emails digitados não coincidem');
+      setLoading(false);
+      return;
+    }
 
     if (formData.senha !== formData.confirmarSenha) {
       setError('As senhas não coincidem');
@@ -275,6 +282,21 @@ const CadastroPsicologo = () => {
                         id="telefone"
                         name="telefone"
                         value={formData.telefone}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="row">
+                    <div className="col-md-6 mb-3">
+                      <label htmlFor="confirmarEmail" className="form-label">Confirmar Email *</label>
+                      <input
+                        type="email"
+                        className="form-control"
+                        id="confirmarEmail"
+                        name="confirmarEmail"
+                        value={formData.confirmarEmail}
                         onChange={handleChange}
                         required
                       />

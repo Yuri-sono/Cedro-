@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/personalizacao.css';
 
-const PersonalizacaoMenu = () => {
+const PersonalizacaoMenu = ({ variant = '' }) => {
+  // Sufixo único por instância — evita IDs e grupos de radio duplicados no DOM
+  // quando o menu é renderizado em mais de um lugar (ex.: navbar desktop + offcanvas).
+  const uid = variant ? `-${variant}` : '';
   const [isDark, setIsDark] = useState(false);
   const [colorMode, setColorMode] = useState('padrao');
   const [dyslexiaFont, setDyslexiaFont] = useState(false);
@@ -64,21 +67,21 @@ const PersonalizacaoMenu = () => {
   };
 
   return (
-    <div className="accordion mt-3 mb-2" id="accordionPersonalizacao">
+    <div className="accordion mt-3 mb-2" id={`accordionPersonalizacao${uid}`}>
       <div className="accordion-item bg-transparent border-0">
-        <h2 className="accordion-header" id="headingPersonalizacao">
-          <button className="accordion-button collapsed bg-transparent shadow-none p-2 text-body fw-medium" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePersonalizacao" aria-expanded="false" aria-controls="collapsePersonalizacao" style={{ paddingLeft: '0.5rem', paddingRight: '0.5rem', fontSize: '1rem' }}>
+        <h2 className="accordion-header" id={`headingPersonalizacao${uid}`}>
+          <button className="accordion-button collapsed bg-transparent shadow-none p-2 text-body fw-medium" type="button" data-bs-toggle="collapse" data-bs-target={`#collapsePersonalizacao${uid}`} aria-expanded="false" aria-controls={`collapsePersonalizacao${uid}`} style={{ paddingLeft: '0.5rem', paddingRight: '0.5rem', fontSize: '1rem' }}>
             <i className="bi bi-palette me-2"></i>Personalização
           </button>
         </h2>
-        <div id="collapsePersonalizacao" className="accordion-collapse collapse" aria-labelledby="headingPersonalizacao" data-bs-parent="#accordionPersonalizacao">
+        <div id={`collapsePersonalizacao${uid}`} className="accordion-collapse collapse" aria-labelledby={`headingPersonalizacao${uid}`} data-bs-parent={`#accordionPersonalizacao${uid}`}>
           <div className="accordion-body px-2 py-3 border-top mt-2">
             
             <div className="mb-4">
               <h6 className="fw-bold mb-3 text-body" style={{ fontSize: '0.9rem' }}>Temas padrão</h6>
               <div className="form-check mb-3 custom-radio-theme">
-                <input className="form-check-input" type="radio" name="temaPadrao" id="temaClaro" checked={!isDark} onChange={() => handleThemeChange('light')} />
-                <label className="form-check-label d-flex align-items-center justify-content-between w-100" htmlFor="temaClaro">
+                <input className="form-check-input" type="radio" name={`temaPadrao${uid}`} id={`temaClaro${uid}`} checked={!isDark} onChange={() => handleThemeChange('light')} />
+                <label className="form-check-label d-flex align-items-center justify-content-between w-100" htmlFor={`temaClaro${uid}`}>
                   <span style={{ fontSize: '0.9rem' }}>Tema padrão</span>
                   <div className="d-flex gap-1 swatches-container">
                      <span className="swatch" style={{ backgroundColor: '#2ca4ec' }}></span>
@@ -91,8 +94,8 @@ const PersonalizacaoMenu = () => {
                 </label>
               </div>
               <div className="form-check mb-2 custom-radio-theme">
-                <input className="form-check-input" type="radio" name="temaPadrao" id="temaEscuro" checked={isDark} onChange={() => handleThemeChange('dark')} />
-                <label className="form-check-label d-flex align-items-center justify-content-between w-100" htmlFor="temaEscuro">
+                <input className="form-check-input" type="radio" name={`temaPadrao${uid}`} id={`temaEscuro${uid}`} checked={isDark} onChange={() => handleThemeChange('dark')} />
+                <label className="form-check-label d-flex align-items-center justify-content-between w-100" htmlFor={`temaEscuro${uid}`}>
                   <span style={{ fontSize: '0.9rem' }}>Tema escuro</span>
                   <div className="d-flex gap-1 swatches-container">
                      <span className="swatch" style={{ backgroundColor: '#5c5c5c' }}></span>
@@ -109,8 +112,8 @@ const PersonalizacaoMenu = () => {
             <div className="mb-4">
               <h6 className="fw-bold mb-3 text-body" style={{ fontSize: '0.9rem' }}>Temas de daltonismo</h6>
               <div className="form-check mb-3 custom-radio-theme">
-                <input className="form-check-input" type="radio" name="temaDaltonismo" id="acromatopsia" checked={colorMode === 'acromatopsia'} onChange={() => handleColorModeChange('acromatopsia')} />
-                <label className="form-check-label d-flex align-items-center justify-content-between w-100" htmlFor="acromatopsia">
+                <input className="form-check-input" type="radio" name={`temaDaltonismo${uid}`} id={`acromatopsia${uid}`} checked={colorMode === 'acromatopsia'} onChange={() => handleColorModeChange('acromatopsia')} />
+                <label className="form-check-label d-flex align-items-center justify-content-between w-100" htmlFor={`acromatopsia${uid}`}>
                   <span style={{ fontSize: '0.9rem' }}>Acromatopsia</span>
                   <div className="d-flex gap-1 swatches-container">
                      <span className="swatch" style={{ backgroundColor: '#aaaaaa' }}></span>
@@ -123,8 +126,8 @@ const PersonalizacaoMenu = () => {
                 </label>
               </div>
               <div className="form-check mb-3 custom-radio-theme">
-                <input className="form-check-input" type="radio" name="temaDaltonismo" id="tritanopia" checked={colorMode === 'tritanopia'} onChange={() => handleColorModeChange('tritanopia')} />
-                <label className="form-check-label d-flex align-items-center justify-content-between w-100" htmlFor="tritanopia">
+                <input className="form-check-input" type="radio" name={`temaDaltonismo${uid}`} id={`tritanopia${uid}`} checked={colorMode === 'tritanopia'} onChange={() => handleColorModeChange('tritanopia')} />
+                <label className="form-check-label d-flex align-items-center justify-content-between w-100" htmlFor={`tritanopia${uid}`}>
                   <span style={{ fontSize: '0.9rem' }}>Tritanopia</span>
                   <div className="d-flex gap-1 swatches-container">
                      <span className="swatch" style={{ backgroundColor: '#00b7ce' }}></span>
@@ -137,8 +140,8 @@ const PersonalizacaoMenu = () => {
                 </label>
               </div>
               <div className="form-check mb-3 custom-radio-theme">
-                <input className="form-check-input" type="radio" name="temaDaltonismo" id="deuteranopia" checked={colorMode === 'deuteranopia'} onChange={() => handleColorModeChange('deuteranopia')} />
-                <label className="form-check-label d-flex align-items-center justify-content-between w-100" htmlFor="deuteranopia">
+                <input className="form-check-input" type="radio" name={`temaDaltonismo${uid}`} id={`deuteranopia${uid}`} checked={colorMode === 'deuteranopia'} onChange={() => handleColorModeChange('deuteranopia')} />
+                <label className="form-check-label d-flex align-items-center justify-content-between w-100" htmlFor={`deuteranopia${uid}`}>
                   <span style={{ fontSize: '0.9rem' }}>Deuteranopia</span>
                   <div className="d-flex gap-1 swatches-container">
                      <span className="swatch" style={{ backgroundColor: '#99a8ed' }}></span>
@@ -151,8 +154,8 @@ const PersonalizacaoMenu = () => {
                 </label>
               </div>
               <div className="form-check mb-2 custom-radio-theme">
-                <input className="form-check-input" type="radio" name="temaDaltonismo" id="protanopia" checked={colorMode === 'protanopia'} onChange={() => handleColorModeChange('protanopia')} />
-                <label className="form-check-label d-flex align-items-center justify-content-between w-100" htmlFor="protanopia">
+                <input className="form-check-input" type="radio" name={`temaDaltonismo${uid}`} id={`protanopia${uid}`} checked={colorMode === 'protanopia'} onChange={() => handleColorModeChange('protanopia')} />
+                <label className="form-check-label d-flex align-items-center justify-content-between w-100" htmlFor={`protanopia${uid}`}>
                   <span style={{ fontSize: '0.9rem' }}>Protanopia</span>
                   <div className="d-flex gap-1 swatches-container">
                      <span className="swatch" style={{ backgroundColor: '#9ba9ed' }}></span>
@@ -175,9 +178,9 @@ const PersonalizacaoMenu = () => {
               <h6 className="fw-bold mb-3 text-body" style={{ fontSize: '0.9rem' }}>Ajuste visual</h6>
               <div className="form-check form-switch custom-switch-theme d-flex align-items-center ps-0">
                 <div className="form-switch ps-5 ms-0">
-                   <input className="form-check-input fs-5" type="checkbox" role="switch" id="fonteDislexia" checked={dyslexiaFont} onChange={handleDyslexiaFontChange} style={{ marginLeft: '-2.5rem' }} />
+                   <input className="form-check-input fs-5" type="checkbox" role="switch" id={`fonteDislexia${uid}`} checked={dyslexiaFont} onChange={handleDyslexiaFontChange} style={{ marginLeft: '-2.5rem' }} />
                 </div>
-                <label className="form-check-label ms-1" htmlFor="fonteDislexia" style={{ fontSize: '0.9rem' }}>Fonte tipo dislexia</label>
+                <label className="form-check-label ms-1" htmlFor={`fonteDislexia${uid}`} style={{ fontSize: '0.9rem' }}>Fonte tipo dislexia</label>
               </div>
             </div>
 

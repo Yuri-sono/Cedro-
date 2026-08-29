@@ -29,11 +29,22 @@ const NavbarPsicologo = ({ psicologo }) => {
             <span className="header-greeting d-none d-md-block me-4 fw-medium text-white">
               Olá, {psicologo?.nome || 'Psicólogo'}
             </span>
-            <button 
-              className="navbar-toggler custom-toggler border-0 shadow-none" 
-              type="button" 
-              data-bs-toggle="offcanvas" 
-              data-bs-target="#offcanvasPsicologo" 
+            {/* Bloco desktop (>= 992px): itens que NÃO vivem na SidebarPsicologo */}
+            <div className="d-none d-lg-flex align-items-center me-3">
+              <PersonalizacaoMenu variant="navbar-desktop" />
+              <button
+                type="button"
+                className="btn btn-link nav-link text-white d-flex align-items-center p-2"
+                onClick={handleLogout}
+              >
+                <i className="bi bi-box-arrow-right me-2"></i>Sair
+              </button>
+            </div>
+            <button
+              className="navbar-toggler custom-toggler border-0 shadow-none d-lg-none"
+              type="button"
+              data-bs-toggle="offcanvas"
+              data-bs-target="#offcanvasPsicologo"
               aria-label="Abrir menu"
             >
               <span className="icon-bar"></span>
@@ -61,7 +72,7 @@ const NavbarPsicologo = ({ psicologo }) => {
             <p className="mb-0 fw-bold">{psicologo?.nome || 'Psicólogo'}</p>
           </div>
 
-          <PersonalizacaoMenu />
+          <PersonalizacaoMenu variant="offcanvas" />
 
           <ul className="list-unstyled">
             <li className="mb-2"><Link className="d-block p-2" to="/psicologo/perfil" onClick={closeMenu}>

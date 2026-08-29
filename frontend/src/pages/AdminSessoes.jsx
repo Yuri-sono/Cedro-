@@ -9,7 +9,7 @@ function AdminSessoes() {
     pacienteId: '',
     psicologoId: '',
     dataSessao: '',
-    duracao: 60,
+    duracao: 50,
     valor: '',
     statusSessao: 'agendada',
     observacoes: ''
@@ -74,7 +74,7 @@ function AdminSessoes() {
       pacienteId: '',
       psicologoId: '',
       dataSessao: '',
-      duracao: 60,
+      duracao: 50,
       valor: '',
       statusSessao: 'agendada',
       observacoes: ''
@@ -129,11 +129,6 @@ function AdminSessoes() {
                 <label className="form-label">Data/Hora</label>
                 <input type="datetime-local" className="form-control" value={form.dataSessao}
                   onChange={e => setForm({...form, dataSessao: e.target.value})} required />
-              </div>
-              <div className="col-md-4 mb-3">
-                <label className="form-label">Duração (min)</label>
-                <input type="number" className="form-control" value={form.duracao}
-                  onChange={e => setForm({...form, duracao: e.target.value})} />
               </div>
               <div className="col-md-4 mb-3">
                 <label className="form-label">Valor (R$)</label>

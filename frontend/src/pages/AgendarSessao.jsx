@@ -7,7 +7,6 @@ function AgendarSessao() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     data: '',
-    duracao: 60,
     observacoes: ''
   });
   const [loading, setLoading] = useState(false);
@@ -61,7 +60,7 @@ function AgendarSessao() {
       const response = await api.post('/api/sessoes', {
         psicologoId: parseInt(psicologoId),
         dataSessao,
-        duracao: parseInt(formData.duracao),
+        duracao: 50,
         observacoes: formData.observacoes
       });
 
@@ -147,24 +146,6 @@ function AgendarSessao() {
                       })}
                     </div>
                   ) : null}
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label">
-                    <i className="bi bi-hourglass-split me-2"></i>
-                    Duração (minutos)
-                  </label>
-                  <select
-                    className="form-select"
-                    name="duracao"
-                    value={formData.duracao}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="30">30 minutos</option>
-                    <option value="60">60 minutos</option>
-                    <option value="90">90 minutos</option>
-                  </select>
                 </div>
 
                 <div className="mb-4">

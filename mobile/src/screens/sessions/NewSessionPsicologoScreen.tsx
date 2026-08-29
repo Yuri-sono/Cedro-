@@ -83,7 +83,7 @@ export const NewSessionPsicologoScreen = () => {
       await agendarSessao({
         pacienteId,
         dataSessao: formatarDataHoraApi(dataSelecionada, horarioSelecionado),
-        duracao: 60,
+        duracao: 50,
         observacoes: observacoes.trim() || undefined,
       });
       navigation.goBack();
@@ -215,7 +215,7 @@ export const NewSessionPsicologoScreen = () => {
           </View>
           <View style={styles.resumoRow}>
             <Text style={styles.resumoLabel}>Duracao:</Text>
-            <Text style={styles.resumoValue}>60 minutos</Text>
+            <Text style={styles.resumoValue}>50 minutos</Text>
           </View>
         </View>
       )}

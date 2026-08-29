@@ -101,7 +101,7 @@ const NovaConsultaModal = ({
       await api.post('/api/sessoes', {
         pacienteId: parseInt(formNova.pacienteId, 10),
         dataSessao,
-        duracao: 60,
+        duracao: 50,
         observacoes: formNova.observacoes
       });
       onClose();

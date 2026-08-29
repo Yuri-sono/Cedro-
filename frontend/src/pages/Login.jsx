@@ -6,7 +6,9 @@ import api from '../services/api.js';
 function Login() {
   const [formData, setFormData] = useState({
     email: '',
-    senha: ''
+    confirmarEmail: '',
+    senha: '',
+    confirmarSenha: ''
   });
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -122,6 +124,14 @@ function Login() {
     setSuccessMsg('');
     
     if (!isLogin) {
+      if (formData.email !== formData.confirmarEmail) {
+        setErrorMsg('Os emails digitados não coincidem');
+        return;
+      }
+      if (formData.senha !== formData.confirmarSenha) {
+        setErrorMsg('As senhas não coincidem');
+        return;
+      }
       if (!senhaValidacao.minLength || !senhaValidacao.hasNumber || !senhaValidacao.hasSpecial) {
         setErrorMsg('A senha não atende aos requisitos mínimos de segurança.');
         return;
@@ -263,6 +273,19 @@ function Login() {
                       required
                     />
                   </div>
+                  {!isLogin && (
+                    <div className="mb-3">
+                      <label className="form-label">Confirmar Email</label>
+                      <input
+                        type="email"
+                        className="form-control"
+                        name="confirmarEmail"
+                        value={formData.confirmarEmail}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                  )}
                   
                   <div className="mb-3">
                     <label className="form-label">Senha</label>
@@ -291,6 +314,20 @@ function Login() {
                       </div>
                     )}
                   </div>
+
+                  {!isLogin && (
+                    <div className="mb-3">
+                      <label className="form-label">Confirmar Senha</label>
+                      <input
+                        type="password"
+                        className="form-control"
+                        name="confirmarSenha"
+                        value={formData.confirmarSenha}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                  )}
 
 
                   

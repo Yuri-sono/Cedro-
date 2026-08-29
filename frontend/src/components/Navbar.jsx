@@ -24,17 +24,60 @@ const Navbar = () => {
             <i className="bi bi-tree me-2 fs-3"></i>
             <span className="fw-bold fs-4">CEDRO</span>
           </Link>
+          {/* Navegação inline — visível apenas em desktop (>= 992px) */}
+          <ul className="navbar-nav flex-row gap-1 d-none d-lg-flex mx-auto mb-0">
+            <li className="nav-item"><Link className="nav-link text-white" to="/">Início</Link></li>
+            <li className="nav-item"><a className="nav-link text-white" href="/#sobre">Sobre Nós</a></li>
+            <li className="nav-item"><a className="nav-link text-white" href="/#servicos">Serviços</a></li>
+            <li className="nav-item"><Link className="nav-link text-white" to="/psicologos">Psicólogos</Link></li>
+            <li className="nav-item"><a className="nav-link text-white" href="/#contato">Contato</a></li>
+          </ul>
           <div className="d-flex align-items-center ms-auto">
             {isAuthenticated && (
               <span className="header-greeting d-none d-md-block me-4 fw-medium text-white">
                 Olá, {user?.nome || 'Usuário'}
               </span>
             )}
-            <button 
-              className="navbar-toggler custom-toggler border-0 shadow-none" 
-              type="button" 
-              data-bs-toggle="offcanvas" 
-              data-bs-target="#offcanvasMenu" 
+            {/* Itens de conta — visíveis apenas em desktop (>= 992px) */}
+            {isAuthenticated ? (
+              <div className="dropdown d-none d-lg-block me-3">
+                <button
+                  className="btn btn-link nav-link dropdown-toggle text-white p-0"
+                  type="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  Minha Conta
+                </button>
+                <ul className="dropdown-menu dropdown-menu-end">
+                  <li><Link className="dropdown-item" to="/perfil">Meu Perfil</Link></li>
+                  <li><Link className="dropdown-item" to="/minhas-sessoes">Minhas Sessões</Link></li>
+                  {user?.tipoUsuario === 'psicologo' && (
+                    <li><Link className="dropdown-item" to="/psicologo/dashboard">Dashboard</Link></li>
+                  )}
+                  <li><hr className="dropdown-divider" /></li>
+                  <li>
+                    <button className="dropdown-item" type="button" onClick={handleLogout}>
+                      <i className="bi bi-box-arrow-right me-2"></i>Sair
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            ) : (
+              <div className="d-none d-lg-flex align-items-center gap-3 me-3">
+                <Link className="nav-link text-white p-0" to="/login">
+                  <i className="bi bi-box-arrow-in-right me-1"></i>Login Paciente
+                </Link>
+                <Link className="nav-link text-white p-0" to="/login-psicologo">
+                  <i className="bi bi-box-arrow-in-right me-1"></i>Login Psicólogo
+                </Link>
+              </div>
+            )}
+            <button
+              className="navbar-toggler custom-toggler border-0 shadow-none d-lg-none"
+              type="button"
+              data-bs-toggle="offcanvas"
+              data-bs-target="#offcanvasMenu"
               aria-label="Abrir menu"
             >
               <span className="navbar-burger-line d-block"></span>

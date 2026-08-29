@@ -19,6 +19,7 @@ export const RegisterScreen = () => {
 
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
+  const [confirmarEmail, setConfirmarEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
   const [tipoUsuario, setTipoUsuario] = useState<TipoUsuario>(TipoUsuario.paciente);
@@ -41,6 +42,11 @@ export const RegisterScreen = () => {
 
   const handleRegister = async () => {
     if (!nome || !email || !senha) return;
+
+    if (email !== confirmarEmail) {
+      showToast.error('Erro de validacao', 'Os emails nao coincidem.');
+      return;
+    }
 
     if (senha !== confirmarSenha) {
       showToast.error('Erro de validacao', 'As senhas nao coincidem.');
@@ -124,6 +130,19 @@ export const RegisterScreen = () => {
         autoCapitalize="none"
         value={email}
         onChangeText={setEmail}
+      />
+      <Input
+        label="Confirmar email"
+        placeholder="Repita seu e-mail"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        value={confirmarEmail}
+        onChangeText={setConfirmarEmail}
+        error={
+          confirmarEmail && email !== confirmarEmail
+            ? 'Os emails nao coincidem.'
+            : undefined
+        }
       />
 
       <View style={styles.roleSection}>
@@ -252,9 +271,11 @@ export const RegisterScreen = () => {
         disabled={
           !nome ||
           !email ||
+          !confirmarEmail ||
           !senha ||
           !confirmarSenha ||
           !senhaValida ||
+          email !== confirmarEmail ||
           senha !== confirmarSenha ||
           (tipoUsuario === TipoUsuario.psicologo &&
             (!tipoPsicologo.trim() || !crp.trim() || !especialidade.trim() || !precoSessao.trim()))
