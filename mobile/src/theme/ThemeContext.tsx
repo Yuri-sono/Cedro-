@@ -7,9 +7,11 @@
  */
 
 import React, { createContext, useCallback, useContext, useMemo } from 'react';
-import { useColorScheme } from 'react-native';
+// TEMPORÁRIO: `useColorScheme` (react-native) volta quando a lógica dinâmica
+// for reativada após a migração das telas.
 import { useUIStore } from '../store/uiStore';
-import { darkColors, lightColors, ThemeColors } from './colors';
+// TEMPORÁRIO: `darkColors` volta quando a lógica dinâmica for reativada.
+import { lightColors, ThemeColors } from './colors';
 
 export type ThemePreference = 'light' | 'dark' | 'system';
 
@@ -27,17 +29,34 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider = ({ children }: ThemeProviderProps) => {
-  // Preferência persistida no uiStore (AsyncStorage)
+  // ================================================================
+  // TEMPORÁRIO: forçado modo claro até a migração de todas as telas
+  // terminar (Fases 1-4). Reativar a lógica dinâmica original depois.
+  // ================================================================
+
+  // Preferência persistida no uiStore (AsyncStorage) — mantida para que a
+  // escolha do usuário continue sendo salva enquanto o tema claro é forçado.
   const themePreference = useUIStore((state) => state.theme);
   const setTheme = useUIStore((state) => state.setTheme);
 
-  // Esquema do sistema operacional (só relevante quando theme === 'system')
-  const systemColorScheme = useColorScheme();
+  // ----------------------------------------------------------------
+  // LÓGICA ORIGINAL DESATIVADA TEMPORARIAMENTE — reativar após a
+  // migração completa das telas (Fases 1-4):
+  //
+  // // Esquema do sistema operacional (só relevante quando theme === 'system')
+  // const systemColorScheme = useColorScheme();
+  //
+  // const isDark =
+  //   themePreference === 'system'
+  //     ? systemColorScheme === 'dark'
+  //     : themePreference === 'dark';
+  //
+  // const activeColors = isDark ? darkColors : lightColors;
+  // ----------------------------------------------------------------
 
-  const isDark =
-    themePreference === 'system'
-      ? systemColorScheme === 'dark'
-      : themePreference === 'dark';
+  // TEMPORÁRIO: sempre claro, independente da preferência salva ou do sistema
+  const isDark = false;
+  const activeColors = lightColors;
 
   const setThemePreference = useCallback(
     (theme: ThemePreference) => {
@@ -48,12 +67,12 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
 
   const value = useMemo<ThemeContextValue>(
     () => ({
-      colors: isDark ? darkColors : lightColors,
+      colors: activeColors,
       isDark,
       themePreference,
       setThemePreference,
     }),
-    [isDark, themePreference, setThemePreference],
+    [activeColors, isDark, themePreference, setThemePreference],
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

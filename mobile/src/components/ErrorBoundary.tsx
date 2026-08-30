@@ -26,9 +26,10 @@ export class ErrorBoundary extends Component<Props, State> {
     error: null,
   };
 
-  // Consome o tema dinâmico (equivalente a useTheme() para class components)
+  // Consome o tema dinâmico (equivalente a useTheme() para class components).
+  // TS infere `this.context` a partir do `static contextType` abaixo.
+  // (Sem `declare context:` — o preset Babel do Expo não habilita allowDeclareFields)
   static contextType = ThemeContext;
-  declare context: ThemeContextValue | undefined;
 
   public static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
@@ -49,7 +50,11 @@ export class ErrorBoundary extends Component<Props, State> {
         return this.props.fallback;
       }
 
-      const colors: ThemeColors = this.context?.colors ?? lightColors;
+      // `static contextType` acima faz o React injetar o tema aqui; o cast
+      // é necessário porque o @types/react do projeto não infere o tipo
+      // automaticamente (e `declare context:` não é suportado pelo Babel).
+      const themeContext = this.context as unknown as ThemeContextValue | undefined;
+      const colors: ThemeColors = themeContext?.colors ?? lightColors;
 
       // Estilos dependentes de cor (recomputados por render com o tema ativo)
       const colorStyles = StyleSheet.create({
