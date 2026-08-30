@@ -1,47 +1,85 @@
 import React from 'react';
 import ToastMessage, { BaseToast, ErrorToast, ToastConfig } from 'react-native-toast-message';
-import { StyleSheet } from 'react-native';
-import { colors, typography, borderRadius } from '../theme';
+import { StyleSheet, TextStyle, ViewStyle } from 'react-native';
+import { typography, borderRadius } from '../theme';
+import { ThemeColors } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
 
 /**
- * Configuração visual padronizada para os Toasts.
+ * Cria a configuração visual padronizada dos Toasts a partir do tema ativo.
  * Sobrescreve o design padrão do react-native-toast-message para adequar ao Cedro.
  */
-export const toastConfig: ToastConfig = {
+export const createToastConfig = (colors: ThemeColors): ToastConfig => ({
   success: (props) => (
     <BaseToast
       {...props}
-      style={styles.successToast}
-      contentContainerStyle={styles.contentContainer}
-      text1Style={styles.text1}
-      text2Style={styles.text2}
+      style={getToastStyles(colors).successToast}
+      contentContainerStyle={getToastStyles(colors).contentContainer}
+      text1Style={getToastStyles(colors).text1}
+      text2Style={getToastStyles(colors).text2}
     />
   ),
   error: (props) => (
     <ErrorToast
       {...props}
-      style={styles.errorToast}
-      contentContainerStyle={styles.contentContainer}
-      text1Style={styles.text1}
-      text2Style={styles.text2}
+      style={getToastStyles(colors).errorToast}
+      contentContainerStyle={getToastStyles(colors).contentContainer}
+      text1Style={getToastStyles(colors).text1}
+      text2Style={getToastStyles(colors).text2}
     />
   ),
   info: (props) => (
     <BaseToast
       {...props}
-      style={styles.infoToast}
-      contentContainerStyle={styles.contentContainer}
-      text1Style={styles.text1}
-      text2Style={styles.text2}
+      style={getToastStyles(colors).infoToast}
+      contentContainerStyle={getToastStyles(colors).contentContainer}
+      text1Style={getToastStyles(colors).text1}
+      text2Style={getToastStyles(colors).text2}
     />
   ),
-};
+});
+
+/**
+ * Estilos dependentes de cor: computados a partir do tema ativo a cada
+ * chamada, para os toasts acompanharem light/dark sem reiniciar o app.
+ */
+const getToastStyles = (colors: ThemeColors): { [key: string]: ViewStyle | TextStyle } =>
+  StyleSheet.create({
+    successToast: {
+      borderLeftColor: colors.success,
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.md,
+    },
+    errorToast: {
+      borderLeftColor: colors.error,
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.md,
+    },
+    infoToast: {
+      borderLeftColor: colors.info,
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.md,
+    },
+    contentContainer: {
+      paddingHorizontal: 15,
+    },
+    text1: {
+      fontSize: typography.size.md,
+      fontWeight: typography.weight.bold,
+      color: colors.textPrimary,
+    },
+    text2: {
+      fontSize: typography.size.sm,
+      color: colors.textSecondary,
+    },
+  });
 
 /**
  * Componente principal do Toast. Deve ser renderizado na raiz do app (App.tsx).
  */
 export const Toast = () => {
-  return <ToastMessage config={toastConfig} position="bottom" bottomOffset={80} />;
+  const { colors } = useTheme();
+  return <ToastMessage config={createToastConfig(colors)} position="bottom" bottomOffset={80} />;
 };
 
 /**
@@ -70,33 +108,3 @@ export const showToast = {
     });
   },
 };
-
-const styles = StyleSheet.create({
-  successToast: {
-    borderLeftColor: colors.success,
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.md,
-  },
-  errorToast: {
-    borderLeftColor: colors.error,
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.md,
-  },
-  infoToast: {
-    borderLeftColor: colors.info,
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.md,
-  },
-  contentContainer: {
-    paddingHorizontal: 15,
-  },
-  text1: {
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.bold,
-    color: colors.textPrimary,
-  },
-  text2: {
-    fontSize: typography.size.sm,
-    color: colors.textSecondary,
-  },
-});

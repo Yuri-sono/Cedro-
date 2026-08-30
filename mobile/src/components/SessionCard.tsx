@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Sessao } from '../types/api.types';
-import { colors, typography, spacing, borderRadius } from '../theme';
+import { typography, spacing, borderRadius } from '../theme';
+import { useTheme } from '../theme/ThemeContext';
 
 interface Props {
   sessao: Sessao;
@@ -18,12 +19,50 @@ export const SessionCard = ({
   onMarcarRealizada,
   onCancelar,
 }: Props) => {
+  const { colors } = useTheme();
+
   // Parse data
   const data = new Date(sessao.dataSessao);
   const dia = data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
   const hora = data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  
-  // Status color mapper
+
+  // Estilos dependentes de cor (recomputados por render para acompanhar o tema)
+  const colorStyles = StyleSheet.create({
+    card: {
+      backgroundColor: colors.surfaceWarm,
+      borderColor: colors.border,
+    },
+    dateBlock: {
+      backgroundColor: colors.mint,
+    },
+    dia: {
+      color: colors.primary,
+    },
+    hora: {
+      color: colors.textSecondary,
+    },
+    title: {
+      color: colors.textPrimary,
+    },
+    subtitle: {
+      color: colors.textSecondary,
+    },
+    actionRealizar: {
+      backgroundColor: colors.mint,
+    },
+    actionRealizarText: {
+      color: colors.primary,
+    },
+    actionCancelar: {
+      backgroundColor: colors.surface,
+      borderColor: colors.error,
+    },
+    actionCancelarText: {
+      color: colors.error,
+    },
+  });
+
+  // Status color mapper (cores dependem do tema ativo)
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'agendada': return colors.info;
@@ -33,49 +72,51 @@ export const SessionCard = ({
     }
   };
 
+  const statusColor = getStatusColor(sessao.statusSessao);
+
   return (
     <TouchableOpacity 
-      style={styles.card} 
+      style={[styles.card, colorStyles.card]} 
       onPress={onPress} 
       activeOpacity={onPress ? 0.7 : 1}
       disabled={!onPress}
     >
-      <View style={styles.dateBlock}>
-        <Text style={styles.dia}>{dia}</Text>
-        <Text style={styles.hora}>{hora}</Text>
+      <View style={[styles.dateBlock, colorStyles.dateBlock]}>
+        <Text style={[styles.dia, colorStyles.dia]}>{dia}</Text>
+        <Text style={[styles.hora, colorStyles.hora]}>{hora}</Text>
       </View>
       
       <View style={styles.info}>
         {/* Futuro: Exibir nome do psicólogo ou paciente dependendo de quem está logado */}
-        <Text style={styles.title} numberOfLines={1}>Consulta de terapia</Text>
-        <Text style={styles.subtitle}>{sessao.duracao} minutos</Text>
+        <Text style={[styles.title, colorStyles.title]} numberOfLines={1}>Consulta de terapia</Text>
+        <Text style={[styles.subtitle, colorStyles.subtitle]}>{sessao.duracao} minutos</Text>
 
         {!isPaciente && (onMarcarRealizada || onCancelar) && (
           <View style={styles.actionsRow}>
             {onMarcarRealizada && (
               <TouchableOpacity
-                style={[styles.actionBtn, styles.actionRealizar]}
+                style={[styles.actionBtn, styles.actionRealizar, colorStyles.actionRealizar]}
                 onPress={onMarcarRealizada}
                 activeOpacity={0.7}
               >
-                <Text style={styles.actionRealizarText}>Marcar realizada</Text>
+                <Text style={[styles.actionRealizarText, colorStyles.actionRealizarText]}>Marcar realizada</Text>
               </TouchableOpacity>
             )}
             {onCancelar && (
               <TouchableOpacity
-                style={[styles.actionBtn, styles.actionCancelar]}
+                style={[styles.actionBtn, styles.actionCancelar, colorStyles.actionCancelar]}
                 onPress={onCancelar}
                 activeOpacity={0.7}
               >
-                <Text style={styles.actionCancelarText}>Cancelar</Text>
+                <Text style={[styles.actionCancelarText, colorStyles.actionCancelarText]}>Cancelar</Text>
               </TouchableOpacity>
             )}
           </View>
         )}
       </View>
       
-      <View style={[styles.statusBadge, { backgroundColor: getStatusColor(sessao.statusSessao) + '20' }]}>
-        <Text style={[styles.statusText, { color: getStatusColor(sessao.statusSessao) }]} numberOfLines={1}>
+      <View style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>
+        <Text style={[styles.statusText, { color: statusColor }]} numberOfLines={1}>
           {sessao.statusSessao}
         </Text>
       </View>
@@ -83,20 +124,18 @@ export const SessionCard = ({
   );
 };
 
+// Estilos estáticos (layout) — independentes de cor
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
-    backgroundColor: colors.surfaceWarm,
     borderRadius: borderRadius.xl,
     padding: spacing.base,
     marginBottom: spacing.sm,
     borderWidth: 1,
-    borderColor: '#E7DCC6',
     alignItems: 'center',
     gap: spacing.md,
   },
   dateBlock: {
-    backgroundColor: colors.mint,
     padding: spacing.sm,
     borderRadius: borderRadius.md,
     alignItems: 'center',
@@ -106,11 +145,9 @@ const styles = StyleSheet.create({
   dia: {
     fontSize: typography.size.base,
     fontWeight: typography.weight.bold,
-    color: colors.primary,
   },
   hora: {
     fontSize: typography.size.xs,
-    color: colors.textSecondary,
     marginTop: 2,
   },
   info: {
@@ -120,11 +157,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.size.md,
     fontWeight: typography.weight.bold,
-    color: colors.textPrimary,
   },
   subtitle: {
     fontSize: typography.size.sm,
-    color: colors.textSecondary,
     marginTop: 2,
   },
   statusBadge: {
@@ -149,22 +184,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     borderRadius: borderRadius.full,
   },
-  actionRealizar: {
-    backgroundColor: colors.mint,
-  },
+  actionRealizar: {},
   actionRealizarText: {
     fontSize: typography.size.xs,
     fontWeight: typography.weight.bold,
-    color: colors.primary,
   },
   actionCancelar: {
-    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.error,
   },
   actionCancelarText: {
     fontSize: typography.size.xs,
     fontWeight: typography.weight.bold,
-    color: colors.error,
   },
 });

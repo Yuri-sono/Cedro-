@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Image, StyleSheet, ViewStyle } from 'react-native';
-import { colors } from '../theme';
+import { useTheme } from '../theme/ThemeContext';
 
 interface AvatarProps {
   url?: string | null;
@@ -9,6 +9,16 @@ interface AvatarProps {
 }
 
 export const Avatar = ({ url, size = 50, style }: AvatarProps) => {
+  const { colors } = useTheme();
+
+  // Estilos dependentes de cor (recomputados por render para acompanhar o tema)
+  const colorStyles = StyleSheet.create({
+    container: {
+      backgroundColor: colors.backgroundSecondary,
+      borderColor: colors.border,
+    },
+  });
+
   const containerStyle = {
     width: size,
     height: size,
@@ -16,7 +26,7 @@ export const Avatar = ({ url, size = 50, style }: AvatarProps) => {
   };
 
   return (
-    <View style={[styles.container, containerStyle, style]}>
+    <View style={[styles.container, colorStyles.container, containerStyle, style]}>
       {url ? (
         <Image
           source={{ uri: url }}
@@ -34,17 +44,17 @@ export const Avatar = ({ url, size = 50, style }: AvatarProps) => {
   );
 };
 
+// Estilos estáticos (layout) — independentes de cor
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.backgroundSecondary,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: colors.border,
   },
   image: {
     width: '100%',
     height: '100%',
   },
 });
+

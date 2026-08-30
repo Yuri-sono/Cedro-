@@ -7,6 +7,7 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
@@ -89,36 +90,57 @@ export const ChangePasswordScreen = () => {
 
           {novaSenha ? (
             <View style={styles.passwordRules}>
-              <Text
-                style={[
-                  styles.passwordRule,
-                  senhaValidacao.minLength
-                    ? styles.passwordRuleValid
-                    : styles.passwordRuleInvalid,
-                ]}
-              >
-                ✓ 6+ caracteres
-              </Text>
-              <Text
-                style={[
-                  styles.passwordRule,
-                  senhaValidacao.hasNumber
-                    ? styles.passwordRuleValid
-                    : styles.passwordRuleInvalid,
-                ]}
-              >
-                ✓ 1 número
-              </Text>
-              <Text
-                style={[
-                  styles.passwordRule,
-                  senhaValidacao.hasSpecial
-                    ? styles.passwordRuleValid
-                    : styles.passwordRuleInvalid,
-                ]}
-              >
-                ✓ 1 caractere especial
-              </Text>
+              <View style={styles.passwordRuleRow}>
+                <Ionicons
+                  name="checkmark-circle"
+                  size={14}
+                  color={senhaValidacao.minLength ? colors.success : colors.error}
+                />
+                <Text
+                  style={[
+                    styles.passwordRule,
+                    senhaValidacao.minLength
+                      ? styles.passwordRuleValid
+                      : styles.passwordRuleInvalid,
+                  ]}
+                >
+                  6+ caracteres
+                </Text>
+              </View>
+              <View style={styles.passwordRuleRow}>
+                <Ionicons
+                  name="checkmark-circle"
+                  size={14}
+                  color={senhaValidacao.hasNumber ? colors.success : colors.error}
+                />
+                <Text
+                  style={[
+                    styles.passwordRule,
+                    senhaValidacao.hasNumber
+                      ? styles.passwordRuleValid
+                      : styles.passwordRuleInvalid,
+                  ]}
+                >
+                  1 número
+                </Text>
+              </View>
+              <View style={styles.passwordRuleRow}>
+                <Ionicons
+                  name="checkmark-circle"
+                  size={14}
+                  color={senhaValidacao.hasSpecial ? colors.success : colors.error}
+                />
+                <Text
+                  style={[
+                    styles.passwordRule,
+                    senhaValidacao.hasSpecial
+                      ? styles.passwordRuleValid
+                      : styles.passwordRuleInvalid,
+                  ]}
+                >
+                  1 caractere especial
+                </Text>
+              </View>
             </View>
           ) : null}
 
@@ -186,6 +208,11 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     marginTop: -spacing.sm,
     marginBottom: spacing.base,
+  },
+  passwordRuleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   passwordRule: {
     fontSize: typography.size.xs,

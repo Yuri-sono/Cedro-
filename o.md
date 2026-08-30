@@ -1,80 +1,158 @@
 CONTEXTO
-Cedro Plus. Melhorar a configuração de disponibilidade do psicólogo (tela
-Configurações no web, PsychologistSettingsScreen no mobile). Hoje o psicólogo só
-escolhe entre 9 horários fixos pré-definidos. Objetivo: dar liberdade de definir
-uma faixa de horário customizada (início/fim), gerando os horários automaticamente,
-mantendo a possibilidade de desmarcar horários individuais dentro da faixa.
+Cedro Mobile. Fase 0 de uma reforma visual em várias fases. Esta fase NÃO mexe
+em telas ainda — só na fundação: paleta de cores, mecanismo de dark mode, e os
+componentes reutilizáveis em mobile/src/components/. Telas serão fases
+seguintes.
 
-NÃO alterar backend, banco de dados nem os endpoints — essa mudança é só de UI/UX
-no frontend, reaproveitando os campos diasAtendimento/horariosAtendimento e o
-payload já existente em PUT /api/auth/perfil.
+=== PARTE 1: Reestruturar mobile/src/theme/colors.ts ===
 
-=== WEB: frontend/src/pages/ConfiguracoesPsicologo.jsx ===
+1. Reorganize o arquivo em duas paletas paralelas, com EXATAMENTE as mesmas
+   chaves nas duas (nenhuma chave só na light ou só na dark):
 
-1. Em frontend/src/utils/psicologoAgenda.js, adicione uma nova função:
+   export const lightColors = {
+     primary: '#198754',        // alinhado ao site (cedro-colors.css)
+     primaryAccent: '#20c997',  // mesmo gradiente do site (135deg #198754→#20c997)
+     primaryHover: '#20c997',
+     primaryDark: '#146c43',    // --cedro-dark do site
+     primaryLight: '#75b798',   // --cedro-light do site
+     forest: '#146c43',
+     leaf: (mantenha o valor atual, não tem equivalente no site),
+     mint: (mantenha o valor atual),
+     cream: (mantenha o valor atual),
+     sand: (mantenha o valor atual),
+     gradientPrimary: ['#198754', '#20c997'],
+     gradientHero: (mantenha),
+     gradientCard: (mantenha),
+     gradientDark: ['#146c43', '#198754'],
+     background: '#ffffff',           // --bg-primary do site (theme.css)
+     backgroundSecondary: '#f8f9fa',  // --bg-secondary do site
+     backgroundTertiary: (mantenha o valor atual),
+     surface: '#ffffff',              // --card-bg do site
+     surfaceWarm: (mantenha),
+     textPrimary: '#212529',          // --text-primary do site
+     textSecondary: '#6c757d',        // --text-secondary do site
+     textInverse: '#ffffff',
+     border: '#dee2e6',               // --border-color do site
+     shadow: 'rgba(0, 0, 0, 0.1)',    // --shadow do site
+     success: (mantenha),
+     warning: (mantenha),
+     error: (mantenha),
+     info: (mantenha),
+     transparent: 'transparent',
+     overlay: 'rgba(0, 0, 0, 0.5)',
+     white: '#ffffff',
+     black: '#000000',
+   };
 
-   export function gerarHorariosPorFaixa(horaInicio, horaFim) {
-     // horaInicio e horaFim no formato "HH:mm" (ex: "07:00", "20:00")
-     // Retorna array de strings "HH:mm" de hora em hora, incluindo horaInicio
-     // e excluindo horaFim (horaFim é o fim do último atendimento, não um
-     // horário de início válido). Ex: gerarHorariosPorFaixa("08:00","12:00")
-     // retorna ["08:00","09:00","10:00","11:00"].
-     // Validar: se horaFim <= horaInicio, retornar array vazio.
-   }
+   export const darkColors = {
+     // Use os valores --dark do site (theme.css) para as chaves que existem lá:
+     primary: '#198754',              // mantém a cor de marca, não escurece
+     primaryAccent: '#20c997',
+     primaryHover: '#20c997',
+     primaryDark: '#146c43',
+     primaryLight: '#75b798',
+     forest: '#20c997',               // mais claro no dark para contraste
+     leaf: (deriva um tom compatível, documente a escolha em comentário),
+     mint: (versão escura, ex: rgba(25,135,84,0.15) ou similar),
+     cream: (mantenha coerente, pode usar backgroundSecondary do dark),
+     sand: (versão escura correspondente),
+     gradientPrimary: ['#146c43', '#198754'],
+     gradientHero: (versão escura),
+     gradientCard: ['#141414', '#111111'],
+     gradientDark: ['#0a0a0a', '#146c43'],
+     background: '#0a0a0a',              // --bg-primary dark do site
+     backgroundSecondary: '#111111',     // --bg-secondary dark do site
+     backgroundTertiary: (versão escura),
+     surface: '#141414',                 // --card-bg dark do site
+     surfaceWarm: '#141414',
+     textPrimary: '#ffffff',             // --text-primary dark do site
+     textSecondary: '#cccccc',           // --text-secondary dark do site
+     textInverse: '#0a0a0a',
+     border: '#2a2a2a',                  // --border-color dark do site
+     shadow: 'rgba(0, 0, 0, 0.8)',       // --shadow dark do site
+     success: (mantenha ou ajuste levemente para contraste em fundo escuro),
+     warning: (idem),
+     error: (idem),
+     info: (idem),
+     transparent: 'transparent',
+     overlay: 'rgba(0, 0, 0, 0.7)',
+     white: '#ffffff',
+     black: '#000000',
+   };
 
-2. No componente, adicione dois estados novos: faixaInicio e faixaFim (strings
-   "HH:mm", inicializados vazios ou com o menor/maior valor de
-   horariosAtendimento já salvo, se houver).
+   export type ThemeColors = typeof lightColors;
 
-3. Na seção "Dias e Horários de Atendimento", ACIMA dos chips de horário atuais,
-   adicione dois inputs type="time":
-   - "Atender a partir de" (faixaInicio)
-   - "Atender até" (faixaFim)
-   - Um botão pequeno "Gerar horários" ao lado, que ao clicar chama
-     gerarHorariosPorFaixa(faixaInicio, faixaFim) e SUBSTITUI o array
-     horariosAtendimento pelo resultado (sobrescreve a seleção anterior).
-   - Mostrar uma mensagem de erro inline se horaFim <= horaInicio ao tentar gerar.
+   Mantenha exportado também um `colors` = lightColors (alias), para não quebrar
+   nenhum import antigo que ainda não foi migrado durante a transição desta fase.
 
-4. Mantenha os chips de horário exatamente como estão hoje (clicáveis,
-   toggleTimeSlot), mas agora eles devem renderizar dinamicamente a partir do
-   array horariosAtendimento atual (que pode ter sido gerado pela faixa OU ainda
-   conter os 9 horários fixos antigos se o psicólogo nunca usou a faixa nova) —
-   ou seja, troque a fonte dos chips renderizados de DEFAULT_TIME_SLOTS fixo para
-   horariosAtendimento (ordenado), permitindo desmarcar (toggleTimeSlot já
-   remove do array) qualquer horário gerado.
-   IMPORTANTE: se o psicólogo desmarcar um chip, o horário deve sumir da lista
-   E não reaparecer se ele gerar a faixa de novo com os mesmos valores (ou seja,
-   ao clicar "Gerar horários" de novo, é uma substituição total consciente,
-   não uma mesclagem — isso já é o comportamento natural pedido no item 3).
+2. Documente com comentário, ao lado de cada chave "derivada" (leaf, mint,
+   sand, etc. no dark), que o valor foi estimado por você por não ter
+   equivalente direto no site.
 
-5. Adicione um texto de ajuda pequeno abaixo dos inputs: "Os horários serão
-   gerados de hora em hora dentro da faixa escolhida. Você pode remover horários
-   específicos clicando neles depois de gerar (ex: para um horário de almoço)."
+=== PARTE 2: Mecanismo de dark mode dinâmico ===
 
-=== MOBILE: mobile/src/utils/psychologistAgenda.ts ===
+1. Crie mobile/src/theme/ThemeContext.tsx:
+   - ThemeProvider (componente) que:
+     - Lê a preferência salva via useUIStore (theme: 'light' | 'dark' | 'system')
+     - Se 'system', usa useColorScheme() do react-native para resolver
+       automaticamente entre light/dark
+     - Expõe via Context: { colors: ThemeColors, isDark: boolean,
+       themePreference: 'light'|'dark'|'system', setThemePreference: (t) => void }
+     - setThemePreference deve chamar o setTheme já existente no uiStore
+   - useTheme() hook que consome esse Context (lança erro claro se usado fora
+     do Provider)
 
-1. Adicione a mesma função gerarHorariosPorFaixa (ou generateSlotsByRange, em
-   inglês seguindo o padrão do arquivo), com a mesma lógica e assinatura.
+2. Localize mobile/App.tsx (ou o arquivo raiz do app) e envolva a árvore com
+   <ThemeProvider>, no nível mais alto possível (antes do RootNavigator).
 
-2. Em mobile/src/screens/profile/PsychologistSettingsScreen.tsx:
-   - Adicione dois estados: faixaInicio e faixaFim.
-   - Adicione dois inputs de horário ANTES da grade de chips "Horarios
-     disponiveis" (usar o componente Input já existente no projeto, com
-     keyboardType apropriado, ou se houver um time picker nativo já usado em
-     outra tela do projeto, reaproveitar o mesmo padrão — verifique antes de
-     escolher).
-   - Botão "Gerar horários" que substitui horariosAtendimento pelo resultado da
-     função, mesma lógica do web.
-   - Os chips de horário (DEFAULT_TIME_SLOTS hoje fixo) devem passar a renderizar
-     a partir de horariosAtendimento (ordenado), mesma mudança do web.
-   - Mesma mensagem de ajuda abaixo dos inputs.
+=== PARTE 3: Migrar componentes base para o tema dinâmico ===
+
+Para CADA componente abaixo, troque o import estático de `colors` de
+'../theme' pelo hook `useTheme()`, e mova os estilos que dependem de cor para
+dentro do componente (função que retorna StyleSheet.create ou objeto de estilo
+computado a cada render, usando theme.colors) — mantendo estilos que NÃO
+dependem de cor (padding, tamanho, border-radius) no StyleSheet estático de
+fora, para não perder performance à toa:
+
+- Button.tsx
+- Input.tsx
+- AuthScreenLayout.tsx
+- PsicologoCard.tsx
+- SessionCard.tsx
+- MessageBubble.tsx
+- ChatInput.tsx
+- Avatar.tsx
+- OfflineBanner.tsx
+- ErrorBoundary.tsx
+- Toast.tsx (o toastConfig pode precisar virar uma função que recebe o tema)
+
+=== PARTE 4: Substituir emojis por ícones consistentes (Ionicons) ===
+
+1. Input.tsx: troque 👁️/👁️‍🗨️ por Ionicons "eye"/"eye-off" (mesmo padrão do
+   ChatInput.tsx que já usa Ionicons corretamente).
+2. PsicologoCard.tsx: troque ⭐ por Ionicons "star" (cor amarela/dourada) e 💰
+   por Ionicons "cash-outline" ou "wallet-outline" (cor do tema).
+3. Faça uma busca por outros emojis usados como ícone em qualquer arquivo de
+   mobile/src/screens/ e mobile/src/components/ (ex: 🗓️ mencionado na
+   HomeScreen) e substitua todos por Ionicons equivalentes semanticamente,
+   mantendo o texto ao lado como já está.
+
+=== PARTE 5: Novo componente Skeleton ===
+
+Crie mobile/src/components/Skeleton.tsx:
+- Componente simples de bloco retangular com animação de pulso/shimmer
+  (Animated.loop + opacity ou translateX, sem lib externa nova)
+- Props: width, height, borderRadius (usando os tokens de spacing/borderRadius)
+- Deve consumir useTheme() para a cor de fundo do skeleton (um tom entre
+  background e border do tema atual)
+- Não precisa integrar nas telas ainda — isso é trabalho da próxima fase.
 
 === VALIDAÇÃO ===
-- Build web: npm run build
-- Build mobile: npx tsc --noEmit
-- Teste manual (documentar, não precisa executar): psicólogo define faixa
-  07:00-20:00, clica "Gerar horários", vê 13 chips aparecerem (07h a 19h),
-  desmarca o 12:00 (almoço), salva. Ao reabrir a tela, os 12 horários
-  restantes devem aparecer marcados, sem o 12:00.
+Rode: npx tsc --noEmit
+Me mostre o resultado.
 
-Ao final, resumo por arquivo alterado + resultado dos builds.
+Teste manual documentado (não executar): alternar a preferência de tema no
+uiStore entre 'light'/'dark'/'system' e confirmar que os componentes migrados
+(Button, Input, etc.) mudam de cor corretamente sem precisar reiniciar o app.
+
+Ao final, resumo por arquivo alterado/criado.

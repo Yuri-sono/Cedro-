@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { useSubscription } from '../../hooks/useSubscription';
 import { Button } from '../../components/Button';
@@ -12,7 +13,10 @@ export const PaywallScreen = () => {
   if (isPremium) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.successTitle}>Você já é Premium! 🎉</Text>
+        <View style={styles.successTitleRow}>
+          <Ionicons name="sparkles" size={typography.size['2xl']} color={colors.primary} />
+          <Text style={styles.successTitle}>Você já é Premium!</Text>
+        </View>
         <Text style={styles.successSubtitle}>Aproveite reuniões ilimitadas via Google Meet.</Text>
         <Button 
           title="Voltar" 
@@ -38,15 +42,15 @@ export const PaywallScreen = () => {
 
       <Text style={styles.benefitsTitle}>Vantagens do Premium:</Text>
       <View style={styles.benefitItem}>
-        <Text style={styles.benefitCheck}>✓</Text>
+        <Ionicons name="checkmark-circle" size={typography.size.lg} color={colors.success} />
         <Text style={styles.benefitText}>Reuniões via Google Meet ilimitadas</Text>
       </View>
       <View style={styles.benefitItem}>
-        <Text style={styles.benefitCheck}>✓</Text>
+        <Ionicons name="checkmark-circle" size={typography.size.lg} color={colors.success} />
         <Text style={styles.benefitText}>Agendamento prioritário de sessões</Text>
       </View>
       <View style={styles.benefitItem}>
-        <Text style={styles.benefitCheck}>✓</Text>
+        <Ionicons name="checkmark-circle" size={typography.size.lg} color={colors.success} />
         <Text style={styles.benefitText}>Suporte prioritário</Text>
       </View>
 
@@ -99,11 +103,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     padding: spacing.xl,
   },
+  successTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
   successTitle: {
     fontSize: typography.size['2xl'],
     fontWeight: typography.weight.bold,
     color: colors.primary,
-    marginBottom: spacing.sm,
   },
   successSubtitle: {
     fontSize: typography.size.base,
@@ -147,12 +156,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: spacing.sm,
-  },
-  benefitCheck: {
-    color: colors.success,
-    fontSize: typography.size.lg,
-    marginRight: spacing.sm,
-    fontWeight: 'bold',
   },
   benefitText: {
     fontSize: typography.size.base,

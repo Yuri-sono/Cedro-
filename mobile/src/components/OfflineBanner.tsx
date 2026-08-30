@@ -2,13 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { useUIStore } from '../store/uiStore';
-import { colors, typography, spacing } from '../theme';
+import { typography, spacing } from '../theme';
+import { useTheme } from '../theme/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const OfflineBanner = () => {
   const isOffline = useUIStore((state) => state.isOffline);
   const setOffline = useUIStore((state) => state.setOffline);
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+
+  // Estilos dependentes de cor (recomputados por render para acompanhar o tema)
+  const colorStyles = StyleSheet.create({
+    container: {
+      backgroundColor: colors.error,
+    },
+    text: {
+      color: colors.textInverse,
+    },
+  });
 
   // Controla se o banner está montado (para não bloquear cliques quando oculto)
   const [visible, setVisible] = useState(false);
@@ -51,24 +63,25 @@ export const OfflineBanner = () => {
     <Animated.View
       style={[
         styles.container,
+        colorStyles.container,
         {
           paddingTop: Math.max(insets.top, spacing.xs), // Respeitar notch
           transform: [{ translateY }],
         },
       ]}
     >
-      <Text style={styles.text}>Você está sem conexão com a internet.</Text>
+      <Text style={[styles.text, colorStyles.text]}>Você está sem conexão com a internet.</Text>
     </Animated.View>
   );
 };
 
+// Estilos estáticos (layout) — independentes de cor
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: colors.error,
     paddingBottom: spacing.sm,
     paddingHorizontal: spacing.base,
     zIndex: 9999,
@@ -81,7 +94,6 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
   },
   text: {
-    color: colors.textInverse,
     fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
     textAlign: 'center',

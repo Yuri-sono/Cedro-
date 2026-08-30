@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as WebBrowser from 'expo-web-browser';
@@ -22,9 +22,12 @@ export const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const googleClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+  const googleEnabled = Platform.OS !== 'web' || !!googleClientId;
 
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    webClientId: googleClientId,
+    webClientId: googleClientId ?? 'PLACEHOLDER',
+    androidClientId: googleClientId,
+    iosClientId: googleClientId,
   });
 
   useEffect(() => {
@@ -86,7 +89,7 @@ export const LoginScreen = () => {
         title="Entrar com Google"
         variant="outline"
         onPress={() => promptAsync()}
-        disabled={!request || isLoading}
+        disabled={!request || isLoading || !googleEnabled}
         style={styles.googleButton}
       />
 

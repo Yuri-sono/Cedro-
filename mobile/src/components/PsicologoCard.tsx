@@ -1,9 +1,14 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { PsicologoListItem } from '../types/api.types';
-import { colors, typography, spacing, borderRadius } from '../theme';
+import { typography, spacing, borderRadius } from '../theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Avatar } from './Avatar';
+
+// Dourado fixo para a estrela de avaliação (sem equivalente na paleta do tema)
+const STAR_GOLD = '#FFC107';
 
 interface Props {
   psicologo: PsicologoListItem;
@@ -11,27 +16,71 @@ interface Props {
 }
 
 export const PsicologoCard = ({ psicologo, onPress }: Props) => {
+  const { colors } = useTheme();
+
+  // Estilos dependentes de cor (recomputados por render para acompanhar o tema)
+  const colorStyles = StyleSheet.create({
+    card: {
+      borderColor: colors.border,
+      shadowColor: colors.forest,
+    },
+    avatarBadge: {
+      backgroundColor: colors.success,
+      borderColor: colors.white,
+    },
+    nome: {
+      color: colors.textPrimary,
+    },
+    especialidade: {
+      color: colors.textSecondary,
+    },
+    badge: {
+      backgroundColor: colors.mint,
+    },
+    badgeText: {
+      color: colors.primaryDark,
+    },
+    divider: {
+      backgroundColor: colors.border,
+    },
+    statText: {
+      color: colors.textPrimary,
+    },
+    statDivider: {
+      backgroundColor: colors.border,
+    },
+    preco: {
+      color: colors.primary,
+    },
+    bio: {
+      color: colors.textSecondary,
+    },
+    bioContainer: {
+      borderTopColor: colors.border,
+    },
+  });
+
   return (
     <TouchableOpacity style={styles.cardWrapper} onPress={onPress} activeOpacity={0.85}>
       <LinearGradient
-        colors={['#FFFFFF', '#FFFDF8']}
+        colors={colors.gradientCard}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
-        style={styles.card}
+        style={[styles.card, colorStyles.card]}
       >
         <View style={styles.header}>
           <View style={styles.avatarWrapper}>
             <Avatar url={psicologo.fotoUrl} size={64} />
-            <View style={styles.avatarBadge} />
+            <View style={[styles.avatarBadge, colorStyles.avatarBadge]} />
           </View>
           <View style={styles.info}>
-            <Text style={styles.nome} numberOfLines={1}>{psicologo.nome}</Text>
-            <Text style={styles.especialidade} numberOfLines={1}>
+            <Text style={[styles.nome, colorStyles.nome]} numberOfLines={1}>{psicologo.nome}</Text>
+            <Text style={[styles.especialidade, colorStyles.especialidade]} numberOfLines={1}>
               {psicologo.especialidade || 'Psicologia Clínica'}
             </Text>
             {!!psicologo.tipoPsicologo && (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText} numberOfLines={1}>
+              <View style={[styles.badge, colorStyles.badge]}>
+                <Text style={[styles.badgeText, colorStyles.badgeText]} numberOfLines={1}>
                   {psicologo.tipoPsicologo}
                 </Text>
               </View>
@@ -39,27 +88,27 @@ export const PsicologoCard = ({ psicologo, onPress }: Props) => {
           </View>
         </View>
         
-        <View style={styles.divider} />
+        <View style={[styles.divider, colorStyles.divider]} />
         
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
-            <Text style={styles.statIcon}>⭐</Text>
-            <Text style={styles.statText}>
+            <Ionicons name="star" size={typography.size.base} color={STAR_GOLD} />
+            <Text style={[styles.statText, colorStyles.statText]}>
               {psicologo.avaliacao ? `${psicologo.avaliacao.toFixed(1)}` : 'Novo'}
             </Text>
           </View>
-          <View style={styles.statDivider} />
+          <View style={[styles.statDivider, colorStyles.statDivider]} />
           <View style={styles.statItem}>
-            <Text style={styles.statIcon}>💰</Text>
-            <Text style={styles.preco}>
+            <Ionicons name="cash-outline" size={typography.size.base} color={colors.primary} />
+            <Text style={[styles.preco, colorStyles.preco]}>
               {psicologo.precoSessao ? `R$ ${psicologo.precoSessao.toFixed(2)}` : 'A combinar'}
             </Text>
           </View>
         </View>
         
         {!!psicologo.bio && (
-          <View style={styles.bioContainer}>
-            <Text style={styles.bio} numberOfLines={2}>{psicologo.bio}</Text>
+          <View style={[styles.bioContainer, colorStyles.bioContainer]}>
+            <Text style={[styles.bio, colorStyles.bio]} numberOfLines={2}>{psicologo.bio}</Text>
           </View>
         )}
       </LinearGradient>
@@ -67,6 +116,7 @@ export const PsicologoCard = ({ psicologo, onPress }: Props) => {
   );
 };
 
+// Estilos estáticos (layout) — independentes de cor
 const styles = StyleSheet.create({
   cardWrapper: {
     marginBottom: spacing.base,
@@ -75,8 +125,6 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius['2xl'],
     padding: spacing.lg,
     borderWidth: 1,
-    borderColor: '#E7DCC6',
-    shadowColor: colors.forest,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
     shadowRadius: 16,
@@ -97,9 +145,7 @@ const styles = StyleSheet.create({
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: colors.success,
     borderWidth: 2,
-    borderColor: colors.white,
   },
   info: {
     flex: 1,
@@ -108,17 +154,14 @@ const styles = StyleSheet.create({
   nome: {
     fontSize: typography.size.xl,
     fontWeight: typography.weight.bold,
-    color: colors.textPrimary,
     letterSpacing: 0.2,
   },
   especialidade: {
     fontSize: typography.size.sm,
-    color: colors.textSecondary,
     marginTop: spacing.xs,
     fontWeight: typography.weight.medium,
   },
   badge: {
-    backgroundColor: colors.mint,
     borderRadius: borderRadius.md,
     paddingHorizontal: spacing.sm,
     paddingVertical: 4,
@@ -127,14 +170,12 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: typography.size.xs,
-    color: colors.primaryDark,
     fontWeight: typography.weight.bold,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   divider: {
     height: 1,
-    backgroundColor: '#E7DCC6',
     marginVertical: spacing.base,
     opacity: 0.6,
   },
@@ -150,35 +191,27 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
-  statIcon: {
-    fontSize: typography.size.base,
-  },
   statText: {
     fontSize: typography.size.base,
-    color: colors.textPrimary,
     fontWeight: typography.weight.semibold,
   },
   statDivider: {
     width: 1,
     height: 24,
-    backgroundColor: '#E7DCC6',
     opacity: 0.5,
   },
   preco: {
     fontSize: typography.size.base,
     fontWeight: typography.weight.bold,
-    color: colors.primary,
   },
   bioContainer: {
     marginTop: spacing.base,
     paddingTop: spacing.base,
     borderTopWidth: 1,
-    borderTopColor: '#E7DCC6',
     opacity: 0.9,
   },
   bio: {
     fontSize: typography.size.sm,
-    color: colors.textSecondary,
     lineHeight: typography.size.sm * typography.lineHeight.relaxed,
   },
 });

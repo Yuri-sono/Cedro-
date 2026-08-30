@@ -1,4 +1,5 @@
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '../../types/navigation.types';
@@ -6,6 +7,9 @@ import { usePsicologoDetail } from '../../hooks/usePsicologos';
 import { colors, typography, spacing, borderRadius } from '../../theme';
 import { Avatar } from '../../components/Avatar';
 import { Button } from '../../components/Button';
+
+// Dourado fixo para a estrela de avaliação (sem equivalente na paleta do tema)
+const STAR_GOLD = '#FFC107';
 
 type PsicologoDetailRouteProp = RouteProp<HomeStackParamList, 'PsicologoDetail'>;
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'PsicologoDetail'>;
@@ -41,7 +45,8 @@ export const PsicologoDetailScreen = () => {
         
         <View style={styles.badgesRow}>
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>⭐ {psicologo.avaliacao?.toFixed(1) || 'Novo'}</Text>
+            <Ionicons name="star" size={typography.size.sm} color={STAR_GOLD} />
+            <Text style={styles.badgeText}>{psicologo.avaliacao?.toFixed(1) || 'Novo'}</Text>
           </View>
           <View style={styles.badge}>
             <Text style={styles.badgeText}>CRP Ativo</Text>
@@ -116,6 +121,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
     backgroundColor: colors.backgroundSecondary,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,

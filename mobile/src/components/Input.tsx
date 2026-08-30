@@ -8,7 +8,9 @@ import {
   TouchableOpacity,
   Animated,
 } from 'react-native';
-import { colors, typography, spacing, borderRadius } from '../theme';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { typography, spacing, borderRadius } from '../theme';
+import { useTheme } from '../theme/ThemeContext';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -18,6 +20,7 @@ interface InputProps extends TextInputProps {
 
 export const Input = forwardRef<TextInput, InputProps>(
   ({ label, error, isPassword, style, ...props }, ref) => {
+    const { colors } = useTheme();
     const [isFocused, setIsFocused] = useState(false);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [focusAnim] = useState(new Animated.Value(0));
@@ -46,7 +49,7 @@ export const Input = forwardRef<TextInput, InputProps>(
 
     const borderColor = focusAnim.interpolate({
       inputRange: [0, 1],
-      outputRange: ['#E6DDC8', colors.forest],
+      outputRange: [colors.border, colors.forest],
     });
 
     const backgroundColor = focusAnim.interpolate({
@@ -54,13 +57,30 @@ export const Input = forwardRef<TextInput, InputProps>(
       outputRange: [colors.surfaceWarm, colors.surface],
     });
 
+    // Estilos dependentes de cor (recomputados por render para acompanhar o tema)
+    const colorStyles = StyleSheet.create({
+      inputContainer: {
+        shadowColor: colors.forest,
+      },
+      input: {
+        color: colors.textPrimary,
+      },
+      label: {
+        color: colors.textPrimary,
+      },
+      errorText: {
+        color: colors.error,
+      },
+    });
+
     return (
       <View style={styles.container}>
-        {label && <Text style={styles.label}>{label}</Text>}
+        {label && <Text style={[styles.label, colorStyles.label]}>{label}</Text>}
         
         <Animated.View
           style={[
             styles.inputContainer,
+            colorStyles.inputContainer,
             {
               borderColor: error ? colors.error : borderColor,
               backgroundColor,
@@ -69,8 +89,8 @@ export const Input = forwardRef<TextInput, InputProps>(
         >
           <TextInput
             ref={ref}
-            style={[styles.input, style]}
-            placeholderTextColor="#8C968D"
+            style={[styles.input, colorStyles.input, style]}
+            placeholderTextColor={colors.textSecondary}
             secureTextEntry={isPassword && !isPasswordVisible}
             onFocus={handleFocus}
             onBlur={handleBlur}
@@ -83,19 +103,22 @@ export const Input = forwardRef<TextInput, InputProps>(
               onPress={() => setIsPasswordVisible(!isPasswordVisible)}
               activeOpacity={0.7}
             >
-              <Text style={styles.eyeText}>
-                {isPasswordVisible ? '👁️' : '👁️‍🗨️'}
-              </Text>
+              <Ionicons
+                name={isPasswordVisible ? 'eye-off' : 'eye'}
+                size={typography.size.lg}
+                color={colors.textSecondary}
+              />
             </TouchableOpacity>
           )}
         </Animated.View>
 
-        {error && <Text style={styles.errorText}>{error}</Text>}
+        {error && <Text style={[styles.errorText, colorStyles.errorText]}>{error}</Text>}
       </View>
     );
   }
 );
 
+// Estilos estáticos (layout/espaçamento) — independentes de cor
 const styles = StyleSheet.create({
   container: {
     marginBottom: spacing.base,
@@ -104,7 +127,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
-    color: colors.textPrimary,
     marginBottom: spacing.sm,
     marginLeft: spacing.xs,
     letterSpacing: 0.2,
@@ -115,7 +137,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: borderRadius.xl,
     minHeight: 56,
-    shadowColor: colors.forest,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -125,7 +146,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: spacing.base,
     fontSize: typography.size.base,
-    color: colors.textPrimary,
     minHeight: 56,
     fontWeight: typography.weight.medium,
   },
@@ -133,11 +153,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     marginRight: spacing.xs,
   },
-  eyeText: {
-    fontSize: typography.size.lg,
-  },
   errorText: {
-    color: colors.error,
     fontSize: typography.size.xs,
     marginTop: spacing.sm,
     marginLeft: spacing.xs,

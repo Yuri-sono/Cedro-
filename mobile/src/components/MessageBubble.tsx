@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, spacing, typography, borderRadius } from '../theme';
+import { spacing, typography, borderRadius } from '../theme';
+import { useTheme } from '../theme/ThemeContext';
 import { Mensagem } from '../types/api.types';
 import { useAuthStore } from '../store/authStore';
 
@@ -9,19 +10,40 @@ interface Props {
 }
 
 export const MessageBubble = ({ mensagem }: Props) => {
+  const { colors } = useTheme();
   const currentUserId = useAuthStore((state) => state.user?.id);
   const isMine = mensagem.remetenteId === currentUserId;
+
+  // Estilos dependentes de cor (recomputados por render para acompanhar o tema)
+  const colorStyles = StyleSheet.create({
+    mineBubble: {
+      backgroundColor: colors.primary,
+    },
+    theirsBubble: {
+      backgroundColor: colors.surface,
+      borderColor: colors.border,
+    },
+    mineText: {
+      color: colors.white,
+    },
+    theirsText: {
+      color: colors.textPrimary,
+    },
+    theirsTime: {
+      color: colors.textSecondary,
+    },
+  });
 
   const dataObj = new Date(mensagem.dataCriacao);
   const timeString = dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
   return (
     <View style={[styles.container, isMine ? styles.mineContainer : styles.theirsContainer]}>
-      <View style={[styles.bubble, isMine ? styles.mineBubble : styles.theirsBubble]}>
-        <Text style={[styles.text, isMine ? styles.mineText : styles.theirsText]}>
+      <View style={[styles.bubble, isMine ? [styles.mineBubble, colorStyles.mineBubble] : [styles.theirsBubble, colorStyles.theirsBubble]]}>
+        <Text style={[styles.text, isMine ? colorStyles.mineText : colorStyles.theirsText]}>
           {mensagem.mensagem}
         </Text>
-        <Text style={[styles.time, isMine ? styles.mineTime : styles.theirsTime]}>
+        <Text style={[styles.time, isMine ? styles.mineTime : colorStyles.theirsTime]}>
           {timeString}
         </Text>
       </View>
@@ -29,6 +51,7 @@ export const MessageBubble = ({ mensagem }: Props) => {
   );
 };
 
+// Estilos estáticos (layout) — independentes de cor
 const styles = StyleSheet.create({
   container: {
     width: '100%',
@@ -49,24 +72,15 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
   },
   mineBubble: {
-    backgroundColor: colors.primary,
     borderBottomRightRadius: 2,
   },
   theirsBubble: {
-    backgroundColor: colors.surface,
     borderBottomLeftRadius: 2,
     borderWidth: 1,
-    borderColor: colors.border,
   },
   text: {
     fontSize: typography.size.base,
     lineHeight: typography.size.base * typography.lineHeight.normal,
-  },
-  mineText: {
-    color: colors.white,
-  },
-  theirsText: {
-    color: colors.textPrimary,
   },
   time: {
     fontSize: 10,
@@ -74,9 +88,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   mineTime: {
+    // Bolha própria é sempre verde de marca em ambos os temas → alpha fixo de branco
     color: 'rgba(255,255,255,0.7)',
-  },
-  theirsTime: {
-    color: colors.textSecondary,
   },
 });

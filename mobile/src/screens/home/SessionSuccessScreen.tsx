@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, typography, spacing } from '../../theme';
@@ -17,7 +18,9 @@ export const SessionSuccessScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.icon}>✓</Text>
+        <View style={styles.iconCircle}>
+          <Ionicons name="checkmark" size={42} color={colors.white} />
+        </View>
         <Text style={styles.title}>Consulta agendada</Text>
         <Text style={styles.message}>
           Sua consulta com {psicologoNome} foi confirmada. A conversa e a reunião via Google Meet já estão prontas.
@@ -80,16 +83,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  icon: {
+  iconCircle: {
     width: 76,
     height: 76,
     borderRadius: 38,
     backgroundColor: colors.forest,
-    color: colors.white,
-    textAlign: 'center',
-    lineHeight: 76,
-    fontSize: 42,
-    fontWeight: typography.weight.bold,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: spacing.xl,
   },
   title: {

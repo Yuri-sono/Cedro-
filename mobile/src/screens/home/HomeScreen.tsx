@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Linking, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList, MainTabParamList } from '../../types/navigation.types';
@@ -8,6 +9,7 @@ import { useAuthStore } from '../../store/authStore';
 import { usePsicologos } from '../../hooks/usePsicologos';
 import { useSessoes } from '../../hooks/useSessoes';
 import { colors, typography, spacing, borderRadius } from '../../theme';
+import { useTheme } from '../../theme/ThemeContext';
 import { Avatar } from '../../components/Avatar';
 import { PsicologoCard } from '../../components/PsicologoCard';
 import { SessionCard } from '../../components/SessionCard';
@@ -19,9 +21,14 @@ type HomeNavigationProp = NativeStackNavigationProp<HomeStackParamList, 'Home'>;
 
 const TELEGRAM_URL = 'https://t.me/cedroapoio';
 
+// Dourado fixo para a estrela de destaque (sem equivalente na paleta)
+const STAR_GOLD = '#FFC107';
+
 export const HomeScreen = () => {
   const navigation = useNavigation<HomeNavigationProp>();
   const user = useAuthStore((state) => state.user);
+  // Tema dinâmico apenas para a cor dos ícones (estilos das telas migram na próxima fase)
+  const { colors: themeColors } = useTheme();
   const isPsicologo = user?.tipoUsuario === TipoUsuario.psicologo;
 
   const { psicologos, isLoading: loadingPsicos } = usePsicologos();
@@ -66,7 +73,10 @@ export const HomeScreen = () => {
           style={styles.heroCard}
         >
           <View style={styles.heroContent}>
-            <Text style={styles.heroEyebrow}>🌿 Bem-estar hoje</Text>
+            <View style={styles.heroEyebrowRow}>
+              <Ionicons name="leaf" size={14} color={themeColors.primary} />
+              <Text style={styles.heroEyebrow}>Bem-estar hoje</Text>
+            </View>
             <Text style={styles.greeting} numberOfLines={2}>Olá, {firstName}</Text>
             <Text style={styles.subtitle}>Respire com calma. Seu cuidado continua aqui.</Text>
           </View>
@@ -77,7 +87,10 @@ export const HomeScreen = () => {
           <>
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>📊 Resumo do atendimento</Text>
+                <View style={styles.sectionTitleRow}>
+                  <Ionicons name="stats-chart" size={20} color={themeColors.primary} />
+                  <Text style={styles.sectionTitle}>Resumo do atendimento</Text>
+                </View>
                 <TouchableOpacity onPress={() => openProfileTab('PsychologistSettings')} activeOpacity={0.7}>
                   <Text style={styles.seeAllText}>Editar</Text>
                 </TouchableOpacity>
@@ -113,7 +126,10 @@ export const HomeScreen = () => {
 
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>📅 Próximas consultas</Text>
+                <View style={styles.sectionTitleRow}>
+                  <Ionicons name="calendar" size={20} color={themeColors.primary} />
+                  <Text style={styles.sectionTitle}>Próximas consultas</Text>
+                </View>
                 <TouchableOpacity onPress={() => openProfileTab('MySessions')} activeOpacity={0.7}>
                   <Text style={styles.seeAllText}>Ver agenda</Text>
                 </TouchableOpacity>
@@ -155,7 +171,7 @@ export const HomeScreen = () => {
                 style={styles.telegramCard}
               >
                 <View style={styles.telegramIcon}>
-                  <Text style={styles.telegramIconText}>📱</Text>
+                  <Ionicons name="paper-plane" size={24} color={colors.white} />
                 </View>
                 <View style={styles.telegramTextBlock}>
                   <Text style={styles.telegramTitle}>Grupo da instituição</Text>
@@ -163,12 +179,15 @@ export const HomeScreen = () => {
                     Conteúdos importantes, eventos e avisos para a comunidade Cedro.
                   </Text>
                 </View>
-                <Text style={styles.telegramAction}>→</Text>
+                <Ionicons name="chevron-forward" size={typography.size['2xl']} color={colors.white} />
               </LinearGradient>
             </TouchableOpacity>
 
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>🗓️ Sua próxima sessão</Text>
+              <View style={styles.sectionTitleRow}>
+                <Ionicons name="calendar" size={20} color={themeColors.primary} />
+                <Text style={styles.sectionTitle}>Sua próxima sessão</Text>
+              </View>
               {loadingSessoes ? (
                 <ActivityIndicator color={colors.primary} />
               ) : proximaSessao ? (
@@ -185,7 +204,10 @@ export const HomeScreen = () => {
 
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>⭐ Psicólogos em destaque</Text>
+                <View style={styles.sectionTitleRow}>
+                  <Ionicons name="star" size={20} color={STAR_GOLD} />
+                  <Text style={styles.sectionTitle}>Psicólogos em destaque</Text>
+                </View>
                 <TouchableOpacity onPress={() => navigation.navigate('PsicologoList')} activeOpacity={0.7}>
                   <Text style={styles.seeAllText}>Ver todos</Text>
                 </TouchableOpacity>
@@ -299,11 +321,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.mint,
     opacity: 0.3,
   },
+  heroEyebrowRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginBottom: spacing.sm,
+  },
   heroEyebrow: {
     color: colors.primary,
     fontSize: typography.size.sm,
     fontWeight: typography.weight.bold,
-    marginBottom: spacing.sm,
     letterSpacing: 0.5,
   },
   greeting: {
@@ -341,9 +368,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  telegramIconText: {
-    fontSize: typography.size['2xl'],
-  },
   telegramTextBlock: {
     flex: 1,
   },
@@ -360,11 +384,6 @@ const styles = StyleSheet.create({
     opacity: 0.9,
     marginTop: 4,
   },
-  telegramAction: {
-    color: colors.white,
-    fontSize: typography.size['2xl'],
-    fontWeight: typography.weight.bold,
-  },
   section: {
     marginBottom: spacing.xl,
   },
@@ -374,6 +393,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.base,
     marginBottom: spacing.base,
+  },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    flex: 1,
   },
   sectionTitle: {
     flex: 1,

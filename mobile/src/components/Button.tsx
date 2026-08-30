@@ -7,10 +7,10 @@ import {
   TouchableOpacityProps,
   ViewStyle,
   TextStyle,
-  View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, typography, spacing, borderRadius } from '../theme';
+import { typography, spacing, borderRadius } from '../theme';
+import { useTheme } from '../theme/ThemeContext';
 
 interface ButtonProps extends TouchableOpacityProps {
   title: string;
@@ -29,6 +29,23 @@ export const Button = ({
   textStyle,
   ...props
 }: ButtonProps) => {
+  const { colors } = useTheme();
+
+  // Estilos dependentes de cor: computados a cada render para acompanhar o tema
+  const colorStyles = StyleSheet.create({
+    gradientButton: {
+      shadowColor: colors.forest,
+    },
+    secondary: {
+      backgroundColor: colors.mint,
+      shadowColor: colors.primary,
+    },
+    outline: {
+      backgroundColor: colors.surface,
+      borderColor: colors.forest,
+    },
+  });
+
   const getTextColor = () => {
     if (disabled && variant !== 'text') return colors.textSecondary;
     if (variant === 'outline' || variant === 'text') return colors.primary;
@@ -46,10 +63,14 @@ export const Button = ({
         {...props}
       >
         <LinearGradient
-          colors={isButtonDisabled ? ['#657268', '#657268'] : ['#24745B', '#2F8E70']}
+          colors={
+            isButtonDisabled
+              ? ([colors.textSecondary, colors.textSecondary] as const)
+              : colors.gradientPrimary
+          }
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={styles.gradientButton}
+          style={[styles.gradientButton, colorStyles.gradientButton]}
         >
           {isLoading ? (
             <ActivityIndicator color={colors.white} />
@@ -64,9 +85,9 @@ export const Button = ({
   const getVariantStyles = () => {
     switch (variant) {
       case 'secondary':
-        return styles.secondary;
+        return [styles.secondary, colorStyles.secondary];
       case 'outline':
-        return styles.outline;
+        return [styles.outline, colorStyles.outline];
       case 'text':
         return styles.textVariant;
       default:
@@ -104,6 +125,7 @@ export const Button = ({
   );
 };
 
+// Estilos estáticos (layout, espaçamento, raios) — independentes de cor
 const styles = StyleSheet.create({
   base: {
     minHeight: 54,
@@ -121,25 +143,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.base,
     minHeight: 54,
     borderRadius: borderRadius.xl,
-    shadowColor: colors.forest,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.25,
     shadowRadius: 16,
     elevation: 6,
   },
   secondary: {
-    backgroundColor: colors.mint,
     paddingHorizontal: spacing.base,
-    shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
     shadowRadius: 8,
     elevation: 3,
   },
   outline: {
-    backgroundColor: colors.surface,
     borderWidth: 2,
-    borderColor: colors.forest,
     paddingHorizontal: spacing.base,
   },
   textVariant: {
@@ -161,3 +178,4 @@ const styles = StyleSheet.create({
     textDecorationLine: 'none',
   },
 });
+
