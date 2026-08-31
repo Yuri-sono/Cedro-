@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Linking, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -10,9 +10,9 @@ import { usePsicologos } from '../../hooks/usePsicologos';
 import { useSessoes } from '../../hooks/useSessoes';
 import { colors, typography, spacing, borderRadius } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
-import { PsicologoCard } from '../../components/PsicologoCard';
 import { SessionCard } from '../../components/SessionCard';
-import { TipoUsuario } from '../../types/api.types';
+import { Avatar } from '../../components/Avatar';
+import { PsicologoListItem, TipoUsuario } from '../../types/api.types';
 import { usePsychologistDashboard } from '../../hooks/usePsychologistDashboard';
 import { formatAgendaSummary } from '../../utils/psychologistAgenda';
 import { capitalizeName } from '../../utils/format';
@@ -24,10 +24,35 @@ const TELEGRAM_URL = 'https://t.me/cedroapoio';
 // Dourado do redesign (--accent) para a estrela de destaque
 const STAR_GOLD = '#C6952F';
 
+interface PsicologoChipProps {
+  psicologo: PsicologoListItem;
+  onPress: () => void;
+}
+
+// Chip compacto para o carrossel horizontal de "Psicólogos em destaque"
+// (equivalente ao .psy-chip do cedro-redesign.html)
+const PsicologoChip = ({ psicologo, onPress }: PsicologoChipProps) => (
+  <TouchableOpacity style={styles.psyChip} onPress={onPress} activeOpacity={0.8}>
+    <Avatar url={psicologo.fotoUrl} size={48} />
+    <Text style={styles.psyChipName} numberOfLines={1}>
+      {psicologo.nome}
+    </Text>
+    <Text style={styles.psyChipEspecialidade} numberOfLines={1}>
+      {psicologo.especialidade || 'Psicologia'}
+    </Text>
+    <View style={styles.psyChipRatingRow}>
+      <Ionicons name="star" size={11} color={STAR_GOLD} />
+      <Text style={styles.psyChipRatingText}>
+        {psicologo.avaliacao?.toFixed(1) ?? 'Novo'}
+      </Text>
+    </View>
+  </TouchableOpacity>
+);
+
 export const HomeScreen = () => {
   const navigation = useNavigation<HomeNavigationProp>();
   const user = useAuthStore((state) => state.user);
-  // Tema dinÃ¢mico apenas para a cor dos Ã­cones (estilos das telas migram na prÃ³xima fase)
+  // Tema dinâmico apenas para a cor dos ícones (estilos das telas migram na próxima fase)
   const { colors: themeColors } = useTheme();
   const isPsicologo = user?.tipoUsuario === TipoUsuario.psicologo;
 
@@ -35,9 +60,9 @@ export const HomeScreen = () => {
   const { sessoes, isLoading: loadingSessoes } = useSessoes();
   const { estatisticas, proximasConsultas, isLoading: loadingDashboard } = usePsychologistDashboard();
 
-  const destaquePsicologos = psicologos.slice(0, 3);
+  const destaquePsicologos = psicologos.slice(0, 6);
   const proximaSessao = sessoes.find((s) => s.statusSessao.toLowerCase() === 'agendada');
-  // Badge do sino: indica avisos pendentes (prÃ³xima sessÃ£o / pacientes confirmados)
+  // Badge do sino: indica avisos pendentes (próxima sessão / pacientes confirmados)
   const temNotificacao = isPsicologo ? proximasConsultas.length > 0 : !!proximaSessao;
   const openProfileTab = (screen: 'PsychologistSettings' | 'MySessions') => {
     const parentNavigation = navigation.getParent() as NavigationProp<MainTabParamList> | undefined;
@@ -59,7 +84,7 @@ export const HomeScreen = () => {
             </View>
             <View>
               <Text style={styles.brandText}>Cedro</Text>
-              <Text style={styles.brandSubText}>Apoio psicolÃ³gico</Text>
+              <Text style={styles.brandSubText}>Apoio psicológico</Text>
             </View>
           </View>
           <TouchableOpacity style={styles.bellButton} activeOpacity={0.8}>
@@ -80,7 +105,7 @@ export const HomeScreen = () => {
               <Text style={styles.heroEyebrow}>Bem-estar hoje</Text>
             </View>
             <Text style={styles.greeting} numberOfLines={2}>
-              OlÃ¡, {capitalizeName(user?.nome) || 'Bem-vindo'}
+              Olá, {capitalizeName(user?.nome) || 'Bem-vindo'}
             </Text>
             <Text style={styles.subtitle}>Respire com calma. Seu cuidado continua aqui.</Text>
           </View>
@@ -117,10 +142,10 @@ export const HomeScreen = () => {
 
               <LinearGradient colors={['#FFFFFF', '#FFFDF8']} style={styles.professionalSummary}>
                 <Text style={styles.professionalSummaryTitle}>
-                  {user?.especialidade || 'Especialidade ainda nÃ£o configurada'}
+                  {user?.especialidade || 'Especialidade ainda não configurada'}
                 </Text>
                 <Text style={styles.professionalSummaryText}>
-                  {user?.precoSessao != null ? `Consulta: R$ ${user.precoSessao.toFixed(2)}` : 'Valor da consulta nÃ£o definido'}
+                  {user?.precoSessao != null ? `Consulta: R$ ${user.precoSessao.toFixed(2)}` : 'Valor da consulta não definido'}
                 </Text>
                 <Text style={styles.professionalSummaryText}>
                   {formatAgendaSummary(user?.diasAtendimento, user?.horariosAtendimento)}
@@ -132,7 +157,7 @@ export const HomeScreen = () => {
               <View style={styles.sectionHeader}>
                 <View style={styles.sectionTitleRow}>
                   <Ionicons name="calendar" size={20} color={themeColors.primary} />
-                  <Text style={styles.sectionTitle}>PrÃ³ximas consultas</Text>
+                  <Text style={styles.sectionTitle}>Próximas consultas</Text>
                 </View>
                 <TouchableOpacity onPress={() => openProfileTab('MySessions')} activeOpacity={0.7}>
                   <Text style={styles.seeAllText}>Ver agenda</Text>
@@ -154,7 +179,7 @@ export const HomeScreen = () => {
                   <Text style={styles.nextPatientsTitle}>Pacientes confirmados</Text>
                   {proximasConsultas.slice(0, 3).map((consulta) => (
                     <Text key={consulta.id} style={styles.nextPatientsText}>
-                      {new Date(consulta.data).toLocaleDateString('pt-BR')} {consulta.horario} â€¢ {consulta.pacienteNome}
+                      {new Date(consulta.data).toLocaleDateString('pt-BR')} {consulta.horario} • {consulta.pacienteNome}
                     </Text>
                   ))}
                 </LinearGradient>
@@ -173,9 +198,9 @@ export const HomeScreen = () => {
                   <Ionicons name="people" size={20} color={colors.white} />
                 </View>
                 <View style={styles.telegramTextBlock}>
-                  <Text style={styles.telegramTitle}>Grupo da instituiÃ§Ã£o</Text>
+                  <Text style={styles.telegramTitle}>Grupo da instituição</Text>
                   <Text style={styles.telegramText}>
-                    ConteÃºdos, eventos e avisos para a comunidade Cedro.
+                    Conteúdos, eventos e avisos para a comunidade Cedro.
                   </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={16} color={colors.white} />
@@ -185,7 +210,7 @@ export const HomeScreen = () => {
             <View style={styles.section}>
               <View style={styles.sectionTitleRow}>
                 <Ionicons name="calendar" size={20} color={themeColors.primary} />
-                <Text style={styles.sectionTitle}>Sua prÃ³xima sessÃ£o</Text>
+                <Text style={styles.sectionTitle}>Sua próxima sessão</Text>
               </View>
               {loadingSessoes ? (
                 <ActivityIndicator color={colors.primary} />
@@ -196,13 +221,13 @@ export const HomeScreen = () => {
                   <View style={styles.emptyIconCircle}>
                     <Ionicons name="calendar" size={20} color={colors.primary} />
                   </View>
-                  <Text style={styles.emptyText}>VocÃª nÃ£o tem consultas agendadas.</Text>
+                  <Text style={styles.emptyText}>Você não tem consultas agendadas.</Text>
                   <TouchableOpacity
                     style={styles.emptyActionButton}
                     onPress={() => navigation.navigate('PsicologoList')}
                     activeOpacity={0.8}
                   >
-                    <Text style={styles.emptyActionButtonText}>Encontrar um psicÃ³logo</Text>
+                    <Text style={styles.emptyActionButtonText}>Encontrar um psicólogo</Text>
                   </TouchableOpacity>
                 </LinearGradient>
               )}
@@ -212,7 +237,7 @@ export const HomeScreen = () => {
               <View style={styles.sectionHeader}>
                 <View style={styles.sectionTitleRow}>
                   <Ionicons name="star" size={20} color={STAR_GOLD} />
-                  <Text style={styles.sectionTitle}>PsicÃ³logos em destaque</Text>
+                  <Text style={styles.sectionTitle}>Psicólogos em destaque</Text>
                 </View>
                 <TouchableOpacity onPress={() => navigation.navigate('PsicologoList')} activeOpacity={0.7}>
                   <Text style={styles.seeAllText}>Ver todos</Text>
@@ -222,13 +247,19 @@ export const HomeScreen = () => {
               {loadingPsicos ? (
                 <ActivityIndicator color={colors.primary} />
               ) : (
-                destaquePsicologos.map((psi) => (
-                  <PsicologoCard
-                    key={psi.id}
-                    psicologo={psi}
-                    onPress={() => navigation.navigate('PsicologoDetail', { psicologoId: psi.id })}
-                  />
-                ))
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ paddingBottom: spacing.sm }}
+                >
+                  {destaquePsicologos.map((psi) => (
+                    <PsicologoChip
+                      key={psi.id}
+                      psicologo={psi}
+                      onPress={() => navigation.navigate('PsicologoDetail', { psicologoId: psi.id })}
+                    />
+                  ))}
+                </ScrollView>
               )}
             </View>
           </>
@@ -544,5 +575,39 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.bold,
     fontSize: typography.size.sm,
     marginTop: spacing.xs,
+  },
+  psyChip: {
+    width: 118,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: borderRadius.lg,
+    padding: spacing.md,
+    alignItems: 'center',
+    marginRight: spacing.sm,
+  },
+  psyChipName: {
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.bold,
+    color: colors.textPrimary,
+    marginTop: spacing.xs,
+    textAlign: 'center',
+  },
+  psyChipEspecialidade: {
+    fontSize: typography.size.xs,
+    color: colors.textSecondary,
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  psyChipRatingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    marginTop: 3,
+  },
+  psyChipRatingText: {
+    color: STAR_GOLD,
+    fontSize: typography.size.xs,
+    fontWeight: typography.weight.bold,
   },
 });

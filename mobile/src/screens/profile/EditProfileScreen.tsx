@@ -10,6 +10,8 @@ import {
   Alert,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Avatar } from '../../components/Avatar';
@@ -24,39 +26,22 @@ import { ProfileStackParamList } from '../../types/navigation.types';
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'EditProfile'>;
 const MAX_PROFILE_PHOTO_DATA_URI_LENGTH = 1_500_000;
 
-function formatDateForDisplay(dateStr?: string | null): string {
-  if (!dateStr) return '';
-  if (dateStr.includes('-')) {
-    const parts = dateStr.split('T')[0].split('-');
-    if (parts.length === 3) {
-      return `${parts[2]}/${parts[1]}/${parts[0]}`;
-    }
-  }
-  return dateStr;
+function parseDateFromApi(dateStr?: string | null): Date | null {
+  if (!dateStr) return null;
+  const datePart = dateStr.split('T')[0];
+  const parts = datePart.split('-');
+  if (parts.length !== 3) return null;
+  const [y, m, d] = parts.map(Number);
+  if (!y || !m || !d) return null;
+  return new Date(y, m - 1, d);
 }
 
-function formatDateForApi(dateStr?: string): string | undefined {
-  if (!dateStr) return undefined;
-  const clean = dateStr.trim();
-  if (clean.includes('/')) {
-    const parts = clean.split('/');
-    if (parts.length === 3) {
-      return `${parts[2]}-${parts[1]}-${parts[0]}`;
-    }
-  }
-  return clean || undefined;
-}
-
-function formatDateMask(text: string): string {
-  const cleaned = text.replace(/\D/g, '');
-  let formatted = cleaned;
-  if (formatted.length > 2) {
-    formatted = `${formatted.slice(0, 2)}/${formatted.slice(2)}`;
-  }
-  if (formatted.length > 5) {
-    formatted = `${formatted.slice(0, 5)}/${formatted.slice(5, 9)}`;
-  }
-  return formatted;
+function formatDateForApi(date: Date | null): string | undefined {
+  if (!date) return undefined;
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
 function formatPhoneMask(text: string): string {
@@ -121,6 +106,8 @@ async function compressWebImage(uri: string): Promise<string> {
   });
 }
 
+const GENEROS = ['Masculino', 'Feminino', 'Outro'] as const;
+
 export const EditProfileScreen = () => {
   const user = useAuthStore((state) => state.user);
   const { atualizarPerfil, atualizarFoto, isAtualizando, isAtualizandoFoto } = usePerfil();
@@ -128,9 +115,10 @@ export const EditProfileScreen = () => {
 
   const [nome, setNome] = useState(user?.nome || '');
   const [telefone, setTelefone] = useState(formatPhoneMask(user?.telefone || ''));
-  const [dataNascimento, setDataNascimento] = useState(
-    formatDateMask(formatDateForDisplay(user?.dataNascimento)),
+  const [dataNascimento, setDataNascimento] = useState<Date | null>(
+    parseDateFromApi(user?.dataNascimento),
   );
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [genero, setGenero] = useState(user?.genero || '');
   const [endereco, setEndereco] = useState(user?.endereco || '');
   const [bio, setBio] = useState(user?.bio || '');
@@ -258,21 +246,40 @@ export const EditProfileScreen = () => {
           maxLength={15}
         />
 
-        <Input
-          label="Data de nascimento"
-          value={dataNascimento}
-          onChangeText={(text) => setDataNascimento(formatDateMask(text))}
-          placeholder="DD/MM/AAAA"
-          keyboardType="numeric"
-          maxLength={10}
-        />
+        <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateButton}>
+          <Text style={dataNascimento ? styles.dateText : styles.datePlaceholder}>
+            {dataNascimento ? dataNascimento.toLocaleDateString('pt-BR') : 'Selecionar data'}
+          </Text>
+          <Ionicons name="calendar-outline" size={18} color={colors.textSecondary} />
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            value={dataNascimento ?? new Date(2000, 0, 1)}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            maximumDate={new Date()}
+            locale="pt-BR"
+            onChange={(event, selected) => {
+              setShowDatePicker(Platform.OS === 'ios');
+              if (selected) setDataNascimento(selected);
+            }}
+          />
+        )}
 
-        <Input
-          label="Gênero"
-          value={genero}
-          onChangeText={setGenero}
-          placeholder="Ex: Feminino, Masculino, Outro"
-        />
+        <Text style={styles.dateLabel}>Gênero</Text>
+        <View style={styles.generoRow}>
+          {GENEROS.map((g) => (
+            <TouchableOpacity
+              key={g}
+              style={[styles.generoBtn, genero === g && styles.generoBtnActive]}
+              onPress={() => setGenero(g)}
+            >
+              <Text style={[styles.generoBtnText, genero === g && styles.generoBtnTextActive]}>
+                {g}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
         <Input
           label="Endereço"
@@ -389,5 +396,57 @@ const styles = StyleSheet.create({
   saveButton: {
     marginTop: spacing.xl,
     marginBottom: spacing['2xl'],
+  },
+  dateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.surface,
+    paddingHorizontal: spacing.base,
+    paddingVertical: 12,
+    marginBottom: spacing.base,
+  },
+  dateText: {
+    fontSize: typography.size.md,
+    color: colors.textPrimary,
+  },
+  datePlaceholder: {
+    fontSize: typography.size.md,
+    color: colors.textSecondary,
+  },
+  dateLabel: {
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.semibold,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
+  },
+  generoRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.base,
+  },
+  generoBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: borderRadius.full,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+  },
+  generoBtnActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  generoBtnText: {
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.semibold,
+    color: colors.textPrimary,
+  },
+  generoBtnTextActive: {
+    color: colors.white,
   },
 });

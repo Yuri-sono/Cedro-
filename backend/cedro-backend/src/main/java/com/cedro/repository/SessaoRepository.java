@@ -15,6 +15,8 @@ public interface SessaoRepository extends JpaRepository<Sessao, Integer> {
     List<Sessao> findByPsicologoId(Integer psicologoId);
     List<Sessao> findByStatusSessao(String status);
 
+    List<Sessao> findByStatusSessaoAndDataSessaoBetween(String statusSessao, LocalDateTime inicio, LocalDateTime fim);
+
     List<Sessao> findByPsicologoIdAndDataSessaoBetween(Integer psicologoId, LocalDateTime inicio, LocalDateTime fim);
 
     boolean existsByPsicologoIdAndDataSessaoAndStatusSessaoNot(Integer psicologoId, LocalDateTime dataSessao, String statusSessao);

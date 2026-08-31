@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api.js';
 import ReuniaoModal from '../components/ReuniaoModal.jsx';
+import { useSessionReminders } from '../hooks/useSessionReminders';
 
 function MinhasSessoes() {
+  useSessionReminders();
   const [sessoes, setSessoes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sessaoReuniao, setSessaoReuniao] = useState(null);

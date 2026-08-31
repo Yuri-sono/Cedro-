@@ -4,6 +4,7 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { notificationService } from '../services/notificationService';
 import { useAuthStore } from '../store/authStore';
+import { navigationRef } from '../navigation/navigationRef';
 
 // Configuração global de como as notificações aparecem quando o app está em foreground
 Notifications.setNotificationHandler({
@@ -58,11 +59,14 @@ export const useNotifications = () => {
 
     registerForPushNotificationsAsync();
 
-    // Listener para quando o usuário toca na notificação (ex: abrir tela do chat)
+    // Listener para quando o usuário toca na notificação
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      const data = response.notification.request.content.data;
-      // Exemplo: Navegar para o chat se a notificação for de nova mensagem
-      console.log('Notificação tocada, dados:', data);
+      const data = response.notification.request.content.data as any;
+      if (data?.tipo === 'sessao' && data?.sessaoId && navigationRef.isReady()) {
+        // "Reuniao" é uma tela global registrada no RootStack (RootStackParamList),
+        // por isso navegamos direto na raiz em vez de 'HomeStack'.
+        (navigationRef as any).navigate('Reuniao', { sessaoId: data.sessaoId });
+      }
     });
 
     return () => {

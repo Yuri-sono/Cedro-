@@ -4,8 +4,10 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 import NavbarPsicologo from '../components/NavbarPsicologo.jsx';
 import SidebarPsicologo from '../components/SidebarPsicologo.jsx';
 import api from '../services/api.js';
+import { useSessionReminders } from '../hooks/useSessionReminders';
 
 const DashboardPsicologo = () => {
+  useSessionReminders();
   const { user } = useAuth();
   const [stats, setStats] = useState({
     consultasHoje: 0,
