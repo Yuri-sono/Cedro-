@@ -100,6 +100,17 @@ function AppContent() {
     }
   }, []);
 
+  // Atalho de teclado (Ctrl + Shift + A) para acessar o login administrativo
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+        window.location.href = '/admin/login';
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
   return (
     <div className="App">
       {shouldShowNavbar && <Navbar />}

@@ -1,10 +1,12 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import PersonalizacaoMenu from './PersonalizacaoMenu.jsx';
 
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   
   const closeMenu = () => {
     const btnClose = document.querySelector('#offcanvasMenu .btn-close');
@@ -13,6 +15,16 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
+    closeMenu();
+  };
+
+  const handleInicio = (e) => {
+    e.preventDefault();
+    if (location.pathname === '/') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      navigate('/');
+    }
     closeMenu();
   };
   
@@ -26,7 +38,7 @@ const Navbar = () => {
           </Link>
           {/* Navegação inline — visível apenas em desktop (>= 992px) */}
           <ul className="navbar-nav flex-row gap-1 d-none d-lg-flex mx-auto mb-0">
-            <li className="nav-item"><Link className="nav-link text-white" to="/">Início</Link></li>
+            <li className="nav-item"><a className="nav-link text-white" href="/" onClick={handleInicio}>Início</a></li>
             <li className="nav-item"><a className="nav-link text-white" href="/#sobre">Sobre Nós</a></li>
             <li className="nav-item"><a className="nav-link text-white" href="/#servicos">Serviços</a></li>
             <li className="nav-item"><Link className="nav-link text-white" to="/psicologos">Psicólogos</Link></li>
@@ -74,7 +86,7 @@ const Navbar = () => {
               </div>
             )}
             <button
-              className="navbar-toggler custom-toggler border-0 shadow-none d-lg-none"
+              className="navbar-toggler custom-toggler border-0 shadow-none"
               type="button"
               data-bs-toggle="offcanvas"
               data-bs-target="#offcanvasMenu"
@@ -108,11 +120,13 @@ const Navbar = () => {
           )}
 
           <ul className="list-unstyled">
-            <li className="mb-2"><Link className="d-block p-2" to="/" onClick={closeMenu}>Início</Link></li>
-            <li className="mb-2"><a className="d-block p-2" href="/#sobre" onClick={closeMenu}>Sobre Nós</a></li>
-            <li className="mb-2"><a className="d-block p-2" href="/#servicos" onClick={closeMenu}>Serviços</a></li>
-            <li className="mb-2"><Link className="d-block p-2" to="/psicologos" onClick={closeMenu}>Psicólogos</Link></li>
-            <li className="mb-2"><a className="d-block p-2" href="/#contato" onClick={closeMenu}>Contato</a></li>
+            <div className="d-lg-none">
+              <li className="mb-2"><a className="d-block p-2" href="/" onClick={handleInicio}>Início</a></li>
+              <li className="mb-2"><a className="d-block p-2" href="/#sobre" onClick={closeMenu}>Sobre Nós</a></li>
+              <li className="mb-2"><a className="d-block p-2" href="/#servicos" onClick={closeMenu}>Serviços</a></li>
+              <li className="mb-2"><Link className="d-block p-2" to="/psicologos" onClick={closeMenu}>Psicólogos</Link></li>
+              <li className="mb-2"><a className="d-block p-2" href="/#contato" onClick={closeMenu}>Contato</a></li>
+            </div>
             <li className="mb-2"><Link className="d-block p-2" to="/saude-mental" onClick={closeMenu}>
               <i className="bi bi-heart-pulse me-2 text-danger"></i>Saúde Mental
             </Link></li>
@@ -162,9 +176,6 @@ const Navbar = () => {
               <li className="mb-2"><a className="d-block p-2" href="/#ajuda" onClick={closeMenu}>
                 <i className="bi bi-question-circle me-2"></i>Preciso de Ajuda
               </a></li>
-              <li className="mb-2"><Link className="d-block p-2" to="/admin/login" onClick={closeMenu}>
-                <i className="bi bi-shield-lock me-2"></i>Área Administrativa
-              </Link></li>
             </ul>
           )}
         </div>
