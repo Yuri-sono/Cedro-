@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Linking, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -10,24 +10,24 @@ import { usePsicologos } from '../../hooks/usePsicologos';
 import { useSessoes } from '../../hooks/useSessoes';
 import { colors, typography, spacing, borderRadius } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
-import { Avatar } from '../../components/Avatar';
 import { PsicologoCard } from '../../components/PsicologoCard';
 import { SessionCard } from '../../components/SessionCard';
 import { TipoUsuario } from '../../types/api.types';
 import { usePsychologistDashboard } from '../../hooks/usePsychologistDashboard';
 import { formatAgendaSummary } from '../../utils/psychologistAgenda';
+import { capitalizeName } from '../../utils/format';
 
 type HomeNavigationProp = NativeStackNavigationProp<HomeStackParamList, 'Home'>;
 
 const TELEGRAM_URL = 'https://t.me/cedroapoio';
 
-// Dourado fixo para a estrela de destaque (sem equivalente na paleta)
-const STAR_GOLD = '#FFC107';
+// Dourado do redesign (--accent) para a estrela de destaque
+const STAR_GOLD = '#C6952F';
 
 export const HomeScreen = () => {
   const navigation = useNavigation<HomeNavigationProp>();
   const user = useAuthStore((state) => state.user);
-  // Tema dinâmico apenas para a cor dos ícones (estilos das telas migram na próxima fase)
+  // Tema dinÃ¢mico apenas para a cor dos Ã­cones (estilos das telas migram na prÃ³xima fase)
   const { colors: themeColors } = useTheme();
   const isPsicologo = user?.tipoUsuario === TipoUsuario.psicologo;
 
@@ -37,7 +37,8 @@ export const HomeScreen = () => {
 
   const destaquePsicologos = psicologos.slice(0, 3);
   const proximaSessao = sessoes.find((s) => s.statusSessao.toLowerCase() === 'agendada');
-  const firstName = user?.nome?.split(' ')[0] || 'bem-vindo';
+  // Badge do sino: indica avisos pendentes (prÃ³xima sessÃ£o / pacientes confirmados)
+  const temNotificacao = isPsicologo ? proximasConsultas.length > 0 : !!proximaSessao;
   const openProfileTab = (screen: 'PsychologistSettings' | 'MySessions') => {
     const parentNavigation = navigation.getParent() as NavigationProp<MainTabParamList> | undefined;
     parentNavigation?.navigate('ProfileStack', { screen });
@@ -57,13 +58,14 @@ export const HomeScreen = () => {
               <Image source={require('../../../assets/splash-icon.png')} style={styles.brandLogo} resizeMode="contain" />
             </View>
             <View>
-              <Text style={styles.brandText}>CEDRO</Text>
-              <Text style={styles.brandSubText}>Apoio psicológico</Text>
+              <Text style={styles.brandText}>Cedro</Text>
+              <Text style={styles.brandSubText}>Apoio psicolÃ³gico</Text>
             </View>
           </View>
-          <View style={styles.avatarContainer}>
-            <Avatar url={user?.fotoUrl} size={48} />
-          </View>
+          <TouchableOpacity style={styles.bellButton} activeOpacity={0.8}>
+            <Ionicons name="notifications" size={17} color={colors.primary} />
+            {temNotificacao && <View style={styles.bellDot} />}
+          </TouchableOpacity>
         </View>
 
         <LinearGradient
@@ -77,7 +79,9 @@ export const HomeScreen = () => {
               <Ionicons name="leaf" size={14} color={themeColors.primary} />
               <Text style={styles.heroEyebrow}>Bem-estar hoje</Text>
             </View>
-            <Text style={styles.greeting} numberOfLines={2}>Olá, {firstName}</Text>
+            <Text style={styles.greeting} numberOfLines={2}>
+              OlÃ¡, {capitalizeName(user?.nome) || 'Bem-vindo'}
+            </Text>
             <Text style={styles.subtitle}>Respire com calma. Seu cuidado continua aqui.</Text>
           </View>
           <View style={styles.heroDecor} />
@@ -113,10 +117,10 @@ export const HomeScreen = () => {
 
               <LinearGradient colors={['#FFFFFF', '#FFFDF8']} style={styles.professionalSummary}>
                 <Text style={styles.professionalSummaryTitle}>
-                  {user?.especialidade || 'Especialidade ainda não configurada'}
+                  {user?.especialidade || 'Especialidade ainda nÃ£o configurada'}
                 </Text>
                 <Text style={styles.professionalSummaryText}>
-                  {user?.precoSessao != null ? `Consulta: R$ ${user.precoSessao.toFixed(2)}` : 'Valor da consulta não definido'}
+                  {user?.precoSessao != null ? `Consulta: R$ ${user.precoSessao.toFixed(2)}` : 'Valor da consulta nÃ£o definido'}
                 </Text>
                 <Text style={styles.professionalSummaryText}>
                   {formatAgendaSummary(user?.diasAtendimento, user?.horariosAtendimento)}
@@ -128,7 +132,7 @@ export const HomeScreen = () => {
               <View style={styles.sectionHeader}>
                 <View style={styles.sectionTitleRow}>
                   <Ionicons name="calendar" size={20} color={themeColors.primary} />
-                  <Text style={styles.sectionTitle}>Próximas consultas</Text>
+                  <Text style={styles.sectionTitle}>PrÃ³ximas consultas</Text>
                 </View>
                 <TouchableOpacity onPress={() => openProfileTab('MySessions')} activeOpacity={0.7}>
                   <Text style={styles.seeAllText}>Ver agenda</Text>
@@ -150,7 +154,7 @@ export const HomeScreen = () => {
                   <Text style={styles.nextPatientsTitle}>Pacientes confirmados</Text>
                   {proximasConsultas.slice(0, 3).map((consulta) => (
                     <Text key={consulta.id} style={styles.nextPatientsText}>
-                      {new Date(consulta.data).toLocaleDateString('pt-BR')} {consulta.horario} • {consulta.pacienteNome}
+                      {new Date(consulta.data).toLocaleDateString('pt-BR')} {consulta.horario} â€¢ {consulta.pacienteNome}
                     </Text>
                   ))}
                 </LinearGradient>
@@ -164,39 +168,41 @@ export const HomeScreen = () => {
               onPress={() => Linking.openURL(TELEGRAM_URL)}
               activeOpacity={0.9}
             >
-              <LinearGradient
-                colors={['#173B2F', '#24745B']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.telegramCard}
-              >
+              <View style={styles.telegramCard}>
                 <View style={styles.telegramIcon}>
-                  <Ionicons name="paper-plane" size={24} color={colors.white} />
+                  <Ionicons name="people" size={20} color={colors.white} />
                 </View>
                 <View style={styles.telegramTextBlock}>
-                  <Text style={styles.telegramTitle}>Grupo da instituição</Text>
+                  <Text style={styles.telegramTitle}>Grupo da instituiÃ§Ã£o</Text>
                   <Text style={styles.telegramText}>
-                    Conteúdos importantes, eventos e avisos para a comunidade Cedro.
+                    ConteÃºdos, eventos e avisos para a comunidade Cedro.
                   </Text>
                 </View>
-                <Ionicons name="chevron-forward" size={typography.size['2xl']} color={colors.white} />
-              </LinearGradient>
+                <Ionicons name="chevron-forward" size={16} color={colors.white} />
+              </View>
             </TouchableOpacity>
 
             <View style={styles.section}>
               <View style={styles.sectionTitleRow}>
                 <Ionicons name="calendar" size={20} color={themeColors.primary} />
-                <Text style={styles.sectionTitle}>Sua próxima sessão</Text>
+                <Text style={styles.sectionTitle}>Sua prÃ³xima sessÃ£o</Text>
               </View>
               {loadingSessoes ? (
                 <ActivityIndicator color={colors.primary} />
               ) : proximaSessao ? (
                 <SessionCard sessao={proximaSessao} />
               ) : (
-                <LinearGradient colors={['#FFFFFF', '#FFFDF8']} style={styles.emptyCard}>
-                  <Text style={styles.emptyText}>Você não tem consultas agendadas.</Text>
-                  <TouchableOpacity onPress={() => navigation.navigate('PsicologoList')} activeOpacity={0.7}>
-                    <Text style={styles.linkText}>Encontrar um psicólogo</Text>
+                <LinearGradient colors={['#FFFFFF', '#FFFFFF']} style={styles.emptyCard}>
+                  <View style={styles.emptyIconCircle}>
+                    <Ionicons name="calendar" size={20} color={colors.primary} />
+                  </View>
+                  <Text style={styles.emptyText}>VocÃª nÃ£o tem consultas agendadas.</Text>
+                  <TouchableOpacity
+                    style={styles.emptyActionButton}
+                    onPress={() => navigation.navigate('PsicologoList')}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.emptyActionButtonText}>Encontrar um psicÃ³logo</Text>
                   </TouchableOpacity>
                 </LinearGradient>
               )}
@@ -206,7 +212,7 @@ export const HomeScreen = () => {
               <View style={styles.sectionHeader}>
                 <View style={styles.sectionTitleRow}>
                   <Ionicons name="star" size={20} color={STAR_GOLD} />
-                  <Text style={styles.sectionTitle}>Psicólogos em destaque</Text>
+                  <Text style={styles.sectionTitle}>PsicÃ³logos em destaque</Text>
                 </View>
                 <TouchableOpacity onPress={() => navigation.navigate('PsicologoList')} activeOpacity={0.7}>
                   <Text style={styles.seeAllText}>Ver todos</Text>
@@ -258,27 +264,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   logoCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: colors.white,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.primaryTint,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.forest,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 3,
   },
   brandLogo: {
-    width: 40,
-    height: 40,
+    width: 32,
+    height: 32,
   },
   brandText: {
     fontSize: typography.size.base,
-    color: colors.forest,
+    color: colors.primary,
     fontWeight: typography.weight.bold,
-    letterSpacing: 1.2,
+    letterSpacing: 0.2,
   },
   brandSubText: {
     fontSize: typography.size.xs,
@@ -286,25 +287,38 @@ const styles = StyleSheet.create({
     marginTop: 2,
     fontWeight: typography.weight.medium,
   },
-  avatarContainer: {
-    shadowColor: colors.forest,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 3,
-    borderRadius: 24,
+  bellButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bellDot: {
+    position: 'absolute',
+    top: 7,
+    right: 7,
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: colors.accent,
+    borderWidth: 1.5,
+    borderColor: colors.white,
   },
   heroCard: {
     borderRadius: borderRadius['2xl'],
     padding: spacing.xl,
     marginBottom: spacing.xl,
     borderWidth: 1,
-    borderColor: '#E7DCC6',
+    borderColor: colors.border,
     shadowColor: colors.forest,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.18,
-    shadowRadius: 24,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 2,
     overflow: 'hidden',
   },
   heroContent: {
@@ -354,17 +368,18 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius['2xl'],
     padding: spacing.lg,
     gap: spacing.base,
+    backgroundColor: colors.primary,
     shadowColor: colors.forest,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 3,
   },
   telegramIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    width: 42,
+    height: 42,
+    borderRadius: borderRadius.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -418,12 +433,33 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E7DCC6',
+    borderColor: colors.border,
     shadowColor: colors.forest,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 2,
+  },
+  emptyIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primaryTint,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.sm + 2,
+  },
+  emptyActionButton: {
+    backgroundColor: colors.primary,
+    borderRadius: borderRadius.full,
+    paddingVertical: 11,
+    paddingHorizontal: spacing.lg,
+    marginTop: spacing.xs,
+  },
+  emptyActionButtonText: {
+    color: colors.white,
+    fontWeight: typography.weight.semibold,
+    fontSize: typography.size.md - 0.5,
   },
   emptyText: {
     color: colors.textSecondary,
@@ -441,7 +477,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.xl,
     padding: spacing.base,
     borderWidth: 1,
-    borderColor: '#E7DCC6',
+    borderColor: 'colors.border',
     shadowColor: colors.forest,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
@@ -463,7 +499,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.xl,
     padding: spacing.base,
     borderWidth: 1,
-    borderColor: '#E7DCC6',
+    borderColor: 'colors.border',
     shadowColor: colors.forest,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
@@ -485,7 +521,7 @@ const styles = StyleSheet.create({
     padding: spacing.base,
     marginTop: spacing.base,
     borderWidth: 1,
-    borderColor: '#E7DCC6',
+    borderColor: 'colors.border',
     shadowColor: colors.forest,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,

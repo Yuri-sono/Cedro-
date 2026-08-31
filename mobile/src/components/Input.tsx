@@ -49,24 +49,21 @@ export const Input = forwardRef<TextInput, InputProps>(
 
     const borderColor = focusAnim.interpolate({
       inputRange: [0, 1],
-      outputRange: [colors.border, colors.forest],
+      outputRange: [colors.border, colors.primary],
     });
 
     const backgroundColor = focusAnim.interpolate({
       inputRange: [0, 1],
-      outputRange: [colors.surfaceWarm, colors.surface],
+      outputRange: [colors.surface, colors.surface],
     });
 
     // Estilos dependentes de cor (recomputados por render para acompanhar o tema)
     const colorStyles = StyleSheet.create({
-      inputContainer: {
-        shadowColor: colors.forest,
-      },
       input: {
         color: colors.textPrimary,
       },
       label: {
-        color: colors.textPrimary,
+        color: colors.textSecondary,
       },
       errorText: {
         color: colors.error,
@@ -80,7 +77,6 @@ export const Input = forwardRef<TextInput, InputProps>(
         <Animated.View
           style={[
             styles.inputContainer,
-            colorStyles.inputContainer,
             {
               borderColor: error ? colors.error : borderColor,
               backgroundColor,
@@ -90,7 +86,7 @@ export const Input = forwardRef<TextInput, InputProps>(
           <TextInput
             ref={ref}
             style={[styles.input, colorStyles.input, style]}
-            placeholderTextColor={colors.textSecondary}
+            placeholderTextColor={colors.textFaint}
             secureTextEntry={isPassword && !isPasswordVisible}
             onFocus={handleFocus}
             onBlur={handleBlur}
@@ -126,7 +122,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: typography.size.sm,
-    fontWeight: typography.weight.semibold,
+    fontWeight: typography.weight.bold,
     marginBottom: spacing.sm,
     marginLeft: spacing.xs,
     letterSpacing: 0.2,
@@ -134,20 +130,16 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 2,
-    borderRadius: borderRadius.xl,
-    minHeight: 56,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    borderWidth: 1.5,
+    borderRadius: borderRadius.sm,
+    minHeight: 52,
   },
   input: {
     flex: 1,
     paddingHorizontal: spacing.base,
-    fontSize: typography.size.base,
-    minHeight: 56,
-    fontWeight: typography.weight.medium,
+    fontSize: typography.size.md,
+    minHeight: 52,
+    fontWeight: typography.weight.semibold,
   },
   eyeIcon: {
     padding: spacing.md,

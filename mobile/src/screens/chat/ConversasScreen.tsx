@@ -7,10 +7,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp as ReactNavProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { ChatStackParamList } from '../../types/navigation.types';
+import { ChatStackParamList, MainTabParamList } from '../../types/navigation.types';
 import { useConversas } from '../../hooks/useConversas';
 import { ConversaResumo } from '../../types/api.types';
 import { Avatar } from '../../components/Avatar';
@@ -37,7 +37,13 @@ const formatarHorario = (iso?: string) => {
 
 export const ConversasScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  // Navegação para a tab de Home (usada na sugestão do estado vazio)
+  const parentNavigation = navigation.getParent() as ReactNavProp<MainTabParamList> | undefined;
   const { conversas, isLoading, isFetching, refetch } = useConversas();
+
+  const abrirPsicologos = () => {
+    parentNavigation?.navigate('HomeStack', { screen: 'PsicologoList' });
+  };
 
   const renderItem = ({ item }: { item: ConversaResumo }) => {
     return (
@@ -84,7 +90,10 @@ export const ConversasScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.brandText}>CEDRO APOIO PSICOLOGICO E SAUDE</Text>
+      <View style={styles.header}>
+        <Text style={styles.brandEyebrow}>CEDRO APOIO PSICOLÓGICO E SAÚDE</Text>
+        <Text style={styles.headerTitle}>Mensagens</Text>
+      </View>
       <FlatList
         data={conversas}
         keyExtractor={(item) => item.userId.toString()}
@@ -93,9 +102,17 @@ export const ConversasScreen = () => {
         onRefresh={refetch}
         refreshing={isFetching}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Ionicons name="chatbubbles-outline" size={34} color={colors.textSecondary} />
-            <Text style={styles.emptyText}>Voce ainda nao possui conversas.</Text>
+          <View style={styles.emptyCard}>
+            <View style={styles.emptyIcon}>
+              <Ionicons name="search" size={20} color={colors.textFaint} />
+            </View>
+            <Text style={styles.emptyText}>
+              Suas conversas com outros psicólogos vão aparecer aqui.{'\n'}
+              Que tal encontrar mais um especialista?
+            </Text>
+            <TouchableOpacity style={styles.emptyButton} onPress={abrirPsicologos} activeOpacity={0.8}>
+              <Text style={styles.emptyButtonText}>Encontrar um psicólogo</Text>
+            </TouchableOpacity>
           </View>
         }
       />
@@ -106,33 +123,50 @@ export const ConversasScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.cream,
   },
-  brandText: {
-    fontSize: typography.size.xs,
-    color: colors.primaryDark,
-    fontWeight: typography.weight.bold,
-    letterSpacing: 0.4,
+  header: {
     paddingHorizontal: spacing.base,
     paddingTop: spacing.base,
-    paddingBottom: spacing.sm,
+    paddingBottom: spacing.md,
+  },
+  brandEyebrow: {
+    fontSize: typography.size.xs,
+    color: colors.accent,
+    fontWeight: typography.weight.bold,
+    letterSpacing: 1.2,
+    marginBottom: spacing.xs,
+  },
+  headerTitle: {
+    fontSize: typography.size['2xl'],
+    color: colors.primary,
+    fontWeight: typography.weight.bold,
   },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background,
+    backgroundColor: colors.cream,
   },
   listContent: {
     flexGrow: 1,
+    paddingBottom: spacing.lg,
   },
   conversaCard: {
     flexDirection: 'row',
     padding: spacing.base,
     backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderRadius: borderRadius.md,
+    marginHorizontal: spacing.base,
+    marginBottom: spacing.sm,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: colors.forest,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 1,
   },
   conversaInfo: {
     flex: 1,
@@ -184,16 +218,46 @@ const styles = StyleSheet.create({
     fontSize: typography.size.xs,
     fontWeight: typography.weight.bold,
   },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
+  emptyCard: {
+    marginHorizontal: spacing.base,
+    marginTop: spacing.xl,
+    paddingVertical: spacing['2xl'],
+    paddingHorizontal: spacing.lg,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderStyle: 'dashed',
+    borderRadius: borderRadius['2xl'],
     alignItems: 'center',
-    padding: spacing['2xl'],
-    marginTop: 100,
-    gap: spacing.sm,
+  },
+  emptyIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.sm + 2,
   },
   emptyText: {
     color: colors.textSecondary,
-    fontSize: typography.size.base,
+    fontSize: typography.size.md,
+    textAlign: 'center',
+    lineHeight: typography.size.md * 1.5,
+    marginBottom: spacing.md + 2,
+  },
+  emptyButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    borderRadius: borderRadius.full,
+    paddingVertical: 11,
+    paddingHorizontal: spacing.lg,
+  },
+  emptyButtonText: {
+    color: colors.primary,
+    fontWeight: typography.weight.semibold,
+    fontSize: typography.size.md - 0.5,
   },
 });

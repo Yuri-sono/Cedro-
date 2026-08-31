@@ -11,7 +11,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
-import { colors, typography, spacing } from '../../theme';
+import { colors, typography, spacing, borderRadius } from '../../theme';
 import { usePerfil } from '../../hooks/usePerfil';
 import { showToast } from '../../components/Toast';
 
@@ -33,6 +33,26 @@ export const ChangePasswordScreen = () => {
     senhaValidacao.minLength &&
     senhaValidacao.hasNumber &&
     senhaValidacao.hasSpecial;
+
+  // O botão só habilita com validação real: todos os campos preenchidos +
+  // senha válida + confirmação igual à nova senha.
+  const isFormValid =
+    !!senhaAtual &&
+    !!novaSenha &&
+    !!confirmarSenha &&
+    senhaValida &&
+    novaSenha === confirmarSenha;
+
+  // Indicador simples de força (4 segmentos): comprimento + variedade
+  const forcaSenha = [
+    novaSenha.length >= 6,
+    novaSenha.length >= 10,
+    /\d/.test(novaSenha),
+    /[!@#$%^&*(),.?":{}|<>]/.test(novaSenha),
+  ].filter(Boolean).length;
+
+  const corForca =
+    forcaSenha <= 1 ? colors.error : forcaSenha === 2 ? colors.warning : colors.success;
 
   const handleChangePassword = async () => {
     if (!senhaAtual || !novaSenha || !confirmarSenha) return;
@@ -87,6 +107,23 @@ export const ChangePasswordScreen = () => {
             value={novaSenha}
             onChangeText={setNovaSenha}
           />
+
+          {novaSenha ? (
+            <View style={styles.strengthRow}>
+              {[0, 1, 2, 3].map((i) => (
+                <View
+                  key={i}
+                  style={[
+                    styles.strengthSeg,
+                    i < forcaSenha && { backgroundColor: corForca },
+                  ]}
+                />
+              ))}
+              <Text style={[styles.strengthLabel, { color: corForca }]}>
+                {forcaSenha <= 1 ? 'Fraca' : forcaSenha === 2 ? 'Média' : forcaSenha === 3 ? 'Forte' : 'Muito forte'}
+              </Text>
+            </View>
+          ) : null}
 
           {novaSenha ? (
             <View style={styles.passwordRules}>
@@ -161,15 +198,15 @@ export const ChangePasswordScreen = () => {
             title="Alterar Senha"
             onPress={handleChangePassword}
             isLoading={isAlterandoSenha}
-            disabled={
-              !senhaAtual ||
-              !novaSenha ||
-              !confirmarSenha ||
-              !senhaValida ||
-              novaSenha !== confirmarSenha
-            }
+            disabled={!isFormValid}
             style={styles.changeButton}
           />
+
+          {!isFormValid && (senhaAtual || novaSenha || confirmarSenha) ? (
+            <Text style={styles.disabledHint}>
+              Preencha todos os campos corretamente para habilitar o botão.
+            </Text>
+          ) : null}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -226,5 +263,29 @@ const styles = StyleSheet.create({
   },
   changeButton: {
     marginTop: spacing.md,
+  },
+  strengthRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: -spacing.sm,
+    marginBottom: spacing.base,
+  },
+  strengthSeg: {
+    flex: 1,
+    height: 4,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.backgroundSecondary,
+  },
+  strengthLabel: {
+    fontSize: typography.size.xs,
+    fontWeight: typography.weight.bold,
+    marginLeft: spacing.xs,
+  },
+  disabledHint: {
+    fontSize: typography.size.sm,
+    color: colors.textFaint,
+    textAlign: 'center',
+    marginTop: spacing.sm,
   },
 });

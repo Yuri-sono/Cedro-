@@ -3,8 +3,8 @@ import { ConversaResumo, Mensagem, TipoUsuario, UsuarioResponse } from '../types
 
 const DEMO_CHAT_PREFIX = 'cedro_demo_chat';
 const DEMO_COUNTERPARTS = {
-  psicologo: { userId: -101, nome: 'Funcionario Cedro', fotoUrl: null as string | null },
-  paciente: { userId: -102, nome: 'Psicologo Demo', fotoUrl: null as string | null },
+  psicologo: { userId: -101, nome: 'Funcionário Cedro', fotoUrl: null as string | null },
+  paciente: { userId: -102, nome: 'Psicólogo Demo', fotoUrl: null as string | null },
 };
 
 function getStorageKey(currentUserId: number, otherUserId: number) {
@@ -65,7 +65,7 @@ export const demoCommunicationService = {
       userId: counterpart.userId,
       nome: counterpart.nome,
       fotoUrl: counterpart.fotoUrl,
-      ultimaMensagem: 'Conversa de demonstracao pronta para a apresentacao.',
+      ultimaMensagem: 'Conversa de demonstração pronta para a apresentação.',
       dataUltimaMensagem: new Date().toISOString(),
       naoLidas: 0,
     };
@@ -81,9 +81,9 @@ export const demoCommunicationService = {
 
     const counterpart = getCounterpartFor(currentUser);
     const seeded = [
-      createMessage(1, counterpart.userId, currentUser.id, 'Oi! Podemos testar o chat para a apresentacao?'),
+      createMessage(1, counterpart.userId, currentUser.id, 'Oi! Podemos testar o chat para a apresentação?'),
       createMessage(2, currentUser.id, counterpart.userId, 'Sim, estou vendo tudo pelo mobile web neste momento.'),
-      createMessage(3, counterpart.userId, currentUser.id, 'Perfeito. Depois testa tambem a reuniao via Google Meet.'),
+      createMessage(3, counterpart.userId, currentUser.id, 'Perfeito. Depois testa também a reunião via Google Meet.'),
     ];
 
     await writeMessages(currentUser.id, otherUserId, seeded);

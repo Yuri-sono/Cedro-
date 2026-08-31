@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useAuthStore } from '../../store/authStore';
 import { useAuth } from '../../hooks/useAuth';
 import { colors, typography, spacing, borderRadius } from '../../theme';
@@ -10,6 +11,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ProfileStackParamList } from '../../types/navigation.types';
 import { TipoUsuario } from '../../types/api.types';
 import { formatAgendaSummary } from '../../utils/psychologistAgenda';
+import { capitalizeName } from '../../utils/format';
 
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'Profile'>;
 
@@ -40,7 +42,7 @@ export const ProfileScreen = () => {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Avatar url={user.fotoUrl} size={100} style={styles.avatar} />
-        <Text style={styles.nome} numberOfLines={2}>{user.nome}</Text>
+        <Text style={styles.nome} numberOfLines={2}>{capitalizeName(user.nome)}</Text>
         <Text style={styles.email} numberOfLines={2}>{user.email}</Text>
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{user.tipoUsuario.toUpperCase()}</Text>
@@ -49,27 +51,47 @@ export const ProfileScreen = () => {
 
       <View style={styles.menu}>
         <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('EditProfile')}>
+          <View style={styles.menuItemIcon}>
+            <Ionicons name="person" size={18} color={colors.primary} />
+          </View>
           <Text style={styles.menuItemText}>Editar Perfil</Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
         </TouchableOpacity>
 
         {isPsicologo && (
           <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PsychologistSettings')}>
+            <View style={styles.menuItemIcon}>
+              <Ionicons name="settings" size={18} color={colors.primary} />
+            </View>
             <Text style={styles.menuItemText}>Configurar Atendimento</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
           </TouchableOpacity>
         )}
         
         <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('MySessions')}>
+          <View style={styles.menuItemIcon}>
+            <Ionicons name="calendar" size={18} color={colors.primary} />
+          </View>
           <Text style={styles.menuItemText}>Minhas Sessões</Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
         </TouchableOpacity>
         
         {user.tipoUsuario === 'paciente' && (
           <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Subscription')}>
+            <View style={styles.menuItemIcon}>
+              <Ionicons name="star" size={18} color={colors.accent} />
+            </View>
             <Text style={styles.menuItemText}>Assinatura Premium</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
           </TouchableOpacity>
         )}
 
         <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('ChangePassword')}>
+          <View style={styles.menuItemIcon}>
+            <Ionicons name="lock-closed" size={18} color={colors.primary} />
+          </View>
           <Text style={styles.menuItemText}>Alterar Senha</Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
         </TouchableOpacity>
       </View>
 
@@ -77,10 +99,10 @@ export const ProfileScreen = () => {
         <View style={styles.professionalCard}>
           <Text style={styles.professionalTitle}>Atendimento</Text>
           <Text style={styles.professionalText}>
-            {user.especialidade || 'Especialidade ainda nao informada'}
+            {user.especialidade || 'Especialidade ainda não informada'}
           </Text>
           <Text style={styles.professionalText}>
-            {user.precoSessao != null ? `Consulta: R$ ${user.precoSessao.toFixed(2)}` : 'Valor da consulta nao definido'}
+            {user.precoSessao != null ? `Consulta: R$ ${user.precoSessao.toFixed(2)}` : 'Valor da consulta não definido'}
           </Text>
           <Text style={styles.professionalText}>
             {formatAgendaSummary(user.diasAtendimento, user.horariosAtendimento)}
@@ -94,6 +116,7 @@ export const ProfileScreen = () => {
           variant="outline"
           onPress={confirmLogout}
           style={styles.logoutButton}
+          textStyle={styles.logoutButtonText}
         />
       </View>
     </ScrollView>
@@ -149,16 +172,29 @@ const styles = StyleSheet.create({
     marginTop: spacing.xl,
   },
   menuItem: {
-    backgroundColor: colors.surfaceWarm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    backgroundColor: colors.surface,
     padding: spacing.base,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E7DCC6',
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: borderRadius.md,
     marginHorizontal: spacing.base,
     marginBottom: spacing.sm,
   },
+  menuItemIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: borderRadius.sm,
+    backgroundColor: colors.primaryTint,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   menuItemText: {
-    fontSize: typography.size.base,
+    flex: 1,
+    fontSize: typography.size.md,
+    fontWeight: typography.weight.semibold,
     color: colors.textPrimary,
   },
   footer: {
@@ -185,6 +221,11 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   logoutButton: {
-    borderColor: colors.error,
+    borderColor: colors.border,
+    minHeight: 50,
+  },
+  logoutButtonText: {
+    color: colors.textPrimary,
+    fontWeight: typography.weight.semibold,
   },
 });

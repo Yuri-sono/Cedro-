@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -8,7 +8,14 @@ import { colors, spacing, typography, borderRadius } from '../../theme';
 
 export const PaywallScreen = () => {
   const navigation = useNavigation();
-  const { pacotes, isLoading, assinar, isPremium, limiteInfo } = useSubscription();
+  const { isPremium, limiteInfo, planos, isLoading, isLoadingOfertas, assinar } = useSubscription();
+
+  // Semântica real do backend: chamadasRealizadas = sessões agendadas no mês corrente
+  // (limiteMensal = 4 para gratuitos). A fração ambígua "0/4" foi substituída por
+  // barra de progresso + frase explícita.
+  const total = limiteInfo.limiteMensal;
+  const usadas = total > 0 ? Math.min(limiteInfo.chamadasRealizadas, total) : limiteInfo.chamadasRealizadas;
+  const percentual = total > 0 ? Math.min(100, (usadas / total) * 100) : 0;
 
   if (isPremium) {
     return (
@@ -30,14 +37,19 @@ export const PaywallScreen = () => {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Desbloqueie o Cedro Premium</Text>
-      
-      <View style={styles.limitCard}>
-        <Text style={styles.limitText}>
-          Sua cota mensal de reuniões gratuitas via Google Meet atingiu o limite:
-        </Text>
-        <Text style={styles.limitNumbers}>
-          {limiteInfo.chamadasRealizadas} / {limiteInfo.limiteMensal}
-        </Text>
+
+      {/* Cota mensal — card dourado com barra de progresso */}
+      <View style={styles.quotaCard}>
+        <View style={styles.quotaTop}>
+          <Text style={styles.quotaLabel}>Reuniões gratuitas este mês</Text>
+          <Text style={styles.quotaCount}>
+            {total > 0 ? `${usadas} de ${total} usadas` : `${usadas} usadas`}
+          </Text>
+        </View>
+        <View style={styles.quotaBar}>
+          <View style={[styles.quotaFill, { width: `${percentual}%` }]} />
+        </View>
+        <Text style={styles.quotaNote}>Sua cota renova todo mês · assine para reuniões ilimitadas</Text>
       </View>
 
       <Text style={styles.benefitsTitle}>Vantagens do Premium:</Text>
@@ -55,24 +67,40 @@ export const PaywallScreen = () => {
       </View>
 
       <View style={styles.packagesContainer}>
-        {pacotes.length === 0 ? (
+        {isLoadingOfertas ? (
           <View style={styles.loadingPackages}>
             <ActivityIndicator color={colors.primary} />
             <Text style={styles.loadingText}>Carregando ofertas...</Text>
           </View>
         ) : (
-          pacotes.map((pacote) => (
-            <View key={pacote.identifier} style={styles.packageCard}>
-              <View>
-                <Text style={styles.packageTitle}>{pacote.product.title}</Text>
-                <Text style={styles.packagePrice}>{pacote.product.priceString}</Text>
+          planos.map((plano) => (
+            <View key={plano.id} style={[styles.planCard, plano.featured && styles.planCardFeatured]}>
+              {plano.featured && (
+                <View style={styles.planTag}>
+                  <Text style={styles.planTagText}>Mais popular</Text>
+                </View>
+              )}
+              <View style={styles.planInfo}>
+                <Text style={styles.planName}>{plano.nome}</Text>
+                <Text style={styles.planPrice}>
+                  {plano.preco}
+                  {plano.detalhe ? ` · ${plano.detalhe}` : ''}
+                </Text>
               </View>
-              <Button
-                title="Assinar"
-                onPress={() => assinar(pacote)}
-                isLoading={isLoading}
-                style={styles.subscribeButton}
-              />
+              <TouchableOpacity
+                style={[styles.btnAssinar, !plano.featured && styles.btnAssinarOutline]}
+                onPress={() => assinar(plano)}
+                disabled={isLoading}
+                activeOpacity={0.8}
+              >
+                {isLoading ? (
+                  <ActivityIndicator size="small" color={plano.featured ? colors.white : colors.primary} />
+                ) : (
+                  <Text style={[styles.btnAssinarText, !plano.featured && styles.btnAssinarTextOutline]}>
+                    Assinar
+                  </Text>
+                )}
+              </TouchableOpacity>
             </View>
           ))
         )}
@@ -125,26 +153,48 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     textAlign: 'center',
   },
-  limitCard: {
-    backgroundColor: colors.error + '20', // 20% opacity
-    padding: spacing.base,
-    borderRadius: borderRadius.md,
-    marginBottom: spacing.xl,
+  quotaCard: {
+    backgroundColor: '#FBF1DC', // accent-tint do redesign
     borderWidth: 1,
-    borderColor: colors.error,
+    borderColor: '#EAD8A6',
+    borderRadius: borderRadius['2xl'],
+    padding: spacing.base,
+    marginBottom: spacing.xl,
   },
-  limitText: {
-    color: colors.error,
+  quotaTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.sm + 2,
+  },
+  quotaLabel: {
+    color: '#8A6A1F',
+    fontSize: typography.size.sm + 1,
+    fontWeight: typography.weight.bold,
+    flex: 1,
+    marginRight: spacing.sm,
+  },
+  quotaCount: {
+    color: '#8A6A1F',
     fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
-    textAlign: 'center',
+    opacity: 0.85,
+  },
+  quotaBar: {
+    height: 8,
+    borderRadius: borderRadius.full,
+    backgroundColor: '#EFE0BB',
+    overflow: 'hidden',
     marginBottom: spacing.sm,
   },
-  limitNumbers: {
-    color: colors.error,
-    fontSize: typography.size.xl,
-    fontWeight: typography.weight.bold,
-    textAlign: 'center',
+  quotaFill: {
+    height: '100%',
+    backgroundColor: colors.accent,
+    borderRadius: borderRadius.full,
+  },
+  quotaNote: {
+    color: '#8A6A1F',
+    fontSize: typography.size.sm - 0.5,
+    opacity: 0.8,
   },
   benefitsTitle: {
     fontSize: typography.size.lg,
@@ -173,29 +223,70 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     color: colors.textSecondary,
   },
-  packageCard: {
+  planCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: colors.surface,
     padding: spacing.base,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
+    borderRadius: borderRadius['2xl'],
+    borderWidth: 1.5,
     borderColor: colors.border,
+    marginBottom: spacing.md,
   },
-  packageTitle: {
-    fontSize: typography.size.base,
+  planCardFeatured: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryTint,
+  },
+  planTag: {
+    position: 'absolute',
+    top: -10,
+    left: spacing.base,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: borderRadius.full,
+  },
+  planTagText: {
+    color: colors.white,
+    fontSize: typography.size.xs,
+    fontWeight: typography.weight.bold,
+  },
+  planInfo: {
+    flex: 1,
+    marginRight: spacing.md,
+  },
+  planName: {
+    fontSize: typography.size.md,
     fontWeight: typography.weight.bold,
     color: colors.textPrimary,
   },
-  packagePrice: {
-    fontSize: typography.size.lg,
-    color: colors.primary,
-    fontWeight: typography.weight.bold,
-    marginTop: 4,
+  planPrice: {
+    fontSize: typography.size.sm + 0.5,
+    color: colors.textSecondary,
+    marginTop: 2,
   },
-  subscribeButton: {
-    width: 100,
+  btnAssinar: {
+    backgroundColor: colors.primary,
+    paddingVertical: 11,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 40,
+  },
+  btnAssinarOutline: {
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+  },
+  btnAssinarText: {
+    color: colors.white,
+    fontWeight: typography.weight.semibold,
+    fontSize: typography.size.md - 0.5,
+  },
+  btnAssinarTextOutline: {
+    color: colors.primary,
   },
   cancelButton: {
     marginTop: spacing.xl,

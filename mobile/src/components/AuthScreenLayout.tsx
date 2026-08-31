@@ -76,7 +76,7 @@ export const AuthScreenLayout = ({
             <Image source={require('../../assets/splash-icon.png')} style={styles.logo} resizeMode="contain" />
             <View style={styles.brandTextBlock}>
               <Text style={[styles.brandPillText, colorStyles.brandPillText]}>CEDRO</Text>
-              <Text style={[styles.brandTitle, colorStyles.brandTitle]}>CEDRO APOIO PSICOLOGICO E SAUDE</Text>
+              <Text style={[styles.brandTitle, colorStyles.brandTitle]}>CEDRO APOIO PSICOLÓGICO E SAÚDE</Text>
             </View>
           </View>
 

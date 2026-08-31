@@ -14,78 +14,93 @@ export type Gradient = readonly [string, string];
 
 export const lightColors = {
   // ── Verde Cedro (identidade visual) ──
-  primary: '#198754', // Alinhado ao site (cedro-colors.css)
-  primaryAccent: '#20c997', // Mesmo gradiente do site (135deg #198754 → #20c997)
-  primaryHover: '#20c997', // Alinhado ao site
-  primaryDark: '#146c43', // --cedro-dark do site
-  primaryLight: '#75b798', // --cedro-light do site
-  forest: '#146c43', // --cedro-dark do site
-  leaf: '#A6B96F', // Mantido do mobile atual (sem equivalente no site)
-  mint: '#E7F2EC', // Mantido do mobile atual (sem equivalente no site)
-  cream: '#F5F7F1', // Mantido do mobile atual (sem equivalente no site)
-  sand: '#E8E2D2', // Mantido do mobile atual (sem equivalente no site)
+  // Paleta migrada para o redesign (referência: cedro-redesign.html)
+  primary: '#1F4D3A', // --primary do redesign
+  primaryAccent: '#2F6B4F', // --primary-light do redesign
+  primaryHover: '#2F6B4F', // --primary-light do redesign
+  primaryDark: '#16382A', // VALOR DERIVADO: escurecimento do --primary
+  primaryLight: '#2F6B4F', // --primary-light do redesign
+  forest: '#16382A', // VALOR DERIVADO: mesma família do --primary
+  leaf: '#2F6B4F', // Alinhado ao --primary-light do redesign
+  mint: '#E7EFE9', // --primary-tint do redesign
+  cream: '#F5F2E9', // --bg do redesign
+  sand: '#EFEBDD', // --surface-2 do redesign
+
+  // ── Tons de apoio do redesign ──
+  primaryTint: '#E7EFE9', // --primary-tint
+  accent: '#C6952F', // --accent (dourado)
+  accentTint: '#FBF1DC', // --accent-tint
+  textFaint: '#A6A192', // --text-faint (placeholders)
+  danger: '#A6432B', // --danger
+  dangerTint: '#F5E7E2', // --danger-tint
 
   // ── Gradientes ──
-  gradientPrimary: ['#198754', '#20c997'] as Gradient, // Mesmo gradiente do site (135deg)
-  gradientHero: ['#F5F7F1', '#E7F2EC'] as Gradient, // Mantido do mobile atual
-  gradientCard: ['#FFFFFF', '#FFFDF8'] as Gradient, // Mantido do mobile atual
-  gradientDark: ['#146c43', '#198754'] as Gradient, // Derivado: versão profunda do verde de marca
+  gradientPrimary: ['#1F4D3A', '#2F6B4F'] as Gradient, // Mesma direção do redesign
+  gradientHero: ['#F5F2E9', '#F0EDE2'] as Gradient, // Fundo quente do redesign
+  gradientCard: ['#FFFFFF', '#FFFFFF'] as Gradient, // Superfícies planas no redesign
+  gradientDark: ['#16382A', '#1F4D3A'] as Gradient, // Derivado: versão profunda do verde de marca
 
   // ── Fundos ──
-  background: '#ffffff', // --bg-primary do site (theme.css)
-  backgroundSecondary: '#f8f9fa', // --bg-secondary do site
-  backgroundTertiary: '#E2EFE8', // Mantido do mobile atual (sem equivalente no site)
-  surface: '#ffffff', // --card-bg do site
-  surfaceWarm: '#FFFDF8', // Mantido do mobile atual (sem equivalente no site)
+  background: '#F5F2E9', // --bg do redesign
+  backgroundSecondary: '#EFEBDD', // --surface-2 do redesign
+  backgroundTertiary: '#E7EFE9', // --primary-tint do redesign
+  surface: '#FFFFFF', // --surface do redesign
+  surfaceWarm: '#FFFFFF', // Superfícies planas no redesign
 
   // ── Textos ──
-  textPrimary: '#212529', // --text-primary do site
-  textSecondary: '#6c757d', // --text-secondary do site
+  textPrimary: '#22261F', // --text do redesign
+  textSecondary: '#74705F', // --text-muted do redesign
   textInverse: '#ffffff',
 
   // ── Bordas & Sombras ──
-  border: '#dee2e6', // --border-color do site
-  shadow: 'rgba(0, 0, 0, 0.1)', // --shadow do site
+  border: '#E5E0D0', // --border do redesign
+  shadow: 'rgba(31, 77, 58, 0.07)', // --shadow do redesign
 
   // ── Status ──
-  success: '#198754', // Mantido do mobile atual
-  warning: '#B9852B', // Mantido do mobile atual
-  error: '#DC3545', // Mantido do mobile atual
-  info: '#0DCAF0', // Mantido do mobile atual
+  success: '#2F6B4F', // Derivado do --primary-light
+  warning: '#C6952F', // --accent do redesign
+  error: '#A6432B', // --danger do redesign
+  info: '#2F6B4F', // Derivado do --primary-light
 
   // ── Utilitários ──
   transparent: 'transparent',
-  overlay: 'rgba(0, 0, 0, 0.5)',
+  overlay: 'rgba(34, 38, 31, 0.5)',
   white: '#ffffff',
   black: '#000000',
 };
 
 export const darkColors: ThemeColors = {
   // ── Verde Cedro (identidade visual) ──
-  primary: '#198754', // Mantém a cor de marca, não escurece
-  primaryAccent: '#20c997',
-  primaryHover: '#20c997',
-  primaryDark: '#146c43',
-  primaryLight: '#75b798',
-  forest: '#20c997', // Mais claro no dark para garantir contraste
-  // VALOR DERIVADO: tom do leaf light (#A6B96F) clareado (~+25% luminosidade)
-  // para manter contraste sobre fundos escuros. Não existe no site.
-  leaf: '#C9DA8F',
-  // VALOR DERIVADO: equivalente translúcido do mint light (#E7F2EC),
-  // no padrão rgba(25, 135, 84, 0.15) sugerido para superfícies escuras.
-  mint: 'rgba(25, 135, 84, 0.15)',
+  primary: '#2F6B4F', // --primary-light: verde mais claro para contraste no dark
+  primaryAccent: '#3E8A68', // VALOR DERIVADO: clareamento do --primary-light
+  primaryHover: '#3E8A68',
+  primaryDark: '#2F6B4F',
+  primaryLight: '#5FA184', // VALOR DERIVADO: clareamento do --primary-light
+  forest: '#3E8A68', // VALOR DERIVADO: clareamento do --primary-light
+  // VALOR DERIVADO: clareamento do leaf light para contraste sobre fundos escuros.
+  leaf: '#7FAF95',
+  // VALOR DERIVADO: translúcido do primary-tint light para superfícies escuras.
+  mint: 'rgba(31, 77, 58, 0.35)',
   // VALOR DERIVADO: cream light mapeado para o backgroundSecondary do dark
   // (#111111), mantendo o papel de "fundo quente neutro".
   cream: '#111111',
   // VALOR DERIVADO: areia light (#E8E2D2) convertida em neutro quente escuro.
   sand: '#2A2A2A',
 
+  // ── Tons de apoio do redesign (derivados para o dark) ──
+  primaryTint: 'rgba(31, 77, 58, 0.35)', // VALOR DERIVADO
+  accent: '#D9AC55', // VALOR DERIVADO: clareamento do --accent
+  accentTint: 'rgba(198, 149, 47, 0.18)', // VALOR DERIVADO
+  textFaint: '#8A8578', // VALOR DERIVADO: clareamento do --text-faint
+  danger: '#C4614A', // VALOR DERIVADO: clareamento do --danger
+  dangerTint: 'rgba(166, 67, 43, 0.20)', // VALOR DERIVADO
+
   // ── Gradientes ──
-  gradientPrimary: ['#146c43', '#198754'], // Derivado: mesma direção, mais profunda no dark
+  gradientPrimary: ['#16382A', '#2F6B4F'], // Derivado: mesma direção, mais profunda no dark
   // VALOR DERIVADO: hero dark como variação sutil de cinzas neutros.
   gradientHero: ['#111111', '#161616'],
   gradientCard: ['#141414', '#111111'],
-  gradientDark: ['#0a0a0a', '#146c43'],
+  gradientDark: ['#0a0a0a', '#16382A'],
   // ── Fundos ──
   background: '#0a0a0a', // --bg-primary dark do site
   backgroundSecondary: '#111111', // --bg-secondary dark do site
@@ -104,11 +119,11 @@ export const darkColors: ThemeColors = {
   shadow: 'rgba(0, 0, 0, 0.8)', // --shadow dark do site
 
   // ── Status ──
-  success: '#198754', // Mantido (cor de marca, funciona no dark)
+  success: '#5FA184', // VALOR DERIVADO: verde claro para contraste no dark
   // VALOR DERIVADO: warning/error clareados levemente para contraste em fundo escuro.
   warning: '#E0A83E',
-  error: '#E4545F',
-  info: '#0DCAF0', // Mantido (já claro o suficiente)
+  error: '#D4725B', // VALOR DERIVADO: clareamento do --danger
+  info: '#5FA184', // VALOR DERIVADO: verde claro para contraste no dark
 
   // ── Utilitários ──
   transparent: 'transparent',

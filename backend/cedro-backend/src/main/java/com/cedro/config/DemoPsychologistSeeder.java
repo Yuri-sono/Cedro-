@@ -7,8 +7,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
-
 @Component
 public class DemoPsychologistSeeder implements CommandLineRunner {
 
@@ -22,33 +20,8 @@ public class DemoPsychologistSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        createPsychologistDemo();
         createPatientDemo();
         createAdminDemo();
-    }
-
-    private void createPsychologistDemo() {
-        String email = "psicologo.demo@cedro.app";
-
-        if (usuarioRepository.existsByEmailIgnoreCase(email)) {
-            return;
-        }
-
-        Usuario psicologo = new Usuario();
-        psicologo.setNome("Dra. Marina Almeida");
-        psicologo.setEmail(email);
-        psicologo.setSenhaHash(passwordEncoder.encode("Cedro@123"));
-        psicologo.setTipoUsuario(TipoUsuario.psicologo);
-        psicologo.setTelefone("(11) 99999-0000");
-        psicologo.setEspecialidade("Terapia Cognitivo-Comportamental");
-        psicologo.setTipoPsicologo("Terapia Cognitivo-Comportamental");
-        psicologo.setCrp("06/123456");
-        psicologo.setPrecoSessao(BigDecimal.valueOf(180));
-        psicologo.setBio("Psicologa de demonstracao para apresentacao do TCC. Atendimento acolhedor e objetivo.");
-        psicologo.setAtivo(true);
-
-        usuarioRepository.save(psicologo);
-        System.out.println("[Cedro] Usuario psicologo demo criado: " + email);
     }
 
     private void createPatientDemo() {

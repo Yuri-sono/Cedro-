@@ -17,7 +17,7 @@ import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { usePerfil } from '../../hooks/usePerfil';
 import { useAuthStore } from '../../store/authStore';
-import { colors, spacing, typography } from '../../theme';
+import { colors, spacing, typography, borderRadius } from '../../theme';
 import { TipoUsuario, UpdatePerfilRequest } from '../../types/api.types';
 import { ProfileStackParamList } from '../../types/navigation.types';
 
@@ -145,7 +145,7 @@ export const EditProfileScreen = () => {
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        Alert.alert('Permissao necessaria', 'Autorize o acesso as fotos para alterar sua imagem.');
+        Alert.alert('Permissão necessária', 'Autorize o acesso às fotos para alterar sua imagem.');
         return;
       }
 
@@ -161,7 +161,7 @@ export const EditProfileScreen = () => {
 
       const asset = result.assets[0];
       if (!asset?.uri) {
-        Alert.alert('Imagem invalida', 'Nao foi possivel processar essa imagem.');
+        Alert.alert('Imagem inválida', 'Não foi possível processar essa imagem.');
         return;
       }
 
@@ -175,7 +175,7 @@ export const EditProfileScreen = () => {
             : undefined;
 
       if (!dataUri) {
-        Alert.alert('Imagem invalida', 'Nao foi possivel processar essa imagem.');
+        Alert.alert('Imagem inválida', 'Não foi possível processar essa imagem.');
         return;
       }
 
@@ -193,7 +193,7 @@ export const EditProfileScreen = () => {
       setFotoUrl(response.fotoUrl || asset.uri);
     } catch {
       setFotoUrl(previousFotoUrl);
-      Alert.alert('Foto nao salva', 'Nao foi possivel enviar a imagem. Tente outra foto.');
+      Alert.alert('Foto não salva', 'Não foi possível enviar a imagem. Tente outra foto.');
     }
   };
 
@@ -268,14 +268,14 @@ export const EditProfileScreen = () => {
         />
 
         <Input
-          label="Genero"
+          label="Gênero"
           value={genero}
           onChangeText={setGenero}
           placeholder="Ex: Feminino, Masculino, Outro"
         />
 
         <Input
-          label="Endereco"
+          label="Endereço"
           value={endereco}
           onChangeText={setEndereco}
           placeholder="Cidade, Estado"
@@ -285,7 +285,7 @@ export const EditProfileScreen = () => {
           label="Biografia"
           value={bio}
           onChangeText={setBio}
-          placeholder="Fale um pouco sobre voce"
+          placeholder="Fale um pouco sobre você"
           multiline
           numberOfLines={4}
           style={styles.textArea}
@@ -293,7 +293,7 @@ export const EditProfileScreen = () => {
 
         {!isPsicologo && (
           <Input
-            label="Area de interesse"
+            label="Área de interesse"
             value={areaInteresse}
             onChangeText={setAreaInteresse}
             placeholder="Ex: TCC, ansiedade, infantil"
@@ -313,7 +313,7 @@ export const EditProfileScreen = () => {
         )}
 
         <Button
-          title="Salvar alteracoes"
+          title="Salvar alterações"
           onPress={handleSave}
           isLoading={isAtualizando}
           disabled={!nome.trim() || isAtualizandoFoto}
@@ -339,11 +339,11 @@ const styles = StyleSheet.create({
   avatarContainer: {
     alignItems: 'center',
     marginBottom: spacing['2xl'],
-    backgroundColor: colors.surfaceWarm,
-    borderRadius: 24,
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius['2xl'],
     padding: spacing.xl,
     borderWidth: 1,
-    borderColor: '#E7DCC6',
+    borderColor: colors.border,
   },
   changePhotoButton: {
     marginTop: spacing.sm,
@@ -369,11 +369,11 @@ const styles = StyleSheet.create({
     paddingTop: spacing.sm,
   },
   psychologistCta: {
-    backgroundColor: colors.surfaceWarm,
-    borderRadius: 20,
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius['2xl'],
     padding: spacing.base,
     borderWidth: 1,
-    borderColor: '#E7DCC6',
+    borderColor: colors.border,
     marginTop: spacing.sm,
   },
   psychologistCtaTitle: {
