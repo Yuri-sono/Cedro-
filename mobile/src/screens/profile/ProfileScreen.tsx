@@ -1,9 +1,9 @@
-import React from 'react';
+﻿import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useAuthStore } from '../../store/authStore';
 import { useAuth } from '../../hooks/useAuth';
-import { colors, typography, spacing, borderRadius } from '../../theme';
+import { colors, typography, spacing, borderRadius , useTheme, ThemeColors } from '../../theme';
 import { Avatar } from '../../components/Avatar';
 import { Button } from '../../components/Button';
 import { useNavigation } from '@react-navigation/native';
@@ -16,6 +16,8 @@ import { capitalizeName } from '../../utils/format';
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'Profile'>;
 
 export const ProfileScreen = () => {
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const user = useAuthStore((state) => state.user);
   const { logout } = useAuth();
   const navigation = useNavigation<NavigationProp>();
@@ -64,6 +66,46 @@ export const ProfileScreen = () => {
               <Ionicons name="settings" size={18} color={colors.primary} />
             </View>
             <Text style={styles.menuItemText}>Configurar Atendimento</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
+          </TouchableOpacity>
+        )}
+
+        {isPsicologo && (
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PacientesPsicologo')}>
+            <View style={styles.menuItemIcon}>
+              <Ionicons name="people" size={18} color={colors.primary} />
+            </View>
+            <Text style={styles.menuItemText}>Meus Pacientes</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
+          </TouchableOpacity>
+        )}
+
+        {isPsicologo && (
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('ConsultasPsicologo')}>
+            <View style={styles.menuItemIcon}>
+              <Ionicons name="clipboard" size={18} color={colors.primary} />
+            </View>
+            <Text style={styles.menuItemText}>Próximas Consultas</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
+          </TouchableOpacity>
+        )}
+
+        {isPsicologo && (
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('FinanceiroPsicologo')}>
+            <View style={styles.menuItemIcon}>
+              <Ionicons name="wallet" size={18} color={colors.primary} />
+            </View>
+            <Text style={styles.menuItemText}>Financeiro</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
+          </TouchableOpacity>
+        )}
+
+        {isPsicologo && (
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('EstatisticasPsicologo')}>
+            <View style={styles.menuItemIcon}>
+              <Ionicons name="stats-chart" size={18} color={colors.primary} />
+            </View>
+            <Text style={styles.menuItemText}>Estatísticas</Text>
             <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
           </TouchableOpacity>
         )}
@@ -123,7 +165,8 @@ export const ProfileScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.cream,

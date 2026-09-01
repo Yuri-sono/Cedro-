@@ -1,8 +1,10 @@
-import React from 'react';
+﻿import React from 'react';
 import { View, StyleSheet, Image } from 'react-native';
-import { colors } from '../theme';
+import { colors , useTheme, ThemeColors } from '../theme';
 
 export const SplashScreen = () => {
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   return (
     <View style={styles.container}>
       <Image
@@ -14,7 +16,8 @@ export const SplashScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',

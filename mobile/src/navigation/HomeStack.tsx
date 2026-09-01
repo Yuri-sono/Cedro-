@@ -5,7 +5,7 @@ import { HomeScreen } from '../screens/home/HomeScreen';
 import { PsicologoListScreen } from '../screens/home/PsicologoListScreen';
 import { PsicologoDetailScreen } from '../screens/home/PsicologoDetailScreen';
 import { ScheduleSessionScreen } from '../screens/home/ScheduleSessionScreen';
-import { SessionSuccessScreen } from '../screens/home/SessionSuccessScreen';
+import { PaymentScreen } from '../screens/home/PaymentScreen';
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
@@ -33,9 +33,9 @@ export const HomeStack = () => {
         options={{ title: 'Agendar Consulta' }}
       />
       <Stack.Screen
-        name="SessionSuccess"
-        component={SessionSuccessScreen}
-        options={{ headerShown: false }}
+        name="Payment"
+        component={PaymentScreen}
+        options={{ title: 'Pagamento' }}
       />
     </Stack.Navigator>
   );

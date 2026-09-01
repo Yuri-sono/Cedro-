@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+﻿import React, { useEffect, useRef } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -15,12 +15,14 @@ import { RootStackParamList, ChatStackParamList } from '../../types/navigation.t
 import { useChat } from '../../hooks/useChat';
 import { MessageBubble } from '../../components/MessageBubble';
 import { ChatInput } from '../../components/ChatInput';
-import { borderRadius, colors, spacing } from '../../theme';
+import { borderRadius, colors, spacing , useTheme, ThemeColors } from '../../theme';
 
 type ChatRouteProp = RouteProp<ChatStackParamList, 'Chat'>;
 type ChatNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export const ChatScreen = () => {
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const route = useRoute<ChatRouteProp>();
   const navigation = useNavigation<ChatNavigationProp>();
 
@@ -79,7 +81,8 @@ export const ChatScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,

@@ -7,7 +7,7 @@ import * as Google from 'expo-auth-session/providers/google';
 import { AuthStackParamList } from '../../types/navigation.types';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
-import { colors, spacing, typography } from '../../theme';
+import { spacing, typography, useTheme, ThemeColors } from '../../theme';
 import { useAuth } from '../../hooks/useAuth';
 import { AuthScreenLayout } from '../../components/AuthScreenLayout';
 
@@ -16,6 +16,8 @@ type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 WebBrowser.maybeCompleteAuthSession();
 
 export const LoginScreen = () => {
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const navigation = useNavigation<NavigationProp>();
   const { login, loginComGoogle, isLoading } = useAuth();
 
@@ -104,36 +106,37 @@ export const LoginScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  forgotPasswordButton: {
-    alignSelf: 'flex-end',
-    width: 'auto',
-    marginBottom: spacing.base,
-  },
-  forgotPasswordText: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
-    color: colors.primaryDark,
-  },
-  loginButton: {
-    marginTop: spacing.xs,
-  },
-  googleButton: {
-    marginBottom: spacing.sm,
-  },
-  footerRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  footerText: {
-    color: colors.textSecondary,
-    fontSize: typography.size.sm,
-    marginRight: spacing.xs,
-  },
-  footerActionText: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.semibold,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    forgotPasswordButton: {
+      alignSelf: 'flex-end',
+      width: 'auto',
+      marginBottom: spacing.base,
+    },
+    forgotPasswordText: {
+      fontSize: typography.size.sm,
+      fontWeight: typography.weight.medium,
+      color: colors.primaryDark,
+    },
+    loginButton: {
+      marginTop: spacing.xs,
+    },
+    googleButton: {
+      marginBottom: spacing.sm,
+    },
+    footerRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    footerText: {
+      color: colors.textSecondary,
+      fontSize: typography.size.sm,
+      marginRight: spacing.xs,
+    },
+    footerActionText: {
+      fontSize: typography.size.sm,
+      fontWeight: typography.weight.semibold,
+    },
+  });

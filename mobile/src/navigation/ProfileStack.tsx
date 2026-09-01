@@ -8,6 +8,10 @@ import { ChangePasswordScreen } from '../screens/profile/ChangePasswordScreen';
 import { SessionsScreen } from '../screens/sessions/SessionsScreen';
 import { NewSessionPsicologoScreen } from '../screens/sessions/NewSessionPsicologoScreen';
 import { PaywallScreen } from '../screens/subscription/PaywallScreen';
+import { PacientesPsicologoScreen } from '../screens/psicologo/PacientesPsicologoScreen';
+import { ConsultasPsicologoScreen } from '../screens/psicologo/ConsultasPsicologoScreen';
+import { FinanceiroPsicologoScreen } from '../screens/psicologo/FinanceiroPsicologoScreen';
+import { EstatisticasPsicologoScreen } from '../screens/psicologo/EstatisticasPsicologoScreen';
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
 
@@ -48,6 +52,26 @@ export const ProfileStack = () => {
         name="Subscription" 
         component={PaywallScreen} 
         options={{ title: 'Assinatura' }} 
+      />
+      <Stack.Screen
+        name="PacientesPsicologo"
+        component={PacientesPsicologoScreen}
+        options={{ title: 'Meus Pacientes' }}
+      />
+      <Stack.Screen
+        name="ConsultasPsicologo"
+        component={ConsultasPsicologoScreen}
+        options={{ title: 'Próximas Consultas' }}
+      />
+      <Stack.Screen
+        name="FinanceiroPsicologo"
+        component={FinanceiroPsicologoScreen}
+        options={{ title: 'Financeiro' }}
+      />
+      <Stack.Screen
+        name="EstatisticasPsicologo"
+        component={EstatisticasPsicologoScreen}
+        options={{ title: 'Estatísticas' }}
       />
     </Stack.Navigator>
   );

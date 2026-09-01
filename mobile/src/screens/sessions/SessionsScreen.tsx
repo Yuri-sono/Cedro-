@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import {
   View,
   StyleSheet,
@@ -14,7 +14,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSessoes } from '../../hooks/useSessoes';
 import { useAuthStore } from '../../store/authStore';
 import { SessionCard } from '../../components/SessionCard';
-import { colors, spacing, typography } from '../../theme';
+import { colors, spacing, typography , useTheme, ThemeColors } from '../../theme';
 import { ProfileStackParamList } from '../../types/navigation.types';
 import { TipoUsuario } from '../../types/api.types';
 
@@ -26,6 +26,8 @@ type Sessao = {
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'MySessions'>;
 
 export const SessionsScreen = () => {
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const navigation = useNavigation<NavigationProp>();
   const user = useAuthStore((state) => state.user);
   const isPsicologo = user?.tipoUsuario === TipoUsuario.psicologo;
@@ -105,7 +107,8 @@ export const SessionsScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.backgroundSecondary,

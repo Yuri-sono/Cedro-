@@ -2,15 +2,18 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { MainTabParamList } from '../types/navigation.types';
-import { colors } from '../theme';
+import { useTheme } from '../theme';
 
 import { HomeStack } from './HomeStack';
 import { ProfileStack } from './ProfileStack';
 import { ChatStack } from './ChatStack';
+import { RecursosStack } from './RecursosStack';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export const MainTabs = () => {
+  const { colors, isDark } = useTheme();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -24,7 +27,7 @@ export const MainTabs = () => {
         },
         tabBarStyle: {
           backgroundColor: colors.surface,
-          borderTopColor: '#E8DDC8',
+          borderTopColor: isDark ? colors.border : '#E8DDC8',
           height: 72,
           paddingBottom: 10,
           paddingTop: 8,
@@ -40,19 +43,24 @@ export const MainTabs = () => {
               ? focused
                 ? 'home'
                 : 'home-outline'
-              : route.name === 'ChatStack'
+              : route.name === 'RecursosStack'
                 ? focused
-                  ? 'chatbubbles'
-                  : 'chatbubbles-outline'
-                : focused
-                  ? 'person'
-                  : 'person-outline';
+                  ? 'heart'
+                  : 'heart-outline'
+                : route.name === 'ChatStack'
+                  ? focused
+                    ? 'chatbubbles'
+                    : 'chatbubbles-outline'
+                  : focused
+                    ? 'person'
+                    : 'person-outline';
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
       })}
     >
       <Tab.Screen name="HomeStack" component={HomeStack} options={{ title: 'Home' }} />
+      <Tab.Screen name="RecursosStack" component={RecursosStack} options={{ title: 'Recursos' }} />
       <Tab.Screen name="ChatStack" component={ChatStack} options={{ title: 'Chat' }} />
       <Tab.Screen name="ProfileStack" component={ProfileStack} options={{ title: 'Perfil' }} />
     </Tab.Navigator>

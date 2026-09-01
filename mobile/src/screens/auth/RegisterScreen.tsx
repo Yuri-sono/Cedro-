@@ -1,19 +1,24 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../types/navigation.types';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
-import { colors, spacing, typography } from '../../theme';
+import { spacing, typography, useTheme, ThemeColors } from '../../theme';
 import { useAuth } from '../../hooks/useAuth';
 import { TipoUsuario } from '../../types/api.types';
 import { showToast } from '../../components/Toast';
 import { AuthScreenLayout } from '../../components/AuthScreenLayout';
+import api from '../../services/api';
+import { API_ENDPOINTS } from '../../constants/api';
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Register'>;
 
 export const RegisterScreen = () => {
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const navigation = useNavigation<NavigationProp>();
   const { register, isLoading } = useAuth();
 
@@ -28,6 +33,47 @@ export const RegisterScreen = () => {
   const [especialidade, setEspecialidade] = useState('');
   const [areaInteresse, setAreaInteresse] = useState('');
   const [precoSessao, setPrecoSessao] = useState('');
+  const [crpStatus, setCrpStatus] = useState<
+    'idle' | 'checking' | 'valid' | 'invalid' | 'format_error'
+  >('idle');
+  const [crpMessage, setCrpMessage] = useState('');
+
+  const validarFormatoCrp = (valor: string) => /^\d{2}\/\d{5,6}$/.test(valor);
+
+  const verificarCrp = async (valor: string) => {
+    if (!validarFormatoCrp(valor)) {
+      setCrpStatus('format_error');
+      setCrpMessage('Formato inválido. Use: XX/XXXXXX (ex: 06/123456)');
+      return;
+    }
+    setCrpStatus('checking');
+    setCrpMessage('Verificando CRP...');
+    try {
+      const response = await api.get<{ valido: boolean; mensagem?: string }>(
+        API_ENDPOINTS.PSICOLOGOS.VERIFICAR_CRP,
+        { params: { crp: valor } },
+      );
+      if (response.data.valido) {
+        setCrpStatus('valid');
+        setCrpMessage('CRP verificado com sucesso!');
+      } else {
+        setCrpStatus('invalid');
+        setCrpMessage(response.data.mensagem || 'CRP não encontrado no sistema.');
+      }
+    } catch (error: any) {
+      const mensagemBackend = error.response?.data?.mensagem || error.response?.data?.error;
+      if (error.response?.status === 409) {
+        setCrpStatus('invalid');
+        setCrpMessage('Este CRP já está cadastrado na plataforma.');
+      } else if (error.response?.status === 400 && mensagemBackend) {
+        setCrpStatus('format_error');
+        setCrpMessage(mensagemBackend);
+      } else {
+        setCrpStatus('valid');
+        setCrpMessage('Formato de CRP válido');
+      }
+    }
+  };
 
   const senhaValidacao = {
     minLength: senha.length >= 6,
@@ -69,6 +115,19 @@ export const RegisterScreen = () => {
     if (isPsicologo) {
       if (!crp.trim() || !especialidade.trim()) {
         showToast.error('Dados profissionais', 'Informe CRP e especialidade para o cadastro.');
+        return;
+      }
+
+      if (crpStatus === 'invalid') {
+        showToast.error(
+          'CRP inválido',
+          'O CRP informado não foi validado. Verifique e tente novamente.',
+        );
+        return;
+      }
+
+      if (!validarFormatoCrp(crp.trim())) {
+        showToast.error('CRP inválido', 'Use o formato XX/XXXXXX (ex: 06/123456).');
         return;
       }
 
@@ -186,8 +245,40 @@ export const RegisterScreen = () => {
             placeholder="Ex: 06/123456"
             autoCapitalize="characters"
             value={crp}
-            onChangeText={setCrp}
+            onChangeText={(v) => {
+              setCrp(v);
+              setCrpStatus('idle');
+              setCrpMessage('');
+            }}
+            onBlur={() => {
+              if (crp.trim()) verificarCrp(crp.trim());
+            }}
           />
+          {crpStatus !== 'idle' && (
+            <View style={styles.crpFeedback}>
+              {crpStatus === 'checking' && (
+                <ActivityIndicator size="small" color={colors.primary} />
+              )}
+              {crpStatus === 'valid' && (
+                <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+              )}
+              {(crpStatus === 'invalid' || crpStatus === 'format_error') && (
+                <Ionicons name="close-circle" size={16} color={colors.error} />
+              )}
+              <Text
+                style={[
+                  styles.crpMessage,
+                  crpStatus === 'valid'
+                    ? { color: colors.success }
+                    : crpStatus === 'checking'
+                      ? { color: colors.primary }
+                      : { color: colors.error },
+                ]}
+              >
+                {crpMessage}
+              </Text>
+            </View>
+          )}
           <Input
             label="Especialidade"
             placeholder="Ex: Terapia Cognitivo-Comportamental"
@@ -278,7 +369,11 @@ export const RegisterScreen = () => {
           email !== confirmarEmail ||
           senha !== confirmarSenha ||
           (tipoUsuario === TipoUsuario.psicologo &&
-            (!tipoPsicologo.trim() || !crp.trim() || !especialidade.trim() || !precoSessao.trim()))
+            (!tipoPsicologo.trim() ||
+              !crp.trim() ||
+              !especialidade.trim() ||
+              !precoSessao.trim() ||
+              crpStatus === 'checking'))
         }
         style={styles.registerButton}
       />
@@ -286,15 +381,28 @@ export const RegisterScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  passwordRules: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginTop: -spacing.sm,
-    marginBottom: spacing.base,
-  },
-  passwordRule: {
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    passwordRules: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+      marginTop: -spacing.sm,
+      marginBottom: spacing.base,
+    },
+    crpFeedback: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+      marginTop: -spacing.sm,
+      marginBottom: spacing.base,
+    },
+    crpMessage: {
+      fontSize: typography.size.xs,
+      fontWeight: typography.weight.medium,
+      flex: 1,
+    },
+    passwordRule: {
     fontSize: typography.size.xs,
     fontWeight: typography.weight.medium,
   },

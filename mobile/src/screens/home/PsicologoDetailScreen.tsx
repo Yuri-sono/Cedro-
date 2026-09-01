@@ -1,10 +1,11 @@
+import React from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '../../types/navigation.types';
 import { usePsicologoDetail } from '../../hooks/usePsicologos';
-import { colors, typography, spacing, borderRadius } from '../../theme';
+import { typography, spacing, borderRadius, useTheme, ThemeColors } from '../../theme';
 import { Avatar } from '../../components/Avatar';
 import { Button } from '../../components/Button';
 
@@ -15,6 +16,8 @@ type PsicologoDetailRouteProp = RouteProp<HomeStackParamList, 'PsicologoDetail'>
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'PsicologoDetail'>;
 
 export const PsicologoDetailScreen = () => {
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const route = useRoute<PsicologoDetailRouteProp>();
   const navigation = useNavigation<NavigationProp>();
   const psicologoId = route.params.psicologoId;
@@ -77,7 +80,8 @@ export const PsicologoDetailScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,

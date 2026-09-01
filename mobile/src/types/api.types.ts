@@ -221,3 +221,19 @@ export interface ProximaConsulta {
   tipo: string;
   pacienteNome: string;
 }
+
+// ── Financeiro do psicólogo (GET /api/psicologos/financeiro) ──
+export interface TransacaoFinanceira {
+  id: number;
+  data: string;
+  valor: number | null;
+  status: string; // 'Pago' | 'Pendente'
+  paciente?: string;
+}
+
+export interface FinanceiroPsicologo {
+  faturamentoMes: number | null;
+  consultasRealizadas: number;
+  ticketMedio: number | null;
+  transacoes: TransacaoFinanceira[];
+}

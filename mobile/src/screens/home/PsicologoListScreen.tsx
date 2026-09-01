@@ -6,11 +6,13 @@ import { HomeStackParamList } from '../../types/navigation.types';
 import { usePsicologos } from '../../hooks/usePsicologos';
 import { PsicologoCard } from '../../components/PsicologoCard';
 import { Input } from '../../components/Input';
-import { colors, spacing } from '../../theme';
+import { spacing, useTheme, ThemeColors } from '../../theme';
 
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'PsicologoList'>;
 
 export const PsicologoListScreen = () => {
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const navigation = useNavigation<NavigationProp>();
   const { psicologos, isLoading, refetch } = usePsicologos();
   const [busca, setBusca] = useState('');
@@ -52,26 +54,27 @@ export const PsicologoListScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  searchContainer: {
-    padding: spacing.base,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  searchInput: {
-    marginBottom: 0, // anula o margin bottom default do Input
-  },
-  loader: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  listContent: {
-    padding: spacing.base,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    searchContainer: {
+      padding: spacing.base,
+      backgroundColor: colors.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    searchInput: {
+      marginBottom: 0, // anula o margin bottom default do Input
+    },
+    loader: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    listContent: {
+      padding: spacing.base,
+    },
+  });

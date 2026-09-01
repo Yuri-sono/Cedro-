@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -15,7 +15,7 @@ import { Input } from '../../components/Input';
 import { usePacientes } from '../../hooks/usePacientes';
 import { useDisponibilidade, useSessoes } from '../../hooks/useSessoes';
 import { useAuthStore } from '../../store/authStore';
-import { borderRadius, colors, spacing, typography } from '../../theme';
+import { borderRadius, colors, spacing, typography , useTheme, ThemeColors } from '../../theme';
 import { ProfileStackParamList } from '../../types/navigation.types';
 import { TipoUsuario } from '../../types/api.types';
 import { getNextAvailableDates } from '../../utils/psychologistAgenda';
@@ -43,6 +43,8 @@ const formatarDataHoraApi = (data: Date, horario: string) => {
 };
 
 export const NewSessionPsicologoScreen = () => {
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const user = useAuthStore((state) => state.user);
   const navigation = useNavigation<NavigationProp>();
   const isPsicologo = user?.tipoUsuario === TipoUsuario.psicologo;
@@ -231,7 +233,8 @@ export const NewSessionPsicologoScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,

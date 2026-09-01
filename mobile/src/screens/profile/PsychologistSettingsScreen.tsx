@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -16,7 +16,7 @@ import { showToast } from '../../components/Toast';
 import { usePerfil } from '../../hooks/usePerfil';
 import { agendaConfigService } from '../../services/agendaConfigService';
 import { useAuthStore } from '../../store/authStore';
-import { borderRadius, colors, spacing, typography } from '../../theme';
+import { borderRadius, colors, spacing, typography , useTheme, ThemeColors } from '../../theme';
 import { PsicologoAgendaConfig } from '../../types/api.types';
 import {
   formatAgendaSummary,
@@ -31,6 +31,8 @@ function formatCurrencyInput(value: string): string {
 }
 
 export const PsychologistSettingsScreen = () => {
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const navigation = useNavigation();
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
@@ -300,7 +302,8 @@ export const PsychologistSettingsScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.cream,

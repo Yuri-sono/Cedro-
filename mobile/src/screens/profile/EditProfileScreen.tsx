@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -19,7 +19,7 @@ import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { usePerfil } from '../../hooks/usePerfil';
 import { useAuthStore } from '../../store/authStore';
-import { colors, spacing, typography, borderRadius } from '../../theme';
+import { colors, spacing, typography, borderRadius , useTheme, ThemeColors } from '../../theme';
 import { TipoUsuario, UpdatePerfilRequest } from '../../types/api.types';
 import { ProfileStackParamList } from '../../types/navigation.types';
 
@@ -109,6 +109,8 @@ async function compressWebImage(uri: string): Promise<string> {
 const GENEROS = ['Masculino', 'Feminino', 'Outro'] as const;
 
 export const EditProfileScreen = () => {
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const user = useAuthStore((state) => state.user);
   const { atualizarPerfil, atualizarFoto, isAtualizando, isAtualizandoFoto } = usePerfil();
   const navigation = useNavigation<NavigationProp>();
@@ -331,7 +333,8 @@ export const EditProfileScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.cream,

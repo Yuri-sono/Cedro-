@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import { Avatar } from '../../components/Avatar';
 import { Button } from '../../components/Button';
 import { usePsicologoDetail } from '../../hooks/usePsicologos';
 import { useDisponibilidade, useSessoes } from '../../hooks/useSessoes';
-import { borderRadius, colors, spacing, typography } from '../../theme';
+import { borderRadius, colors, spacing, typography , useTheme, ThemeColors } from '../../theme';
 import { HomeStackParamList } from '../../types/navigation.types';
 import {
   getNextAvailableDates,
@@ -31,6 +31,8 @@ const formatarDataApi = (data: Date) => {
 };
 
 export const ScheduleSessionScreen = () => {
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const route = useRoute<ScheduleSessionRouteProp>();
   const navigation = useNavigation<NavigationProp>();
   const psicologoId = route.params.psicologoId;
@@ -81,11 +83,10 @@ export const ScheduleSessionScreen = () => {
         valor: psicologo?.precoSessao || 0,
       });
 
-      navigation.navigate('SessionSuccess', {
-        psicologoId,
-        psicologoNome: psicologo?.nome || 'Psicologo',
-        avatarUrl: psicologo?.fotoUrl || undefined,
+      navigation.navigate('Payment', {
         sessaoId: sessaoCriada.id,
+        psicologoNome: psicologo?.nome || 'Psicologo',
+        valor: psicologo?.precoSessao || 0,
       });
     } catch {
       // O hook ja trata o erro.
@@ -217,7 +218,8 @@ export const ScheduleSessionScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,

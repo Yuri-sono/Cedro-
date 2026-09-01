@@ -15,6 +15,7 @@ export type AuthStackParamList = {
 // Parâmetros para as rotas principais (Bottom Tabs)
 export type MainTabParamList = {
   HomeStack: NavigatorScreenParams<HomeStackParamList>;
+  RecursosStack: NavigatorScreenParams<RecursosStackParamList>;
   ChatStack: NavigatorScreenParams<ChatStackParamList>;
   ProfileStack: NavigatorScreenParams<ProfileStackParamList>;
 };
@@ -25,7 +26,16 @@ export type HomeStackParamList = {
   PsicologoList: undefined;
   PsicologoDetail: { psicologoId: number };
   ScheduleSession: { psicologoId: number };
-  SessionSuccess: { psicologoId: number; psicologoNome: string; avatarUrl?: string; sessaoId: number };
+  Payment: { sessaoId: number; psicologoNome: string; valor: number };
+};
+
+// Parâmetros para a stack de Recursos (Saúde Mental, Jogos, etc)
+export type RecursosStackParamList = {
+  RecursosHub: undefined;
+  SaudeMental: undefined;
+  Autoavaliacoes: undefined;
+  Passatempos: undefined;
+  ChatEmergencia: undefined;
 };
 
 // Parâmetros para a stack de Chat/Mensagens
@@ -42,7 +52,12 @@ export type ProfileStackParamList = {
   ChangePassword: undefined;
   MySessions: undefined;
   NewSessionPsicologo: undefined;
-  Subscription: undefined; // Sprint 6
+  Subscription: undefined;
+  // Portal do Psicólogo
+  PacientesPsicologo: undefined;
+  ConsultasPsicologo: undefined;
+  FinanceiroPsicologo: undefined;
+  EstatisticasPsicologo: undefined;
 };
 
 // Parâmetros globais (Root Navigator)

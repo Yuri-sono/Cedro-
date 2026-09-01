@@ -30,15 +30,19 @@ export const useNotifications = () => {
         return;
       }
 
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
+      // SDK 54: a resolução do tipo PermissionResponse (expo-modules-core) é
+      // instável neste setup, então tipamos localmente os campos que usamos.
+      type PermissaoNotificacao = { granted: boolean; canAskAgain: boolean };
 
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
+      const existing = (await Notifications.getPermissionsAsync()) as unknown as PermissaoNotificacao;
+      let finalGranted = existing.granted;
+
+      if (!finalGranted && existing.canAskAgain) {
+        const request = (await Notifications.requestPermissionsAsync()) as unknown as PermissaoNotificacao;
+        finalGranted = request.granted;
       }
 
-      if (finalStatus !== 'granted') {
+      if (!finalGranted) {
         console.log('Permissão de notificação negada.');
         return;
       }

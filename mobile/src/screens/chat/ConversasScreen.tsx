@@ -14,7 +14,7 @@ import { ChatStackParamList, MainTabParamList } from '../../types/navigation.typ
 import { useConversas } from '../../hooks/useConversas';
 import { ConversaResumo } from '../../types/api.types';
 import { Avatar } from '../../components/Avatar';
-import { borderRadius, colors, spacing, typography } from '../../theme';
+import { borderRadius, spacing, typography, useTheme, ThemeColors } from '../../theme';
 
 type NavigationProp = NativeStackNavigationProp<ChatStackParamList, 'Conversas'>;
 
@@ -36,6 +36,8 @@ const formatarHorario = (iso?: string) => {
 };
 
 export const ConversasScreen = () => {
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const navigation = useNavigation<NavigationProp>();
   // Navegação para a tab de Home (usada na sugestão do estado vazio)
   const parentNavigation = navigation.getParent() as ReactNavProp<MainTabParamList> | undefined;
@@ -120,7 +122,8 @@ export const ConversasScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.cream,

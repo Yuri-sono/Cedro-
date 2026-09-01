@@ -8,8 +8,7 @@ import { HomeStackParamList, MainTabParamList } from '../../types/navigation.typ
 import { useAuthStore } from '../../store/authStore';
 import { usePsicologos } from '../../hooks/usePsicologos';
 import { useSessoes } from '../../hooks/useSessoes';
-import { colors, typography, spacing, borderRadius } from '../../theme';
-import { useTheme } from '../../theme/ThemeContext';
+import { typography, spacing, borderRadius, useTheme, ThemeColors } from '../../theme';
 import { SessionCard } from '../../components/SessionCard';
 import { Avatar } from '../../components/Avatar';
 import { PsicologoListItem, TipoUsuario } from '../../types/api.types';
@@ -31,7 +30,11 @@ interface PsicologoChipProps {
 
 // Chip compacto para o carrossel horizontal de "Psicólogos em destaque"
 // (equivalente ao .psy-chip do cedro-redesign.html)
-const PsicologoChip = ({ psicologo, onPress }: PsicologoChipProps) => (
+const PsicologoChip = ({ psicologo, onPress }: PsicologoChipProps) => {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
+  return (
   <TouchableOpacity style={styles.psyChip} onPress={onPress} activeOpacity={0.8}>
     <Avatar url={psicologo.fotoUrl} size={48} />
     <Text style={styles.psyChipName} numberOfLines={1}>
@@ -47,13 +50,14 @@ const PsicologoChip = ({ psicologo, onPress }: PsicologoChipProps) => (
       </Text>
     </View>
   </TouchableOpacity>
-);
+  );
+};
 
 export const HomeScreen = () => {
   const navigation = useNavigation<HomeNavigationProp>();
   const user = useAuthStore((state) => state.user);
-  // Tema dinâmico apenas para a cor dos ícones (estilos das telas migram na próxima fase)
-  const { colors: themeColors } = useTheme();
+  const { colors, isDark } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const isPsicologo = user?.tipoUsuario === TipoUsuario.psicologo;
 
   const { psicologos, isLoading: loadingPsicos } = usePsicologos();
@@ -71,7 +75,7 @@ export const HomeScreen = () => {
 
   return (
     <LinearGradient
-      colors={['#F5F7F1', '#E7F2EC']}
+      colors={[colors.background, colors.backgroundSecondary]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
       style={styles.container}
@@ -94,14 +98,14 @@ export const HomeScreen = () => {
         </View>
 
         <LinearGradient
-          colors={['#FFFFFF', '#FFFDF8']}
+          colors={[colors.surface, colors.surface]}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
           style={styles.heroCard}
         >
           <View style={styles.heroContent}>
             <View style={styles.heroEyebrowRow}>
-              <Ionicons name="leaf" size={14} color={themeColors.primary} />
+              <Ionicons name="leaf" size={14} color={colors.primary} />
               <Text style={styles.heroEyebrow}>Bem-estar hoje</Text>
             </View>
             <Text style={styles.greeting} numberOfLines={2}>
@@ -117,7 +121,7 @@ export const HomeScreen = () => {
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <View style={styles.sectionTitleRow}>
-                  <Ionicons name="stats-chart" size={20} color={themeColors.primary} />
+                  <Ionicons name="stats-chart" size={20} color={colors.primary} />
                   <Text style={styles.sectionTitle}>Resumo do atendimento</Text>
                 </View>
                 <TouchableOpacity onPress={() => openProfileTab('PsychologistSettings')} activeOpacity={0.7}>
@@ -126,21 +130,21 @@ export const HomeScreen = () => {
               </View>
 
               <View style={styles.statsGrid}>
-                <LinearGradient colors={['#FFFFFF', '#FFFDF8']} style={styles.statCard}>
+                <LinearGradient colors={[colors.surface, colors.surface]} style={styles.statCard}>
                   <Text style={styles.statValue}>{loadingDashboard ? '...' : estatisticas?.consultasHoje ?? 0}</Text>
                   <Text style={styles.statLabel}>Hoje</Text>
                 </LinearGradient>
-                <LinearGradient colors={['#FFFFFF', '#FFFDF8']} style={styles.statCard}>
+                <LinearGradient colors={[colors.surface, colors.surface]} style={styles.statCard}>
                   <Text style={styles.statValue}>{loadingDashboard ? '...' : estatisticas?.consultasSemana ?? 0}</Text>
                   <Text style={styles.statLabel}>Semana</Text>
                 </LinearGradient>
-                <LinearGradient colors={['#FFFFFF', '#FFFDF8']} style={styles.statCard}>
+                <LinearGradient colors={[colors.surface, colors.surface]} style={styles.statCard}>
                   <Text style={styles.statValue}>{loadingDashboard ? '...' : estatisticas?.pacientesAtivos ?? 0}</Text>
                   <Text style={styles.statLabel}>Pacientes</Text>
                 </LinearGradient>
               </View>
 
-              <LinearGradient colors={['#FFFFFF', '#FFFDF8']} style={styles.professionalSummary}>
+              <LinearGradient colors={[colors.surface, colors.surface]} style={styles.professionalSummary}>
                 <Text style={styles.professionalSummaryTitle}>
                   {user?.especialidade || 'Especialidade ainda não configurada'}
                 </Text>
@@ -156,7 +160,7 @@ export const HomeScreen = () => {
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <View style={styles.sectionTitleRow}>
-                  <Ionicons name="calendar" size={20} color={themeColors.primary} />
+                  <Ionicons name="calendar" size={20} color={colors.primary} />
                   <Text style={styles.sectionTitle}>Próximas consultas</Text>
                 </View>
                 <TouchableOpacity onPress={() => openProfileTab('MySessions')} activeOpacity={0.7}>
@@ -169,13 +173,13 @@ export const HomeScreen = () => {
               ) : sessoes.length > 0 ? (
                 sessoes.slice(0, 3).map((sessao) => <SessionCard key={sessao.id} sessao={sessao} />)
               ) : (
-                <LinearGradient colors={['#FFFFFF', '#FFFDF8']} style={styles.emptyCard}>
+                <LinearGradient colors={[colors.surface, colors.surface]} style={styles.emptyCard}>
                   <Text style={styles.emptyText}>Nenhuma consulta agendada no momento.</Text>
                 </LinearGradient>
               )}
 
               {proximasConsultas.length > 0 && (
-                <LinearGradient colors={['#FFFFFF', '#FFFDF8']} style={styles.nextPatientsCard}>
+                <LinearGradient colors={[colors.surface, colors.surface]} style={styles.nextPatientsCard}>
                   <Text style={styles.nextPatientsTitle}>Pacientes confirmados</Text>
                   {proximasConsultas.slice(0, 3).map((consulta) => (
                     <Text key={consulta.id} style={styles.nextPatientsText}>
@@ -209,7 +213,7 @@ export const HomeScreen = () => {
 
             <View style={styles.section}>
               <View style={styles.sectionTitleRow}>
-                <Ionicons name="calendar" size={20} color={themeColors.primary} />
+                <Ionicons name="calendar" size={20} color={colors.primary} />
                 <Text style={styles.sectionTitle}>Sua próxima sessão</Text>
               </View>
               {loadingSessoes ? (
@@ -269,7 +273,8 @@ export const HomeScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -508,7 +513,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.xl,
     padding: spacing.base,
     borderWidth: 1,
-    borderColor: 'colors.border',
+    borderColor: colors.border,
     shadowColor: colors.forest,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
@@ -530,7 +535,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.xl,
     padding: spacing.base,
     borderWidth: 1,
-    borderColor: 'colors.border',
+    borderColor: colors.border,
     shadowColor: colors.forest,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
@@ -552,7 +557,7 @@ const styles = StyleSheet.create({
     padding: spacing.base,
     marginTop: spacing.base,
     borderWidth: 1,
-    borderColor: 'colors.border',
+    borderColor: colors.border,
     shadowColor: colors.forest,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,

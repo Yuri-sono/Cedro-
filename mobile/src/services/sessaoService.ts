@@ -43,4 +43,13 @@ export const sessaoService = {
     const response = await api.put<Sessao>(API_ENDPOINTS.SESSOES.STATUS(id), { status });
     return response.data;
   },
+
+  confirmarPagamento: async (id: number): Promise<Sessao> => {
+    // O backend envelopa a resposta: { message: string, sessao: Sessao }
+    const response = await api.post<{ message: string; sessao: Sessao }>(
+      API_ENDPOINTS.SESSOES.CONFIRMAR_PAGAMENTO(id),
+      {},
+    );
+    return response.data.sessao;
+  },
 };

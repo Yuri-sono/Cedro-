@@ -23,9 +23,11 @@ export const API_ENDPOINTS = {
   PSICOLOGOS: {
     LISTAR: '/api/psicologos',
     POR_ID: (id: number) => `/api/psicologos/${id}`,
+    VERIFICAR_CRP: '/api/psicologos/verificar-crp',
     PACIENTES: (id: number) => `/api/psicologos/${id}/pacientes`,
     ESTATISTICAS: '/api/psicologos/estatisticas',
     PROXIMAS_CONSULTAS: '/api/psicologos/consultas/proximas',
+    FINANCEIRO: '/api/psicologos/financeiro',
   },
 
   // ── Mensagens ──
@@ -54,6 +56,7 @@ export const API_ENDPOINTS = {
     CRIAR: '/api/sessoes',
     DELETAR: (id: number) => `/api/sessoes/${id}`,
     STATUS: (id: number) => `/api/sessoes/${id}/status`,
+    CONFIRMAR_PAGAMENTO: (id: number) => `/api/sessoes/${id}/confirmar-pagamento`,
   },
 
   // ── Usuários ──
@@ -61,16 +64,12 @@ export const API_ENDPOINTS = {
     POR_ID: (id: number) => `/api/usuarios/${id}`,
   },
 
-  // ── Push Notifications (Sprint 4 — endpoint novo) ──
-  PUSH: {
-    REGISTER: '/api/push/register',
-    UNREGISTER: '/api/push/unregister',
-  },
+  // ── Push Notifications (endpoint novo) ──
+  // O registro usa NOTIFICACOES.* (NotificacaoController do backend).
 
   // ── Assinatura (Sprint 6 — endpoint novo) ──
   ASSINATURA: {
     STATUS: '/api/assinatura/status',
-    LIMITE_CHAMADAS: '/api/assinatura/limite-chamadas',
   },
 
   NOTIFICACOES: {

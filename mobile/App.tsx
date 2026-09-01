@@ -13,6 +13,7 @@ import { ThemeProvider, useTheme } from './src/theme';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { Toast } from './src/components/Toast';
 import { OfflineBanner } from './src/components/OfflineBanner';
+import { EmergencyButton } from './src/components/EmergencyButton';
 
 // Navegação
 import { RootNavigator } from './src/navigation/RootNavigator';
@@ -33,6 +34,7 @@ const AppRoot = () => {
           persistOptions={{ persister: asyncStoragePersister }}
         >
           <RootNavigator />
+          <EmergencyButton />
 
           <OfflineBanner />
           <Toast />

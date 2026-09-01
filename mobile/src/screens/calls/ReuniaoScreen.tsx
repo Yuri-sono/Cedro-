@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Linking,
@@ -11,7 +11,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { callService } from '../../services/callService';
-import { colors, spacing, typography } from '../../theme';
+import { colors, spacing, typography , useTheme, ThemeColors } from '../../theme';
 import { RootStackParamList } from '../../types/navigation.types';
 
 type ReuniaoRouteProp = RouteProp<RootStackParamList, 'Reuniao'>;
@@ -31,6 +31,8 @@ function formatarContagemRegressiva(totalSegundos: number) {
 }
 
 export const ReuniaoScreen = () => {
+  const { colors } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const route = useRoute<ReuniaoRouteProp>();
   const navigation = useNavigation<ReuniaoNavigationProp>();
   const { sessaoId } = route.params;
@@ -168,7 +170,8 @@ export const ReuniaoScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0F1412',

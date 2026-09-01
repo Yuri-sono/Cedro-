@@ -11,11 +11,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'automatic',
-  splash: {
-    image: './assets/splash-icon.png',
-    resizeMode: 'contain',
-    backgroundColor: '#F7F1E3',
-  },
   assetBundlePatterns: ['**/*'],
   ios: {
     supportsTablet: true,
@@ -45,6 +40,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     'expo-font',
     'expo-web-browser',
+    [
+      'expo-splash-screen',
+      {
+        image: './assets/splash-icon.png',
+        imageWidth: 200,
+        resizeMode: 'contain',
+        backgroundColor: '#F7F1E3',
+      },
+    ],
     [
       'expo-image-picker',
       {
