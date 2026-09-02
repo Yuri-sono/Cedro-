@@ -320,7 +320,7 @@ const createStyles = (colors: ThemeColors) =>
     borderRadius: borderRadius.xl,
     padding: spacing.lg,
     borderWidth: 1,
-    borderColor: '#E7DCC6',
+    borderColor: colors.border,
     marginBottom: spacing.lg,
   },
   panelTitle: {

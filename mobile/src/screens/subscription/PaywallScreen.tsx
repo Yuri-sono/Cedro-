@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
@@ -154,9 +154,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   quotaCard: {
-    backgroundColor: '#FBF1DC', // accent-tint do redesign
+    backgroundColor: colors.accentTint, // accent-tint do redesign
     borderWidth: 1,
-    borderColor: '#EAD8A6',
+    borderColor: colors.border,
     borderRadius: borderRadius['2xl'],
     padding: spacing.base,
     marginBottom: spacing.xl,
@@ -168,21 +168,21 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm + 2,
   },
   quotaLabel: {
-    color: '#8A6A1F',
+    color: colors.textPrimary,
     fontSize: typography.size.sm + 1,
     fontWeight: typography.weight.bold,
     flex: 1,
     marginRight: spacing.sm,
   },
   quotaCount: {
-    color: '#8A6A1F',
+    color: colors.textPrimary,
     fontSize: typography.size.sm,
     opacity: 0.85,
   },
   quotaBar: {
     height: 8,
     borderRadius: borderRadius.full,
-    backgroundColor: '#EFE0BB',
+    backgroundColor: colors.accentTint,
     overflow: 'hidden',
     marginBottom: spacing.sm,
   },
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.full,
   },
   quotaNote: {
-    color: '#8A6A1F',
+    color: colors.textPrimary,
     fontSize: typography.size.sm - 0.5,
     opacity: 0.8,
   },

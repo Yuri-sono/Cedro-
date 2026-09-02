@@ -128,6 +128,14 @@ export const ProfileScreen = () => {
           </TouchableOpacity>
         )}
 
+        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Appearance')}>
+          <View style={styles.menuItemIcon}>
+            <Ionicons name="contrast" size={18} color={colors.primary} />
+          </View>
+          <Text style={styles.menuItemText}>Aparência</Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('ChangePassword')}>
           <View style={styles.menuItemIcon}>
             <Ionicons name="lock-closed" size={18} color={colors.primary} />
@@ -182,7 +190,7 @@ const createStyles = (colors: ThemeColors) =>
     padding: spacing['2xl'],
     backgroundColor: colors.surfaceWarm,
     borderBottomWidth: 1,
-    borderBottomColor: '#E7DCC6',
+    borderBottomColor: colors.border,
   },
   avatar: {
     marginBottom: spacing.base,
@@ -251,7 +259,7 @@ const createStyles = (colors: ThemeColors) =>
     padding: spacing.base,
     borderRadius: borderRadius.lg,
     borderWidth: 1,
-    borderColor: '#E7DCC6',
+    borderColor: colors.border,
     gap: spacing.xs,
   },
   professionalTitle: {

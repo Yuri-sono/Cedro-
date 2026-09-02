@@ -1,15 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Mensagem } from '../types/api.types';
 import { useAuthStore } from '../store/authStore';
 import api from '../services/api';
 import { API_ENDPOINTS } from '../constants/api';
 import { showToast } from '../components/Toast';
+import { chatService } from '../services/chatService';
 
 export const useChat = (destinatarioId: number) => {
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const currentUserId = useAuthStore((state) => state.user?.id);
+  const stompConnected = useRef(false);
 
   const ordenarMensagens = useCallback((lista: Mensagem[]) => {
     return [...lista].sort((a, b) => {
@@ -56,6 +58,22 @@ export const useChat = (destinatarioId: number) => {
   useEffect(() => {
     if (!isAuthenticated) return;
 
+    // Conecta STOMP uma vez por sessão autenticada
+    if (!stompConnected.current) {
+      chatService.connect().then(() => {
+        stompConnected.current = true;
+      });
+    }
+
+    // Listener STOMP: injeta mensagens recebidas em tempo real
+    const unsubscribe = chatService.addMessageListener((msg) => {
+      const isRelevant =
+        msg.remetenteId === destinatarioId || msg.destinatarioId === destinatarioId;
+      if (isRelevant) {
+        setMensagens((prev) => mergeMensagens(prev, [msg]));
+      }
+    });
+
     carregarHistorico();
     marcarComoLidas();
 
@@ -63,6 +81,7 @@ export const useChat = (destinatarioId: number) => {
 
     return () => {
       clearInterval(interval);
+      unsubscribe();
     };
   }, [
     destinatarioId,

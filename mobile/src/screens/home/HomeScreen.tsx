@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Linking, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -221,7 +221,7 @@ export const HomeScreen = () => {
               ) : proximaSessao ? (
                 <SessionCard sessao={proximaSessao} />
               ) : (
-                <LinearGradient colors={['#FFFFFF', '#FFFFFF']} style={styles.emptyCard}>
+                <LinearGradient colors={[colors.surface, colors.surface]} style={styles.emptyCard}>
                   <View style={styles.emptyIconCircle}>
                     <Ionicons name="calendar" size={20} color={colors.primary} />
                   </View>

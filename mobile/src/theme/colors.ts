@@ -145,3 +145,102 @@ export const colors = lightColors;
 /** Alias legado do tipo. */
 export type Colors = ThemeColors;
 
+// ─────────────────────────────────────────────────────────────────
+// Filtros de daltonismo — espelho do theme.css do web
+// (Protanopia/Deuteranopia substituem verde/vermelho por azul/laranja;
+//  Tritanopia substitui azul/amarelo por magenta/ciano)
+// ─────────────────────────────────────────────────────────────────
+
+export type ColorMode = 'padrao' | 'protanopia' | 'deuteranopia' | 'tritanopia';
+
+interface DaltonismoOverrides {
+  primary: string;
+  primaryAccent: string;
+  primaryHover: string;
+  primaryDark: string;
+  primaryLight: string;
+  forest: string;
+  leaf: string;
+  primaryTint: string;
+  mint: string;
+  success: string;
+  info: string;
+  error: string;
+  danger: string;
+  dangerTint: string;
+  gradientPrimary: Gradient;
+  gradientDark: Gradient;
+}
+
+const PROTANOPIA: DaltonismoOverrides = {
+  primary: '#0066cc',
+  primaryAccent: '#3399ff',
+  primaryHover: '#3399ff',
+  primaryDark: '#004499',
+  primaryLight: '#66b3ff',
+  forest: '#004499',
+  leaf: '#3399ff',
+  primaryTint: '#cce5ff',
+  mint: '#cce5ff',
+  success: '#0066cc',
+  info: '#0066cc',
+  error: '#ff8800',
+  danger: '#ff8800',
+  dangerTint: '#ffe5cc',
+  gradientPrimary: ['#0066cc', '#3399ff'],
+  gradientDark: ['#004499', '#0066cc'],
+};
+
+const DEUTERANOPIA: DaltonismoOverrides = {
+  primary: '#0073e6',
+  primaryAccent: '#4da6ff',
+  primaryHover: '#4da6ff',
+  primaryDark: '#0052a3',
+  primaryLight: '#80bfff',
+  forest: '#0052a3',
+  leaf: '#4da6ff',
+  primaryTint: '#d1e7ff',
+  mint: '#d1e7ff',
+  success: '#0073e6',
+  info: '#0073e6',
+  error: '#ffaa00',
+  danger: '#ffaa00',
+  dangerTint: '#fff0cc',
+  gradientPrimary: ['#0073e6', '#4da6ff'],
+  gradientDark: ['#0052a3', '#0073e6'],
+};
+
+const TRITANOPIA: DaltonismoOverrides = {
+  primary: '#cc0066',
+  primaryAccent: '#ff3399',
+  primaryHover: '#ff3399',
+  primaryDark: '#990050',
+  primaryLight: '#ff66b3',
+  forest: '#990050',
+  leaf: '#ff3399',
+  primaryTint: '#ccf5f5',
+  mint: '#ccf5f5',
+  success: '#00cccc',
+  info: '#00aaaa',
+  error: '#cc0066',
+  danger: '#cc0066',
+  dangerTint: '#ffcce0',
+  gradientPrimary: ['#cc0066', '#ff3399'],
+  gradientDark: ['#990050', '#cc0066'],
+};
+
+/**
+ * Aplica o filtro de daltonismo sobre a paleta base (light ou dark).
+ * Com 'padrao', retorna a paleta original sem alterações.
+ */
+export function applyColorMode(base: ThemeColors, mode: ColorMode): ThemeColors {
+  if (mode === 'padrao') return base;
+  const overrides =
+    mode === 'protanopia'
+      ? PROTANOPIA
+      : mode === 'deuteranopia'
+        ? DEUTERANOPIA
+        : TRITANOPIA;
+  return { ...base, ...overrides };
+}
+

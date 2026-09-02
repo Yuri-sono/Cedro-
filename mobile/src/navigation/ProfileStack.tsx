@@ -8,6 +8,7 @@ import { ChangePasswordScreen } from '../screens/profile/ChangePasswordScreen';
 import { SessionsScreen } from '../screens/sessions/SessionsScreen';
 import { NewSessionPsicologoScreen } from '../screens/sessions/NewSessionPsicologoScreen';
 import { PaywallScreen } from '../screens/subscription/PaywallScreen';
+import { AppearanceScreen } from '../screens/profile/AppearanceScreen';
 import { PacientesPsicologoScreen } from '../screens/psicologo/PacientesPsicologoScreen';
 import { ConsultasPsicologoScreen } from '../screens/psicologo/ConsultasPsicologoScreen';
 import { FinanceiroPsicologoScreen } from '../screens/psicologo/FinanceiroPsicologoScreen';
@@ -72,6 +73,11 @@ export const ProfileStack = () => {
         name="EstatisticasPsicologo"
         component={EstatisticasPsicologoScreen}
         options={{ title: 'Estatísticas' }}
+      />
+      <Stack.Screen
+        name="Appearance"
+        component={AppearanceScreen}
+        options={{ title: 'Aparência' }}
       />
     </Stack.Navigator>
   );

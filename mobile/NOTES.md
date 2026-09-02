@@ -1,6 +1,6 @@
 # 📋 Notas de Progresso — Cedro Mobile
 
-> **Última atualização:** 31/08/2026  
+> **Última atualização:** 01/09/2026  
 > **Type-check:** ✅ EXIT 0 (limpo)  
 > **Branch:** main
 
@@ -62,6 +62,54 @@ O **Cedro** é uma plataforma de saúde mental com dois perfis (paciente e psic�
 - **`SaudeMentalScreen.tsx`** → corrigido bug de escopo: `TranstornoDetalhes` usava `styles` do pai; migrado para `useTheme()` + estilos internos
 - **`PsicologoDetailScreen.tsx`** → adicionado `import React` (faltava para `React.useMemo`)
 
+### Sprint 7 — Dark Mode (REVISÃO 08/2026) ✅
+- **`ThemeContext.tsx`** → lógica dinâmica **REATIVADA** (light/dark/system via `useColorScheme` + uiStore/AsyncStorage)
+- **`AppearanceScreen.tsx`** (novo) → UI de Aparência: Claro/Escuro/Sistema com check no selecionado, persistência automática
+- **`ProfileStack.tsx`** → rota `Appearance` registrada
+- **`ProfileScreen.tsx`** → item de menu "Aparência" (visível para todos, antes de Alterar Senha)
+- **Hexes hardcoded corrigidos** → `#E6DDC8`/`#E7DCC6` → `colors.border` (Register, Profile, PsychologistSettings), gradientes `#FFFFFF` → `colors.surface` (Home), dourados Paywall → `colors.accentTint`/`colors.textPrimary`
+- **Intencionais mantidos**: `STAR_GOLD` (#C6952F/#FFC107), ReuniaoScreen (`#0F1412`/`#17211D` — sala de reunião sempre escura)
+
+> **Nota:** A migração das 30 telas para `useTheme()` + `createStyles(colors)` já estava commitada (commit `058b073`). Este sprint destravou a lógica dinâmica e criou a UI de alternância.
+
+### Sprint 8 — Filtros de Daltonismo (REVISÃO 08/2026) ✅
+- **`colors.ts`** → tipo `ColorMode` (`padrao|protanopia|deuteranopia|tritanopia`), paletas `PROTANOPIA`/`DEUTERANOPIA`/`TRITANOPIA` (espelho do theme.css do web) e função `applyColorMode(base, mode)`
+  - Protanopia: primário/sucesso → azul `#0066cc`, erro → laranja `#ff8800`
+  - Deuteranopia: primário/sucesso → azul `#0073e6`, erro → amarelo `#ffaa00`
+  - Tritanopia: primário/erro → magenta `#cc0066`, sucesso → ciano `#00cccc`
+- **`uiStore.ts`** → `colorMode` + `setColorMode` persistidos no AsyncStorage (`cedro_color_mode`); `loadPreferences` carrega ambos
+- **`ThemeContext.tsx`** → `activeColors = applyColorMode(isDark ? darkColors : lightColors, colorMode)`; Context expõe `colorMode`/`setColorMode`
+- **`AppearanceScreen.tsx`** → seção "Modo de cor (daltonismo)" com 4 opções + swatches de cores (como o PersonalizacaoMenu do web)
+- **`theme/index.ts`** → exporta `ColorMode` e `applyColorMode`
+- Composição: **tema (light/dark) × modo de cor** funcionam juntos — o filtro é aplicado sobre a paleta dark ou light
+
+### Sprint 9 — Correções de Consistência do NOTES.md + Integrações Pendentes ✅
+- **`App.tsx`** → `<AdBanner />` montado globalmente (entre `<RootNavigator />` e `<EmergencyButton />`); o componente já existia mas não estava sendo renderizado
+- **`useChat.ts`** → WebSocket STOMP conectado via `chatService.connect()` no primeiro mount autenticado; listener `addMessageListener` injeta mensagens em tempo real; polling 2.5s mantido como fallback
+- **`NOTES.md`** → sincronizado com a realidade: pendentes 1–2 (Dark Mode/Daltonismo) movidos para concluídos, AdBanner e STOMP marcados como feitos, "Próximo Passo" atualizado para Sprint 9 (fonte dislexia)
+
+### Sprint 10 — Fonte Dislexia (Lexend) ✅
+- **`package.json`** → `@expo-google-fonts/lexend` instalado (`Lexend_400Regular`, `Lexend_600SemiBold`, `Lexend_700Bold`)
+- **`App.tsx`** → `useFonts` carrega as 3 variações da Lexend; splash mantido até `fontsLoaded && isReady`
+- **`uiStore.ts`** → `dislexia: boolean` + `setDislexia(enabled)` persistidos no AsyncStorage (`cedro_dislexia`); `loadPreferences` usa `Promise.all` para carregar os 3 valores em paralelo
+- **`ThemeContext.tsx`** → lê `dislexia` do uiStore; expõe `dislexia`, `setDislexia` e `fontFamily` (`'Lexend_400Regular'` quando ativo, `undefined` caso contrário); exporta constante `FONT_DISLEXIA`
+- **`theme/index.ts`** → exporta `FONT_DISLEXIA`
+- **`AppearanceScreen.tsx`** → seção "Fonte para dislexia" com `Switch` (antes dos filtros de daltonismo); usa `trackColor`/`thumbColor` do tema
+- **`AdBanner.tsx`** → corrigidos 3 bugs de tipo pré-existentes: ícone `heart-pulse` → `fitness`, `as never` duplo → `as any`, array `ADS` tipado com `as const`; type-check: ✅ EXIT 0
+
+### Sprint 11 — Login Google em runtime ✅
+- **`LoginScreen.tsx`** → fluxo OAuth corrigido:
+  - Removidos `androidClientId`/`iosClientId` duplicados (causavam conflito com o Web Client ID)
+  - Removido `useProxy` (API removida no `expo-auth-session` 7.x)
+  - `redirectUri` via `makeRedirectUri()` resolvido automaticamente — no web gera `http://localhost:8081`, no nativo usa o scheme do app
+  - Botão "Entrar com Google" ocultado quando `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` não está configurado
+  - Handler de `response` simplificado com `??` (cobre `authentication.idToken` e `params.id_token`)
+- **`.env.development`** → `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` já configurado com o Client ID real
+- **Pré-requisito no Google Cloud Console** (verificar antes de testar em dispositivo):
+  - Adicionar `http://localhost:8081` como **Authorized JavaScript origin**
+  - Adicionar `http://localhost:8081` como **Authorized redirect URI**
+
+
 ---
 
 ## 📊 Estado Atual do Mobile
@@ -81,13 +129,18 @@ O **Cedro** é uma plataforma de saúde mental com dois perfis (paciente e psic�
 - ✅ Lista/Detalhe de psicólogos
 - ✅ Agendamento de sessão
 - ✅ **Pagamento (Cartão/PIX)** com confirmação no backend
-- ✅ Chat em tempo real (polling 2.5s)
+- ✅ Chat em tempo real (polling 2.5s + **WebSocket STOMP conectado**)
 - ✅ Reunião via Google Meet
 - ✅ Minhas sessões + Perfil com edição
 - ✅ Guia de Saúde Mental (5 transtornos) + Autoavaliações (3 testes)
 - ✅ 3 jogos de relaxamento + Chat de emergência (chatbot) + Botão SOS global
 - ✅ Portal do Psicólogo (pacientes, consultas, financeiro, estatísticas)
 - ✅ Paywall de assinatura
+- ✅ **Dark Mode / Tema dinâmico** (light/dark/system + persistência AsyncStorage)
+- ✅ **Filtros de daltonismo** (protanopia, deuteranopia, tritanopia) + UI em AppearanceScreen
+- ✅ **AdBanner** (flutuante a cada 30s, oculto para premium, montado globalmente no App.tsx)
+- ✅ **Fonte Lexend para dislexia** (toggle em AppearanceScreen, persistido, `fontFamily` exposto pelo ThemeContext)
+- ✅ **Login Google** (fluxo OAuth corrigido, `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` configurado)
 
 ### Type-check
 - ✅ **EXIT 0** — zero erros de compilação
@@ -97,16 +150,10 @@ O **Cedro** é uma plataforma de saúde mental com dois perfis (paciente e psic�
 ## 🔴 O que Falta (Próximos Sprints)
 
 ### Prioridade Alta
-1. **Dark Mode / Tema dinâmico** — infra existe mas está forçada ao claro; migrar telas para `useTheme()`
-2. **Filtros de daltonismo + fonte dislexia** — paletas alternativas no ThemeContext + AsyncStorage
-
-### Prioridade Média
-3. **AdBanner / Premium** — banner flutuante a cada 30s, oculto para premium, limite 4 sessões/mês free
-4. **Login Google em runtime** — fluxo OAuth não testado no dispositivo
-5. **WebSocket STOMP para chat** — preparado mas não conectado (usa polling 2.5s)
+_(sem pendências)_
 
 ### Prioridade Baixa
-6. **Área Admin** — dashboard, usuários, sessões, configurações (normalmente só web)
+1. **Testes em dispositivo físico** — Login Google requer dispositivo real ou emulador com Play Services; verificar URIs no Google Cloud Console
 
 ---
 
@@ -169,7 +216,7 @@ mobile/
 - **State Management:** Zustand (authStore, uiStore)
 - **HTTP Client:** axios com interceptor JWT (SecureStore)
 - **Notificações:** expo-notifications (permissões corrigidas no sprint 5)
-- **Chat:** polling 2.5s (WebSocket STOMP preparado mas não conectado)
+- **Chat:** polling 2.5s + WebSocket STOMP conectado (fallback automático)
 - **Assinatura:** RevenueCat (subscriptionService)
 
 ---
@@ -187,11 +234,11 @@ mobile/
 
 ## 🔄 Próximo Passo Imediato
 
-**Iniciar Sprint 7 — Dark Mode:**
-1. Abrir `ThemeContext.tsx` e remover o `TEMPORÁRIO` que força modo claro
-2. Migrar `LoginScreen.tsx` para `useTheme()` (primeiro caso de teste)
-3. Seguir para as demais telas de `auth/`, `home/`, `chat/`, etc.
-4. Testar toggle em runtime
+**Sem sprints pendentes.** Todas as funcionalidades planejadas estão implementadas.
+Próximos passos são operações de infraestrutura:
+1. Verificar URIs autorizados no Google Cloud Console (ver Sprint 11)
+2. Testar login Google em dispositivo físico com `npx expo start`
+3. Configurar variáveis no EAS Console para build de produção
 
 ---
 

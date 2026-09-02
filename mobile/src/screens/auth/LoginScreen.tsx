@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
+import { makeRedirectUri } from 'expo-auth-session';
 import { AuthStackParamList } from '../../types/navigation.types';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
@@ -13,7 +14,16 @@ import { AuthScreenLayout } from '../../components/AuthScreenLayout';
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
+// Obrigatório para fechar o popup OAuth no web após o redirect
 WebBrowser.maybeCompleteAuthSession();
+
+const GOOGLE_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '';
+
+// No web: redirect para a própria origem (http://localhost:8081 em dev)
+// No nativo: resolvido automaticamente pelo SDK
+// IMPORTANTE: a URL gerada deve estar registrada no Google Cloud Console
+// como Authorized redirect URI.
+const redirectUri = makeRedirectUri();
 
 export const LoginScreen = () => {
   const { colors } = useTheme();
@@ -23,23 +33,20 @@ export const LoginScreen = () => {
 
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
-  const googleClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
-  const googleEnabled = Platform.OS !== 'web' || !!googleClientId;
 
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    webClientId: googleClientId ?? 'PLACEHOLDER',
-    androidClientId: googleClientId,
-    iosClientId: googleClientId,
+    webClientId: GOOGLE_CLIENT_ID,
+    redirectUri,
   });
 
   useEffect(() => {
-    const authResult = response as
-      | { type?: string; authentication?: { idToken?: string }; params?: { id_token?: string } }
-      | null;
-    const idToken = authResult?.authentication?.idToken || authResult?.params?.id_token;
-    if (authResult?.type === 'success' && idToken) {
-      loginComGoogle(idToken);
-    }
+    if (response?.type !== 'success') return;
+    const r = response as {
+      authentication?: { idToken?: string };
+      params?: { id_token?: string };
+    };
+    const idToken = r.authentication?.idToken ?? r.params?.id_token;
+    if (idToken) loginComGoogle(idToken);
   }, [response, loginComGoogle]);
 
   const handleLogin = () => {
@@ -87,13 +94,15 @@ export const LoginScreen = () => {
         onPress={() => navigation.navigate('ForgotPassword')}
       />
 
-      <Button
-        title="Entrar com Google"
-        variant="outline"
-        onPress={() => promptAsync()}
-        disabled={!request || isLoading || !googleEnabled}
-        style={styles.googleButton}
-      />
+      {!!GOOGLE_CLIENT_ID && (
+        <Button
+          title="Entrar com Google"
+          variant="outline"
+          onPress={() => promptAsync()}
+          disabled={!request || isLoading}
+          style={styles.googleButton}
+        />
+      )}
 
       <Button
         title="Entrar"

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { useFonts, Lexend_400Regular, Lexend_600SemiBold, Lexend_700Bold } from '@expo-google-fonts/lexend';
 
 // Utils e Stores
 import { queryClient, asyncStoragePersister } from './src/utils/queryClient';
@@ -14,6 +15,7 @@ import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { Toast } from './src/components/Toast';
 import { OfflineBanner } from './src/components/OfflineBanner';
 import { EmergencyButton } from './src/components/EmergencyButton';
+import { AdBanner } from './src/components/AdBanner';
 
 // Navegação
 import { RootNavigator } from './src/navigation/RootNavigator';
@@ -34,6 +36,7 @@ const AppRoot = () => {
           persistOptions={{ persister: asyncStoragePersister }}
         >
           <RootNavigator />
+          <AdBanner />
           <EmergencyButton />
 
           <OfflineBanner />
@@ -50,6 +53,12 @@ export default function App() {
   const checkAuth = useAuthStore((state) => state.checkAuth);
   const loadPreferences = useUIStore((state) => state.loadPreferences);
 
+  const [fontsLoaded] = useFonts({
+    Lexend_400Regular,
+    Lexend_600SemiBold,
+    Lexend_700Bold,
+  });
+
   useEffect(() => {
     async function initApp() {
       try {
@@ -64,7 +73,7 @@ export default function App() {
     initApp();
   }, [checkAuth, loadPreferences]);
 
-  if (!isReady) {
+  if (!isReady || !fontsLoaded) {
     return <SplashScreen />;
   }
 

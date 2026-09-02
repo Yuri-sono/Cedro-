@@ -53,6 +53,7 @@ export type ProfileStackParamList = {
   MySessions: undefined;
   NewSessionPsicologo: undefined;
   Subscription: undefined;
+  Appearance: undefined;
   // Portal do Psicólogo
   PacientesPsicologo: undefined;
   ConsultasPsicologo: undefined;

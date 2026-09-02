@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
@@ -434,7 +434,7 @@ const createStyles = (colors: ThemeColors) =>
     minHeight: 48,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E6DDC8',
+    borderColor: colors.border,
     backgroundColor: colors.surfaceWarm,
     alignItems: 'center',
     justifyContent: 'center',
@@ -456,7 +456,7 @@ const createStyles = (colors: ThemeColors) =>
     backgroundColor: colors.surfaceWarm,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E7DCC6',
+    borderColor: colors.border,
     padding: spacing.base,
     marginBottom: spacing.base,
   },

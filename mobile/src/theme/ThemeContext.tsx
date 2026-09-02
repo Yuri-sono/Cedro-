@@ -7,19 +7,26 @@
  */
 
 import React, { createContext, useCallback, useContext, useMemo } from 'react';
-// TEMPORÁRIO: `useColorScheme` (react-native) volta quando a lógica dinâmica
-// for reativada após a migração das telas.
+import { useColorScheme } from 'react-native';
 import { useUIStore } from '../store/uiStore';
-// TEMPORÁRIO: `darkColors` volta quando a lógica dinâmica for reativada.
-import { lightColors, ThemeColors } from './colors';
+import { lightColors, darkColors, applyColorMode, ThemeColors } from './colors';
 
 export type ThemePreference = 'light' | 'dark' | 'system';
+
+// Fonte padrão do sistema por plataforma
+const FONT_SYSTEM = undefined; // deixa o RN usar o padrão nativo
+export const FONT_DISLEXIA = 'Lexend_400Regular';
 
 export interface ThemeContextValue {
   colors: ThemeColors;
   isDark: boolean;
   themePreference: ThemePreference;
   setThemePreference: (theme: ThemePreference) => void;
+  colorMode: ReturnType<typeof useUIStore.getState>['colorMode'];
+  setColorMode: ReturnType<typeof useUIStore.getState>['setColorMode'];
+  dislexia: boolean;
+  setDislexia: (enabled: boolean) => void;
+  fontFamily: string | undefined;
 }
 
 export const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
@@ -29,40 +36,32 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider = ({ children }: ThemeProviderProps) => {
-  // ================================================================
-  // TEMPORÁRIO: forçado modo claro até a migração de todas as telas
-  // terminar (Fases 1-4). Reativar a lógica dinâmica original depois.
-  // ================================================================
-
-  // Preferência persistida no uiStore (AsyncStorage) — mantida para que a
-  // escolha do usuário continue sendo salva enquanto o tema claro é forçado.
   const themePreference = useUIStore((state) => state.theme);
+  const colorMode = useUIStore((state) => state.colorMode);
+  const dislexia = useUIStore((state) => state.dislexia);
   const setTheme = useUIStore((state) => state.setTheme);
+  const setColorMode = useUIStore((state) => state.setColorMode);
+  const setDislexiaStore = useUIStore((state) => state.setDislexia);
 
-  // ----------------------------------------------------------------
-  // LÓGICA ORIGINAL DESATIVADA TEMPORARIAMENTE — reativar após a
-  // migração completa das telas (Fases 1-4):
-  //
-  // // Esquema do sistema operacional (só relevante quando theme === 'system')
-  // const systemColorScheme = useColorScheme();
-  //
-  // const isDark =
-  //   themePreference === 'system'
-  //     ? systemColorScheme === 'dark'
-  //     : themePreference === 'dark';
-  //
-  // const activeColors = isDark ? darkColors : lightColors;
-  // ----------------------------------------------------------------
+  const systemColorScheme = useColorScheme();
 
-  // TEMPORÁRIO: sempre claro, independente da preferência salva ou do sistema
-  const isDark = false;
-  const activeColors = lightColors;
+  const isDark =
+    themePreference === 'system'
+      ? systemColorScheme === 'dark'
+      : themePreference === 'dark';
+
+  const activeColors = applyColorMode(isDark ? darkColors : lightColors, colorMode);
+
+  const fontFamily = dislexia ? FONT_DISLEXIA : FONT_SYSTEM;
 
   const setThemePreference = useCallback(
-    (theme: ThemePreference) => {
-      void setTheme(theme);
-    },
+    (theme: ThemePreference) => { void setTheme(theme); },
     [setTheme],
+  );
+
+  const setDislexia = useCallback(
+    (enabled: boolean) => { void setDislexiaStore(enabled); },
+    [setDislexiaStore],
   );
 
   const value = useMemo<ThemeContextValue>(
@@ -71,8 +70,13 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
       isDark,
       themePreference,
       setThemePreference,
+      colorMode,
+      setColorMode,
+      dislexia,
+      setDislexia,
+      fontFamily,
     }),
-    [activeColors, isDark, themePreference, setThemePreference],
+    [activeColors, isDark, themePreference, setThemePreference, colorMode, setColorMode, dislexia, setDislexia, fontFamily],
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
