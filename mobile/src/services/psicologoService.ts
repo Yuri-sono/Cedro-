@@ -1,6 +1,6 @@
 import api from './api';
 import { API_ENDPOINTS } from '../constants/api';
-import { PsicologoListItem, PsicologoResponse, PsicologoEstatisticas, ProximaConsulta, PacienteResumo, FinanceiroPsicologo } from '../types/api.types';
+import { AtividadeRecente, PsicologoListItem, PsicologoResponse, PsicologoEstatisticas, ProximaConsulta, PacienteResumo, FinanceiroPsicologo } from '../types/api.types';
 import { agendaConfigService } from './agendaConfigService';
 import { mergeAgendaConfig } from '../utils/psychologistAgenda';
 
@@ -40,6 +40,11 @@ export const psicologoService = {
     const response = await api.get<FinanceiroPsicologo>(API_ENDPOINTS.PSICOLOGOS.FINANCEIRO, {
       params: { periodo },
     });
+    return response.data;
+  },
+
+  atividadesRecentes: async (): Promise<AtividadeRecente[]> => {
+    const response = await api.get<AtividadeRecente[]>(API_ENDPOINTS.PSICOLOGOS.ATIVIDADES_RECENTES);
     return response.data;
   },
 };

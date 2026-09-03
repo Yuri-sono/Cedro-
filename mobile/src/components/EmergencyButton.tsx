@@ -5,14 +5,14 @@ import { useTheme, spacing, typography, borderRadius } from '../theme';
 import { ThemeColors } from '../theme/colors';
 
 /**
- * Bot�o SOS flutuante global � espelho do EmergencyButton.jsx do web.
- * Abre popover com n�meros oficiais de socorro no Brasil, com liga��o
+ * Botão SOS flutuante global — espelho do EmergencyButton.jsx do web.
+ * Abre popover com números oficiais de socorro no Brasil, com ligação
  * direta via Linking.openURL('tel:...').
  */
 const NUMEROS_SOCORRO = [
-  { nome: 'SAMU', numero: '192', desc: 'Emerg�ncia m�dica / ambul�ncia', icone: 'medical' as const },
-  { nome: 'Pol�cia Militar', numero: '190', desc: 'Emerg�ncia policial', icone: 'shield' as const },
-  { nome: 'Corpo de Bombeiros', numero: '193', desc: 'Inc�ndios e resgates', icone: 'flame' as const },
+  { nome: 'SAMU', numero: '192', desc: 'Emergência médica / ambulância', icone: 'medical' as const },
+  { nome: 'Polícia Militar', numero: '190', desc: 'Emergência policial', icone: 'shield' as const },
+  { nome: 'Corpo de Bombeiros', numero: '193', desc: 'Incêndios e resgates', icone: 'flame' as const },
 ];
 
 export const EmergencyButton = () => {
@@ -47,7 +47,7 @@ export const EmergencyButton = () => {
                 <Ionicons name="pulse" size={20} color={colors.white} />
               </View>
               <View style={styles.itemTexto}>
-                <Text style={styles.itemTitulo}>CVV � Ligue 188</Text>
+                <Text style={styles.itemTitulo}>CVV — Ligue 188</Text>
                 <Text style={styles.itemDesc}>
                   Apoio emocional gratuito, sigiloso e 24 horas por dia
                 </Text>
@@ -55,7 +55,7 @@ export const EmergencyButton = () => {
               <Ionicons name="call" size={18} color={colors.white} />
             </TouchableOpacity>
 
-            <Text style={styles.divisor}>Outros servi�os de emerg�ncia</Text>
+            <Text style={styles.divisor}>Outros serviços de emergência</Text>
 
             {NUMEROS_SOCORRO.map((n) => (
               <TouchableOpacity key={n.numero} style={styles.item} onPress={() => ligar(n.numero)}>
@@ -64,7 +64,7 @@ export const EmergencyButton = () => {
                 </View>
                 <View style={styles.itemTexto}>
                   <Text style={[styles.itemTitulo, { color: colors.textPrimary }]}>
-                    {n.nome} � {n.numero}
+                    {n.nome} — {n.numero}
                   </Text>
                   <Text style={styles.itemDesc}>{n.desc}</Text>
                 </View>
@@ -75,7 +75,7 @@ export const EmergencyButton = () => {
             <View style={styles.nota}>
               <Ionicons name="warning" size={14} color={colors.accent} />
               <Text style={styles.notaTexto}>
-                Em risco imediato, ligue 188 ou v� ao pronto-socorro mais pr�ximo.
+                Em risco imediato, ligue 188 ou vá ao pronto-socorro mais próximo.
               </Text>
             </View>
           </View>
@@ -86,7 +86,7 @@ export const EmergencyButton = () => {
         style={styles.botao}
         onPress={() => setAberto((a) => !a)}
         activeOpacity={0.85}
-        accessibilityLabel="N�meros de emerg�ncia � CVV 188"
+        accessibilityLabel="Números de emergência — CVV 188"
       >
         <Ionicons name={aberto ? 'close' : 'call'} size={22} color={colors.white} />
         <Text style={styles.botaoTexto}>SOS</Text>

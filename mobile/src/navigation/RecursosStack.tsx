@@ -1,6 +1,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { RecursosStackParamList } from '../types/navigation.types';
+import { HeaderBackButton } from '../components/HeaderBackButton';
 import { RecursosHubScreen } from '../screens/recursos/RecursosHubScreen';
 import { SaudeMentalScreen } from '../screens/recursos/SaudeMentalScreen';
 import { AutoavaliacoesScreen } from '../screens/recursos/AutoavaliacoesScreen';
@@ -11,7 +12,19 @@ const Stack = createNativeStackNavigator<RecursosStackParamList>();
 
 export const RecursosStack = () => {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={({ navigation }) => ({
+        // Garante a setinha de voltar em todas as telas de Recursos,
+        // inclusive onde o botão nativo do header não aparece (ex.: web).
+        headerLeft: ({ canGoBack, tintColor }) => (
+          <HeaderBackButton
+            canGoBack={!!canGoBack}
+            onPress={() => navigation.goBack()}
+            color={tintColor ?? undefined}
+          />
+        ),
+      })}
+    >
       <Stack.Screen
         name="RecursosHub"
         component={RecursosHubScreen}

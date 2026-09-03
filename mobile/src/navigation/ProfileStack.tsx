@@ -1,6 +1,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ProfileStackParamList } from '../types/navigation.types';
+import { HeaderBackButton } from '../components/HeaderBackButton';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import { EditProfileScreen } from '../screens/profile/EditProfileScreen';
 import { PsychologistSettingsScreen } from '../screens/profile/PsychologistSettingsScreen';
@@ -13,12 +14,26 @@ import { PacientesPsicologoScreen } from '../screens/psicologo/PacientesPsicolog
 import { ConsultasPsicologoScreen } from '../screens/psicologo/ConsultasPsicologoScreen';
 import { FinanceiroPsicologoScreen } from '../screens/psicologo/FinanceiroPsicologoScreen';
 import { EstatisticasPsicologoScreen } from '../screens/psicologo/EstatisticasPsicologoScreen';
+import { DashboardPsicologoScreen } from '../screens/psicologo/DashboardPsicologoScreen';
+import { AgendaPsicologoScreen } from '../screens/psicologo/AgendaPsicologoScreen';
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
 
 export const ProfileStack = () => {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={({ navigation }) => ({
+        // Garante a setinha de voltar em todas as telas do Perfil (inclusive Assinatura),
+        // inclusive onde o botão nativo do header não aparece (ex.: web).
+        headerLeft: ({ canGoBack, tintColor }) => (
+          <HeaderBackButton
+            canGoBack={!!canGoBack}
+            onPress={() => navigation.goBack()}
+            color={tintColor ?? undefined}
+          />
+        ),
+      })}
+    >
       <Stack.Screen 
         name="Profile" 
         component={ProfileScreen} 
@@ -55,6 +70,16 @@ export const ProfileStack = () => {
         options={{ title: 'Assinatura' }} 
       />
       <Stack.Screen
+        name="DashboardPsicologo"
+        component={DashboardPsicologoScreen}
+        options={{ title: 'Dashboard' }}
+      />
+      <Stack.Screen
+        name="AgendaPsicologo"
+        component={AgendaPsicologoScreen}
+        options={{ title: 'Agenda' }}
+      />
+      <Stack.Screen
         name="PacientesPsicologo"
         component={PacientesPsicologoScreen}
         options={{ title: 'Meus Pacientes' }}
@@ -62,7 +87,7 @@ export const ProfileStack = () => {
       <Stack.Screen
         name="ConsultasPsicologo"
         component={ConsultasPsicologoScreen}
-        options={{ title: 'Próximas Consultas' }}
+        options={{ title: 'Consultas' }}
       />
       <Stack.Screen
         name="FinanceiroPsicologo"

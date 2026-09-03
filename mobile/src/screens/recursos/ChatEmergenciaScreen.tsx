@@ -41,7 +41,7 @@ export const ChatEmergenciaScreen = () => {
   };
 
   const handleOpcao = (opcao: (typeof OPCOES_EMERGENCIA)[number]) => {
-    adicionarMensagem(`${opcao.emoji} ${opcao.texto}`, true);
+    adicionarMensagem(opcao.texto, true);
     setDigitando(true);
     setTimeout(() => {
       setDigitando(false);
@@ -90,9 +90,7 @@ export const ChatEmergenciaScreen = () => {
                 onPress={() => handleOpcao(opcao)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.opcaoTexto}>
-                  {opcao.emoji} {opcao.texto}
-                </Text>
+                <Text style={styles.opcaoTexto}>{opcao.texto}</Text>
               </TouchableOpacity>
             ))}
           </View>

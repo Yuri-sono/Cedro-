@@ -120,6 +120,8 @@ export interface SessaoRequest {
 }
 
 // ── Sessao (Sessao.java entity) ──
+// GET /api/sessoes/psicologo/{id} e /api/sessoes/minhas retornam os nomes e o
+// link da reunião incluídos pelo SessaoController (ver DOCUMENTO_TECNICO_CEDRO.md).
 export interface Sessao {
   id: number;
   pacienteId: number;
@@ -130,6 +132,18 @@ export interface Sessao {
   statusSessao: string;
   observacoes: string | null;
   dataCriacao: string;
+  pacienteNome?: string | null;
+  psicologoNome?: string | null;
+  linkReuniao?: string | null;
+}
+
+// ── Atividade recente (GET /api/psicologos/atividades-recentes) ──
+export interface AtividadeRecente {
+  tipo: 'consulta_finalizada' | 'novo_agendamento';
+  pacienteNome: string;
+  data: string;
+  dataSessao?: string;
+  sessaoId: number;
 }
 
 export interface DisponibilidadeResponse {

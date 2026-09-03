@@ -7,7 +7,7 @@ import { NavigatorScreenParams } from '@react-navigation/native';
 
 // Parâmetros para as rotas de Auth
 export type AuthStackParamList = {
-  Login: undefined;
+  Login: { email?: string } | undefined;
   Register: undefined;
   ForgotPassword: undefined;
 };
@@ -55,6 +55,8 @@ export type ProfileStackParamList = {
   Subscription: undefined;
   Appearance: undefined;
   // Portal do Psicólogo
+  DashboardPsicologo: undefined;
+  AgendaPsicologo: undefined;
   PacientesPsicologo: undefined;
   ConsultasPsicologo: undefined;
   FinanceiroPsicologo: undefined;

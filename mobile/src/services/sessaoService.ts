@@ -1,6 +1,6 @@
 import api from './api';
 import { API_ENDPOINTS } from '../constants/api';
-import { DisponibilidadeResponse, Sessao, SessaoRequest } from '../types/api.types';
+import { DisponibilidadeResponse, LinkReuniaoResponse, Sessao, SessaoRequest } from '../types/api.types';
 
 export const sessaoService = {
   listarTodas: async (): Promise<Sessao[]> => {
@@ -41,6 +41,13 @@ export const sessaoService = {
 
   atualizarStatus: async (id: number, status: 'realizada' | 'cancelada'): Promise<Sessao> => {
     const response = await api.put<Sessao>(API_ENDPOINTS.SESSOES.STATUS(id), { status });
+    return response.data;
+  },
+
+  // Espelho do fluxo "Ver link da reunião" da AgendaPsicologo.jsx (web):
+  // GET /api/sessoes/{id}/link-reuniao → { liberado, disponivelEm?, link?, erro? }
+  linkReuniao: async (id: number): Promise<LinkReuniaoResponse> => {
+    const response = await api.get<LinkReuniaoResponse>(API_ENDPOINTS.SESSOES.LINK_REUNIAO(id));
     return response.data;
   },
 

@@ -6,10 +6,15 @@ export interface Pergunta {
   texto: string;
 }
 
+import type { ComponentProps } from 'react';
+import Ionicons from '@expo/vector-icons/Ionicons';
+
+type NomeIcone = ComponentProps<typeof Ionicons>['name'];
+
 export interface Teste {
   id: 'ansiedade' | 'depressao' | 'estresse';
   titulo: string;
-  emoji: string;
+  icone: NomeIcone;
   descricao: string;
   perguntas: Pergunta[];
 }
@@ -20,7 +25,7 @@ export const TESTES: Teste[] = [
   {
     id: 'ansiedade',
     titulo: 'Teste de Ansiedade',
-    emoji: '😰',
+    icone: 'pulse',
     descricao: 'Avalie como você tem se sentido nas últimas 2 semanas.',
     perguntas: [
       { texto: 'Com que frequência você se sente nervoso ou ansioso?' },
@@ -33,7 +38,7 @@ export const TESTES: Teste[] = [
   {
     id: 'depressao',
     titulo: 'Teste de Depressão',
-    emoji: '😔',
+    icone: 'cloud',
     descricao: 'Avalie seu humor e energia nas últimas 2 semanas.',
     perguntas: [
       { texto: 'Com que frequência você se sente triste ou desanimado?' },
@@ -46,7 +51,7 @@ export const TESTES: Teste[] = [
   {
     id: 'estresse',
     titulo: 'Teste de Estresse',
-    emoji: '🔥',
+    icone: 'speedometer',
     descricao: 'Avalie a carga de tensão que você tem sentido no dia a dia.',
     perguntas: [
       { texto: 'Você se sente sobrecarregado com suas responsabilidades?' },

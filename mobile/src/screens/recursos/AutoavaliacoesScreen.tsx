@@ -64,7 +64,9 @@ export const AutoavaliacoesScreen = () => {
             onPress={() => iniciarTeste(teste)}
             activeOpacity={0.7}
           >
-            <Text style={styles.cardEmoji}>{teste.emoji}</Text>
+            <View style={styles.cardIcone}>
+              <Ionicons name={teste.icone} size={22} color={colors.primary} />
+            </View>
             <View style={styles.cardTexto}>
               <Text style={styles.cardTitulo}>{teste.titulo}</Text>
               <Text style={styles.cardDescricao}>{teste.descricao}</Text>
@@ -217,8 +219,13 @@ const createStyles = (colors: ThemeColors) =>
     borderRadius: borderRadius.lg,
     marginBottom: spacing.sm,
   },
-  cardEmoji: {
-    fontSize: 28,
+  cardIcone: {
+    width: 44,
+    height: 44,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.primaryTint,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cardTexto: {
     flex: 1,

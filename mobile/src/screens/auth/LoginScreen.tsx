@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useRef, useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
@@ -13,6 +15,9 @@ import { useAuth } from '../../hooks/useAuth';
 import { AuthScreenLayout } from '../../components/AuthScreenLayout';
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const CHAVE_EMAIL_LEMBRADO = '@cedro/lembrar_email';
 
 // Obrigatório para fechar o popup OAuth no web após o redirect
 WebBrowser.maybeCompleteAuthSession();
@@ -29,15 +34,37 @@ export const LoginScreen = () => {
   const { colors } = useTheme();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
   const navigation = useNavigation<NavigationProp>();
+  // E-mail preenchido automaticamente após criar a conta (fluxo Cadastro → Login)
+  const route = useRoute<any>();
   const { login, loginComGoogle, isLoading } = useAuth();
 
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(route.params?.email ?? '');
   const [senha, setSenha] = useState('');
+  const [lembrarEmail, setLembrarEmail] = useState(false);
+  const senhaRef = useRef<any>(null);
+
+  const emailValido = EMAIL_RE.test(email.trim());
+  const emailErro = email.length > 0 && !emailValido ? 'Informe um e-mail válido.' : undefined;
 
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     webClientId: GOOGLE_CLIENT_ID,
     redirectUri,
   });
+
+  // Recupera o e-mail lembrado ao abrir a tela
+  useEffect(() => {
+    (async () => {
+      try {
+        const salvo = await AsyncStorage.getItem(CHAVE_EMAIL_LEMBRADO);
+        if (salvo) {
+          setLembrarEmail(true);
+          setEmail((atual: string) => atual || salvo);
+        }
+      } catch {
+        // AsyncStorage indisponível — segue sem e-mail lembrado
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     if (response?.type !== 'success') return;
@@ -49,11 +76,24 @@ export const LoginScreen = () => {
     if (idToken) loginComGoogle(idToken);
   }, [response, loginComGoogle]);
 
-  const handleLogin = () => {
-    if (!email || !senha) return;
-    login({ email: email.trim(), senha });
+  const handleLogin = async () => {
+    if (!emailValido || !senha) return;
+    const sucesso = await login({ email: email.trim(), senha });
+    if (sucesso) {
+      // Praticidade: lembra (ou esquece) o e-mail conforme a escolha do usuário
+      try {
+        if (lembrarEmail) {
+          await AsyncStorage.setItem(CHAVE_EMAIL_LEMBRADO, email.trim());
+        } else {
+          await AsyncStorage.removeItem(CHAVE_EMAIL_LEMBRADO);
+        }
+      } catch {
+        // Falha silenciosa — não bloqueia o login
+      }
+    }
   };
 
+  
   return (
     <AuthScreenLayout
       title="Entrar"
@@ -75,24 +115,52 @@ export const LoginScreen = () => {
         placeholder="Digite seu e-mail"
         keyboardType="email-address"
         autoCapitalize="none"
+        autoComplete="email"
+        textContentType="emailAddress"
+        returnKeyType="next"
+        onSubmitEditing={() => senhaRef.current?.focus()}
         value={email}
         onChangeText={setEmail}
+        error={emailErro}
       />
       <Input
+        ref={senhaRef}
         label="Senha"
         placeholder="Digite sua senha"
         isPassword
+        textContentType="password"
+        autoComplete="password"
+        returnKeyType="go"
+        onSubmitEditing={handleLogin}
         value={senha}
         onChangeText={setSenha}
       />
 
-      <Button
-        title="Esqueci minha senha"
-        variant="text"
-        style={styles.forgotPasswordButton}
-        textStyle={styles.forgotPasswordText}
-        onPress={() => navigation.navigate('ForgotPassword')}
-      />
+      {/* Praticidade: lembrar e-mail + recuperar senha na mesma linha */}
+      <View style={styles.acoesLinha}>
+        <TouchableOpacity
+          style={styles.lembrar}
+          onPress={() => setLembrarEmail((v) => !v)}
+          activeOpacity={0.7}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: lembrarEmail }}
+          accessibilityLabel="Lembrar meu e-mail"
+        >
+          <Ionicons
+            name={lembrarEmail ? 'checkbox' : 'square-outline'}
+            size={18}
+            color={lembrarEmail ? colors.primary : colors.textFaint}
+          />
+          <Text style={styles.lembrarTexto}>Lembrar meu e-mail</Text>
+        </TouchableOpacity>
+
+        <Button
+          title="Esqueci minha senha"
+          variant="text"
+          onPress={() => navigation.navigate('ForgotPassword')}
+          textStyle={styles.forgotPasswordText}
+        />
+      </View>
 
       {!!GOOGLE_CLIENT_ID && (
         <Button
@@ -108,7 +176,7 @@ export const LoginScreen = () => {
         title="Entrar"
         onPress={handleLogin}
         isLoading={isLoading}
-        disabled={!email || !senha}
+        disabled={!emailValido || !senha}
         style={styles.loginButton}
       />
     </AuthScreenLayout>
@@ -117,10 +185,23 @@ export const LoginScreen = () => {
 
 const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
-    forgotPasswordButton: {
-      alignSelf: 'flex-end',
-      width: 'auto',
+    acoesLinha: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
       marginBottom: spacing.base,
+      marginTop: -spacing.xs,
+    },
+    lembrar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+      paddingVertical: spacing.xs,
+    },
+    lembrarTexto: {
+      fontSize: typography.size.sm,
+      color: colors.textSecondary,
+      fontWeight: typography.weight.medium,
     },
     forgotPasswordText: {
       fontSize: typography.size.sm,
@@ -149,3 +230,4 @@ const createStyles = (colors: ThemeColors) =>
       fontWeight: typography.weight.semibold,
     },
   });
+

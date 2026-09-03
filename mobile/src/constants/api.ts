@@ -27,6 +27,7 @@ export const API_ENDPOINTS = {
     PACIENTES: (id: number) => `/api/psicologos/${id}/pacientes`,
     ESTATISTICAS: '/api/psicologos/estatisticas',
     PROXIMAS_CONSULTAS: '/api/psicologos/consultas/proximas',
+    ATIVIDADES_RECENTES: '/api/psicologos/atividades-recentes',
     FINANCEIRO: '/api/psicologos/financeiro',
   },
 

@@ -27,7 +27,9 @@ export const SaudeMentalScreen = () => {
             activeOpacity={0.7}
             accessibilityLabel={`${t.titulo}. Toque para ${ativo === t.id ? 'fechar' : 'expandir'} detalhes`}
           >
-            <Text style={styles.cardEmoji}>{t.emoji}</Text>
+            <View style={styles.cardIcone}>
+              <Ionicons name={t.icone} size={22} color={colors.primary} />
+            </View>
             <View style={styles.cardHeaderTexto}>
               <Text style={styles.cardTitulo}>{t.titulo}</Text>
               <View style={styles.cardBadges}>
@@ -199,8 +201,13 @@ const createStyles = (colors: ThemeColors) =>
     padding: spacing.base,
     minHeight: 52,
   },
-  cardEmoji: {
-    fontSize: 28,
+  cardIcone: {
+    width: 44,
+    height: 44,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.primaryTint,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cardHeaderTexto: {
     flex: 1,

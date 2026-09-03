@@ -12,14 +12,14 @@ const RECURSOS = [
   {
     rota: 'SaudeMental' as const,
     icone: 'happy' as const,
-    titulo: 'Guia de Sa�de Mental',
-    descricao: 'Entenda ansiedade, depress�o, TDAH, burnout e s�ndrome do p�nico.',
+    titulo: 'Guia de Saúde Mental',
+    descricao: 'Entenda ansiedade, depressão, TDAH, burnout e síndrome do pânico.',
   },
   {
     rota: 'Autoavaliacoes' as const,
     icone: 'clipboard' as const,
-    titulo: 'Autoavalia��es',
-    descricao: 'Testes r�pidos de ansiedade, depress�o e estresse.',
+    titulo: 'Autoavaliações',
+    descricao: 'Testes rápidos de ansiedade, depressão e estresse.',
   },
   {
     rota: 'Passatempos' as const,
@@ -31,7 +31,7 @@ const RECURSOS = [
     rota: 'ChatEmergencia' as const,
     icone: 'chatbubbles' as const,
     titulo: 'Preciso de Ajuda',
-    descricao: 'Apoio imediato com t�cnicas guiadas e n�meros de emerg�ncia.',
+    descricao: 'Apoio imediato com técnicas guiadas e números de emergência.',
   },
 ];
 
@@ -43,9 +43,9 @@ export const RecursosHubScreen = () => {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.titulo}>Recursos para voc�</Text>
+        <Text style={styles.titulo}>Recursos para você</Text>
         <Text style={styles.subtitulo}>
-          Conte�dos, atividades e apoio emocional para cuidar da sua mente � tudo aqui � gratuito.
+          Conteúdos, atividades e apoio emocional para cuidar da sua mente — tudo aqui é gratuito.
         </Text>
       </View>
 
@@ -70,7 +70,7 @@ export const RecursosHubScreen = () => {
       <View style={styles.aviso}>
         <Ionicons name="warning" size={16} color={colors.accent} />
         <Text style={styles.avisoTexto}>
-          Em crise, ligue 188 (CVV) � gratuito, sigiloso, 24h. Ou use o bot�o SOS no canto da tela.
+          Em crise, ligue 188 (CVV) — gratuito, sigiloso, 24h. Ou use o botão SOS no canto da tela.
         </Text>
       </View>
     </ScrollView>

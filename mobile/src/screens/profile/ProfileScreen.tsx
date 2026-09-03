@@ -8,12 +8,14 @@ import { Avatar } from '../../components/Avatar';
 import { Button } from '../../components/Button';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { ProfileStackParamList } from '../../types/navigation.types';
+import { ProfileStackParamList, RootStackParamList } from '../../types/navigation.types';
 import { TipoUsuario } from '../../types/api.types';
 import { formatAgendaSummary } from '../../utils/psychologistAgenda';
 import { capitalizeName } from '../../utils/format';
 
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'Profile'>;
+// Navegação raiz, usada para pular para as tabs (ex.: Mensagens → ChatStack)
+type RootNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export const ProfileScreen = () => {
   const { colors } = useTheme();
@@ -21,6 +23,7 @@ export const ProfileScreen = () => {
   const user = useAuthStore((state) => state.user);
   const { logout } = useAuth();
   const navigation = useNavigation<NavigationProp>();
+  const rootNavigation = useNavigation<RootNavigationProp>();
   const isPsicologo = user?.tipoUsuario === TipoUsuario.psicologo;
 
   const confirmLogout = () => {
@@ -61,55 +64,82 @@ export const ProfileScreen = () => {
         </TouchableOpacity>
 
         {isPsicologo && (
-          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PsychologistSettings')}>
-            <View style={styles.menuItemIcon}>
-              <Ionicons name="settings" size={18} color={colors.primary} />
-            </View>
-            <Text style={styles.menuItemText}>Configurar Atendimento</Text>
-            <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
-          </TouchableOpacity>
+          <>
+            {/* ── Portal do Psicólogo — espelha a SidebarPsicologo.jsx da web ── */}
+            <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('DashboardPsicologo')}>
+              <View style={styles.menuItemIcon}>
+                <Ionicons name="speedometer" size={18} color={colors.primary} />
+              </View>
+              <Text style={styles.menuItemText}>Dashboard</Text>
+              <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('AgendaPsicologo')}>
+              <View style={styles.menuItemIcon}>
+                <Ionicons name="calendar" size={18} color={colors.primary} />
+              </View>
+              <Text style={styles.menuItemText}>Agenda</Text>
+              <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PacientesPsicologo')}>
+              <View style={styles.menuItemIcon}>
+                <Ionicons name="people" size={18} color={colors.primary} />
+              </View>
+              <Text style={styles.menuItemText}>Pacientes</Text>
+              <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('ConsultasPsicologo')}>
+              <View style={styles.menuItemIcon}>
+                <Ionicons name="clipboard" size={18} color={colors.primary} />
+              </View>
+              <Text style={styles.menuItemText}>Consultas</Text>
+              <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() =>
+                rootNavigation.navigate('Main', {
+                  screen: 'ChatStack',
+                  params: { screen: 'Conversas' },
+                })
+              }
+            >
+              <View style={styles.menuItemIcon}>
+                <Ionicons name="chatbubbles" size={18} color={colors.primary} />
+              </View>
+              <Text style={styles.menuItemText}>Mensagens</Text>
+              <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('FinanceiroPsicologo')}>
+              <View style={styles.menuItemIcon}>
+                <Ionicons name="wallet" size={18} color={colors.primary} />
+              </View>
+              <Text style={styles.menuItemText}>Financeiro</Text>
+              <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('EstatisticasPsicologo')}>
+              <View style={styles.menuItemIcon}>
+                <Ionicons name="stats-chart" size={18} color={colors.primary} />
+              </View>
+              <Text style={styles.menuItemText}>Estatísticas</Text>
+              <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PsychologistSettings')}>
+              <View style={styles.menuItemIcon}>
+                <Ionicons name="settings" size={18} color={colors.primary} />
+              </View>
+              <Text style={styles.menuItemText}>Configurações de Atendimento</Text>
+              <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
+            </TouchableOpacity>
+          </>
         )}
 
-        {isPsicologo && (
-          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PacientesPsicologo')}>
-            <View style={styles.menuItemIcon}>
-              <Ionicons name="people" size={18} color={colors.primary} />
-            </View>
-            <Text style={styles.menuItemText}>Meus Pacientes</Text>
-            <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
-          </TouchableOpacity>
-        )}
-
-        {isPsicologo && (
-          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('ConsultasPsicologo')}>
-            <View style={styles.menuItemIcon}>
-              <Ionicons name="clipboard" size={18} color={colors.primary} />
-            </View>
-            <Text style={styles.menuItemText}>Próximas Consultas</Text>
-            <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
-          </TouchableOpacity>
-        )}
-
-        {isPsicologo && (
-          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('FinanceiroPsicologo')}>
-            <View style={styles.menuItemIcon}>
-              <Ionicons name="wallet" size={18} color={colors.primary} />
-            </View>
-            <Text style={styles.menuItemText}>Financeiro</Text>
-            <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
-          </TouchableOpacity>
-        )}
-
-        {isPsicologo && (
-          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('EstatisticasPsicologo')}>
-            <View style={styles.menuItemIcon}>
-              <Ionicons name="stats-chart" size={18} color={colors.primary} />
-            </View>
-            <Text style={styles.menuItemText}>Estatísticas</Text>
-            <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
-          </TouchableOpacity>
-        )}
-        
         <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('MySessions')}>
           <View style={styles.menuItemIcon}>
             <Ionicons name="calendar" size={18} color={colors.primary} />

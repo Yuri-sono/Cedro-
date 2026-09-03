@@ -1,16 +1,19 @@
 ﻿import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import type { ComponentProps } from 'react';
 import { colors, typography, spacing , useTheme, ThemeColors } from '../../theme';
 import { PlasticoBolha } from './games/PlasticoBolha';
 import { TesteReflexo } from './games/TesteReflexo';
 import { ParticulasFugitivas } from './games/ParticulasFugitivas';
 
 type Jogo = 'bolhas' | 'reflexo' | 'particulas';
+type NomeIcone = ComponentProps<typeof Ionicons>['name'];
 
-const ABAS: { id: Jogo; emoji: string; label: string }[] = [
-  { id: 'bolhas', emoji: '🫧', label: 'Plástico Bolha' },
-  { id: 'reflexo', emoji: '⚡', label: 'Teste de Reflexo' },
-  { id: 'particulas', emoji: '✨', label: 'Partículas Fugitivas' },
+const ABAS: { id: Jogo; icone: NomeIcone; label: string }[] = [
+  { id: 'bolhas', icone: 'ellipse', label: 'Plástico Bolha' },
+  { id: 'reflexo', icone: 'flash', label: 'Teste de Reflexo' },
+  { id: 'particulas', icone: 'sparkles', label: 'Partículas Fugitivas' },
 ];
 
 export const PassatemposScreen = () => {
@@ -35,7 +38,12 @@ export const PassatemposScreen = () => {
                 style={[styles.abaTexto, ativo === aba.id && styles.abaTextoAtivo]}
                 onPress={() => setAtivo(aba.id)}
               >
-                {aba.emoji} {aba.label}
+                <Ionicons
+                  name={aba.icone}
+                  size={13}
+                  color={ativo === aba.id ? colors.primary : colors.textSecondary}
+                />
+                {' '}{aba.label}
               </Text>
               {ativo === aba.id && <View style={styles.abaIndicador} />}
             </View>

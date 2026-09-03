@@ -98,12 +98,12 @@ const getVisual = (estado: EstadoJogo, tempo: number | null) => {
     case 'pronto':
       return { fundo: colors.success, titulo: '', mensagem: 'TOQUE JÁ!' };
     case 'cedo':
-      return { fundo: colors.surface, titulo: 'Cedo demais! 😅', mensagem: 'Toque para tentar de novo.' };
+      return { fundo: colors.surface, titulo: 'Cedo demais!', mensagem: 'Toque para tentar de novo.' };
     case 'resultado':
       return {
         fundo: colors.surface,
         titulo: 'Seu tempo de reação:',
-        mensagem: tempo !== null && tempo < 250 ? 'Reflexo de falcão! 🦅' : 'Bom reflexo! 👏',
+        mensagem: tempo !== null && tempo < 250 ? 'Excelente reflexo!' : 'Bom reflexo!',
       };
     default:
       return {
