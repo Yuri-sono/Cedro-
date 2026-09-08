@@ -179,7 +179,7 @@ const ConsultasPsicologo = () => {
                 ) : (
                   <div className="table-responsive">
                     <table className="table table-hover mb-0">
-                      <thead className="bg-light">
+                      <thead className="bg-light" style={{ color: 'var(--text-primary, #212529)', backgroundColor: 'var(--bg-secondary, #f8f9fa)' }}>
                         <tr>
                           <th>Paciente</th>
                           <th>Data</th>
@@ -285,35 +285,35 @@ const ConsultasPsicologo = () => {
           <div className="modal-backdrop fade show" onClick={() => setDetalhesSessao(null)} aria-hidden="true" />
           <div className="modal d-block" tabIndex="-1" role="dialog" aria-modal="true">
             <div className="modal-dialog modal-dialog-centered">
-              <div className="modal-content border-0 shadow-lg">
+              <div className="modal-content border-0 shadow-lg" style={{ backgroundColor: 'var(--bg-primary, #fff)', color: 'var(--text-primary, #212529)' }}>
                 <div className="modal-header border-0">
-                  <h5 className="modal-title fw-bold">Detalhes da Consulta</h5>
+                  <h5 className="modal-title fw-bold" style={{ color: 'var(--text-primary, #212529)' }}>Detalhes da Consulta</h5>
                   <button type="button" className="btn-close" aria-label="Fechar" onClick={() => setDetalhesSessao(null)} />
                 </div>
-                <div className="modal-body">
+                <div className="modal-body" style={{ color: 'var(--text-primary, #212529)' }}>
                   <div className="mb-2">
-                    <strong>Paciente:</strong> {detalhesSessao.pacienteNome || `Paciente #${detalhesSessao.pacienteId}`}
+                    <strong style={{ color: 'var(--text-primary, #212529)' }}>Paciente:</strong> {detalhesSessao.pacienteNome || `Paciente #${detalhesSessao.pacienteId}`}
                   </div>
                   <div className="mb-2">
-                    <strong>Psicólogo:</strong> {detalhesSessao.psicologoNome || `Psicólogo #${detalhesSessao.psicologoId}`}
+                    <strong style={{ color: 'var(--text-primary, #212529)' }}>Psicólogo:</strong> {detalhesSessao.psicologoNome || `Psicólogo #${detalhesSessao.psicologoId}`}
                   </div>
                   <div className="mb-2">
-                    <strong>Data:</strong> {new Date(detalhesSessao.dataSessao).toLocaleString('pt-BR')}
+                    <strong style={{ color: 'var(--text-primary, #212529)' }}>Data:</strong> {new Date(detalhesSessao.dataSessao).toLocaleString('pt-BR')}
                   </div>
                   <div className="mb-2">
-                    <strong>Duração:</strong> {detalhesSessao.duracao || 60} minutos
+                    <strong style={{ color: 'var(--text-primary, #212529)' }}>Duração:</strong> {detalhesSessao.duracao || 60} minutos
                   </div>
                   <div className="mb-2">
-                    <strong>Status:</strong> {getStatusLabel(detalhesSessao.statusSessao)}
+                    <strong style={{ color: 'var(--text-primary, #212529)' }}>Status:</strong> {getStatusLabel(detalhesSessao.statusSessao)}
                   </div>
                   <div className="mb-2">
-                    <strong>Valor:</strong> {formatarValor(detalhesSessao.valor)}
+                    <strong style={{ color: 'var(--text-primary, #212529)' }}>Valor:</strong> {formatarValor(detalhesSessao.valor)}
                   </div>
                   <div className="mb-2">
-                    <strong>Observações:</strong> {detalhesSessao.observacoes || '—'}
+                    <strong style={{ color: 'var(--text-primary, #212529)' }}>Observações:</strong> {detalhesSessao.observacoes || '—'}
                   </div>
                   <div className="mb-0">
-                    <strong>Link da reunião:</strong> {detalhesSessao.linkReuniao || 'Não gerado'}
+                    <strong style={{ color: 'var(--text-primary, #212529)' }}>Link da reunião:</strong> {detalhesSessao.linkReuniao || 'Não gerado'}
                   </div>
                 </div>
                 <div className="modal-footer border-0">

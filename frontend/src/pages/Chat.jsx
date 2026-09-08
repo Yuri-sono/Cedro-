@@ -20,6 +20,7 @@ function Chat() {
   const { userId } = useParams();
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
+  const messagesAreaRef = useRef(null);
   const inputRef = useRef(null);
   const socketRef = useRef(null);
   const reconnectTimerRef = useRef(null);
@@ -27,7 +28,11 @@ function Chat() {
   const destinatarioId = Number(userId);
 
   const scrollToBottom = (smooth = true) => {
-    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' });
+    // Scroll interno da área de mensagens — NÃO usar scrollIntoView,
+    // que rola a página inteira para baixo.
+    const area = messagesAreaRef.current;
+    if (!area) return;
+    area.scrollTo({ top: area.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
   };
 
   const upsertMensagem = useCallback((mensagem) => {
@@ -306,7 +311,7 @@ function Chat() {
           </div>
         </div>
 
-        <div className="chat-messages-area">
+        <div className="chat-messages-area" ref={messagesAreaRef}>
           {mensagens.length === 0 ? (
             <div className="chat-empty-state">
               <div className="chat-empty-icon">
@@ -358,7 +363,12 @@ function Chat() {
                 className="chat-text-input"
                 placeholder="Digite sua mensagem..."
                 value={novaMensagem}
-                onChange={(e) => setNovaMensagem(e.target.value)}
+                onChange={(e) => {
+                  setNovaMensagem(e.target.value);
+                  // Auto-resize do textarea (até ~5 linhas)
+                  e.target.style.height = 'auto';
+                  e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+                }}
                 onKeyDown={handleKeyDown}
               />
               <button

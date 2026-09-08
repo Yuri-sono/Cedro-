@@ -161,6 +161,8 @@ function Login() {
       } else {
         setSuccessMsg('Conta criada com sucesso! Faça login para continuar.');
         setIsLogin(true);
+        // email e senha já estão em formData — NÃO resetar o form ao trocar de modo,
+        // assim os campos aparecem pré-preenchidos na tela de login.
       }
     } catch (error) {
       console.error('Erro:', error);

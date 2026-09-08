@@ -1,9 +1,9 @@
 import React from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
+import { useRoute, useNavigation, RouteProp, NavigationProp as ReactNavigationProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { HomeStackParamList } from '../../types/navigation.types';
+import { HomeStackParamList, MainTabParamList } from '../../types/navigation.types';
 import { usePsicologoDetail } from '../../hooks/usePsicologos';
 import { typography, spacing, borderRadius, useTheme, ThemeColors } from '../../theme';
 import { Avatar } from '../../components/Avatar';
@@ -35,6 +35,20 @@ export const PsicologoDetailScreen = () => {
       </View>
     );
   }
+
+  // Enviar mensagem: sai da HomeStack e chega em ChatStack → Chat via tab pai
+  // (mesmo padrão de getParent() usado no openProfileTab do HomeScreen).
+  const handleEnviarMensagem = () => {
+    const parentNav = navigation.getParent() as ReactNavigationProp<MainTabParamList> | undefined;
+    parentNav?.navigate('ChatStack', {
+      screen: 'Chat',
+      params: {
+        userId: psicologo.id,
+        userName: psicologo.nome,
+        avatarUrl: psicologo.fotoUrl ?? undefined,
+      },
+    });
+  };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -74,6 +88,12 @@ export const PsicologoDetailScreen = () => {
         <Button
           title="Agendar Consulta"
           onPress={handleAgendar}
+        />
+        <Button
+          title="Enviar mensagem"
+          variant="outline"
+          onPress={handleEnviarMensagem}
+          style={styles.botaoMensagem}
         />
       </View>
     </ScrollView>
@@ -172,5 +192,8 @@ const createStyles = (colors: ThemeColors) =>
   footer: {
     marginTop: spacing.xl,
     marginBottom: spacing['3xl'],
+  },
+  botaoMensagem: {
+    marginTop: spacing.sm,
   },
 });

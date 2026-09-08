@@ -9,6 +9,7 @@ import { ChangePasswordScreen } from '../screens/profile/ChangePasswordScreen';
 import { SessionsScreen } from '../screens/sessions/SessionsScreen';
 import { NewSessionPsicologoScreen } from '../screens/sessions/NewSessionPsicologoScreen';
 import { PaywallScreen } from '../screens/subscription/PaywallScreen';
+import { AssinaturaPaymentScreen } from '../screens/subscription/AssinaturaPaymentScreen';
 import { AppearanceScreen } from '../screens/profile/AppearanceScreen';
 import { PacientesPsicologoScreen } from '../screens/psicologo/PacientesPsicologoScreen';
 import { ConsultasPsicologoScreen } from '../screens/psicologo/ConsultasPsicologoScreen';
@@ -64,10 +65,15 @@ export const ProfileStack = () => {
         component={NewSessionPsicologoScreen}
         options={{ title: 'Nova Consulta' }}
       />
-      <Stack.Screen 
-        name="Subscription" 
-        component={PaywallScreen} 
-        options={{ title: 'Assinatura' }} 
+      <Stack.Screen
+        name="Subscription"
+        component={PaywallScreen}
+        options={{ title: 'Assinatura' }}
+      />
+      <Stack.Screen
+        name="AssinaturaPayment"
+        component={AssinaturaPaymentScreen}
+        options={{ title: 'Pagamento da Assinatura' }}
       />
       <Stack.Screen
         name="DashboardPsicologo"

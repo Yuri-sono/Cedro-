@@ -160,7 +160,7 @@ const PacientesPsicologo = () => {
                 ) : (
                   <div className="table-responsive">
                     <table className="table table-hover mb-0">
-                      <thead className="bg-light">
+                      <thead className="bg-light" style={{ color: 'var(--text-primary, #212529)', backgroundColor: 'var(--bg-secondary, #f8f9fa)' }}>
                         <tr>
                           <th>Nome</th>
                           <th>Email</th>
@@ -182,39 +182,19 @@ const PacientesPsicologo = () => {
                             <td>{paciente.email}</td>
                             <td>{formatarData(paciente.ultimaConsulta)}</td>
                             <td>
-                              <div className="dropdown">
-                                <button className="btn btn-outline-secondary btn-sm" data-bs-toggle="dropdown">
-                                  <i className="bi bi-three-dots-vertical"></i>
+                              <div className="d-flex gap-1">
+                                <button className="btn btn-outline-primary btn-sm" title="Ver Perfil"
+                                  onClick={() => setPacientePerfil(paciente)}>
+                                  <i className="bi bi-person"></i>
                                 </button>
-                                <ul className="dropdown-menu">
-                                  <li>
-                                    <button
-                                      className="dropdown-item"
-                                      type="button"
-                                      onClick={() => setPacientePerfil(paciente)}
-                                    >
-                                      Ver Perfil
-                                    </button>
-                                  </li>
-                                  <li>
-                                    <button
-                                      className="dropdown-item"
-                                      type="button"
-                                      onClick={() => setNovaConsultaPacienteId(paciente.id)}
-                                    >
-                                      Agendar Consulta
-                                    </button>
-                                  </li>
-                                  <li>
-                                    <button
-                                      className="dropdown-item"
-                                      type="button"
-                                      onClick={() => setPacienteHistorico(paciente)}
-                                    >
-                                      Histórico
-                                    </button>
-                                  </li>
-                                </ul>
+                                <button className="btn btn-outline-success btn-sm" title="Agendar"
+                                  onClick={() => setNovaConsultaPacienteId(paciente.id)}>
+                                  <i className="bi bi-calendar-plus"></i>
+                                </button>
+                                <button className="btn btn-outline-secondary btn-sm" title="Histórico"
+                                  onClick={() => setPacienteHistorico(paciente)}>
+                                  <i className="bi bi-clock-history"></i>
+                                </button>
                               </div>
                             </td>
                           </tr>
@@ -235,24 +215,24 @@ const PacientesPsicologo = () => {
           <div className="modal-backdrop fade show" onClick={() => setPacientePerfil(null)} aria-hidden="true" />
           <div className="modal d-block" tabIndex="-1" role="dialog" aria-modal="true">
             <div className="modal-dialog modal-dialog-centered">
-              <div className="modal-content border-0 shadow-lg">
+              <div className="modal-content border-0 shadow-lg" style={{ backgroundColor: 'var(--bg-primary, #fff)', color: 'var(--text-primary, #212529)' }}>
                 <div className="modal-header border-0">
-                  <h5 className="modal-title fw-bold">Perfil do Paciente</h5>
+                  <h5 className="modal-title fw-bold" style={{ color: 'var(--text-primary, #212529)' }}>Perfil do Paciente</h5>
                   <button type="button" className="btn-close" aria-label="Fechar" onClick={() => setPacientePerfil(null)} />
                 </div>
-                <div className="modal-body">
+                <div className="modal-body" style={{ color: 'var(--text-primary, #212529)' }}>
                   <div className="d-flex align-items-center mb-3">
                     <div className="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
                       <i className="bi bi-person text-primary fs-4"></i>
                     </div>
                     <div>
-                      <h6 className="fw-bold mb-1">{pacientePerfil.nome}</h6>
+                      <h6 className="fw-bold mb-1" style={{ color: 'var(--text-primary, #212529)' }}>{pacientePerfil.nome}</h6>
                       <small className="text-muted">{pacientePerfil.email}</small>
                     </div>
                   </div>
-                  <div className="bg-light rounded p-3 d-flex justify-content-between align-items-center">
+                  <div className="rounded p-3 d-flex justify-content-between align-items-center" style={{ backgroundColor: 'var(--bg-secondary, #f8f9fa)', color: 'var(--text-primary, #212529)' }}>
                     <div>
-                      <div className="fw-bold">Total de sessões</div>
+                      <div className="fw-bold" style={{ color: 'var(--text-primary, #212529)' }}>Total de sessões</div>
                       <small className="text-muted">Sessões com você</small>
                     </div>
                     <span className="badge bg-primary rounded-pill fs-6">{pacientePerfil.totalSessoes}</span>
@@ -275,18 +255,18 @@ const PacientesPsicologo = () => {
           <div className="modal-backdrop fade show" onClick={() => setPacienteHistorico(null)} aria-hidden="true" />
           <div className="modal d-block" tabIndex="-1" role="dialog" aria-modal="true">
             <div className="modal-dialog modal-dialog-centered modal-lg">
-              <div className="modal-content border-0 shadow-lg">
+              <div className="modal-content border-0 shadow-lg" style={{ backgroundColor: 'var(--bg-primary, #fff)', color: 'var(--text-primary, #212529)' }}>
                 <div className="modal-header border-0">
-                  <h5 className="modal-title fw-bold">Histórico — {pacienteHistorico.nome}</h5>
+                  <h5 className="modal-title fw-bold" style={{ color: 'var(--text-primary, #212529)' }}>Histórico — {pacienteHistorico.nome}</h5>
                   <button type="button" className="btn-close" aria-label="Fechar" onClick={() => setPacienteHistorico(null)} />
                 </div>
-                <div className="modal-body">
+                <div className="modal-body" style={{ color: 'var(--text-primary, #212529)' }}>
                   {historicoDoPaciente.length === 0 ? (
                     <p className="text-muted text-center mb-0">Nenhuma sessão registrada.</p>
                   ) : (
                     <div className="table-responsive">
                       <table className="table table-sm table-hover mb-0">
-                        <thead className="bg-light">
+                        <thead className="bg-light" style={{ color: 'var(--text-primary, #212529)', backgroundColor: 'var(--bg-secondary, #f8f9fa)' }}>
                           <tr>
                             <th>Data</th>
                             <th>Horário</th>

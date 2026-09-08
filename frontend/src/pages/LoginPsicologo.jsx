@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import api from '../services/api.js';
 
@@ -12,6 +12,7 @@ const LoginPsicologo = () => {
   const [error, setError] = useState('');
   const { login, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const recemCadastrado = searchParams.get('cadastro') === '1';
 
@@ -20,6 +21,18 @@ const LoginPsicologo = () => {
       navigate('/psicologo/dashboard');
     }
   }, [user, navigate]);
+
+  // Pré-preenche email/senha vindos do cadastro (location.state)
+  useEffect(() => {
+    if (location.state?.email || location.state?.senha) {
+      setFormData((prev) => ({
+        ...prev,
+        email: location.state.email || prev.email,
+        senha: location.state.senha || prev.senha
+      }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleChange = (e) => {
     setFormData({

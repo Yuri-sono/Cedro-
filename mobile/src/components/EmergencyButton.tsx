@@ -17,7 +17,12 @@ const NUMEROS_SOCORRO = [
 
 export const EmergencyButton = () => {
   const [aberto, setAberto] = useState(false);
+  const [dispensado, setDispensado] = useState(false);
   const { colors } = useTheme();
+
+  // Requisito do produto: o usuário pode dispensar o botão SOS da tela.
+  // Sem persistência — reaparece na próxima sessão (reload do app).
+  if (dispensado) return null;
 
   const ligar = (numero: string) => {
     setAberto(false);
@@ -82,15 +87,29 @@ export const EmergencyButton = () => {
         </>
       )}
 
-      <TouchableOpacity
-        style={styles.botao}
-        onPress={() => setAberto((a) => !a)}
-        activeOpacity={0.85}
-        accessibilityLabel="Números de emergência — CVV 188"
-      >
-        <Ionicons name={aberto ? 'close' : 'call'} size={22} color={colors.white} />
-        <Text style={styles.botaoTexto}>SOS</Text>
-      </TouchableOpacity>
+      <View style={styles.botaoWrap}>
+        <TouchableOpacity
+          style={styles.botao}
+          onPress={() => setAberto((a) => !a)}
+          activeOpacity={0.85}
+          accessibilityLabel="Números de emergência — CVV 188"
+        >
+          <Ionicons name={aberto ? 'close' : 'call'} size={22} color={colors.white} />
+          <Text style={styles.botaoTexto}>SOS</Text>
+        </TouchableOpacity>
+
+        {/* X de dispensa — só aparece com o popover fechado, para não conflitar visualmente */}
+        {!aberto && (
+          <TouchableOpacity
+            style={styles.botaoFechar}
+            onPress={() => setDispensado(true)}
+            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+            accessibilityLabel="Dispensar botão de emergência"
+          >
+            <Ionicons name="close-circle" size={20} color={colors.white} />
+          </TouchableOpacity>
+        )}
+      </View>
     </>
   );
 };
@@ -193,22 +212,36 @@ const createStyles = (colors: ThemeColors) =>
     fontSize: typography.size.xs,
     color: 'rgba(255,255,255,0.8)',
   },
-  botao: {
+  botaoWrap: {
     position: 'absolute',
     right: spacing.lg,
     bottom: 100,
+    zIndex: 999,
+    elevation: 10,
+  },
+  botao: {
     width: 62,
     height: 62,
     borderRadius: 31,
     backgroundColor: colors.danger,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 999,
-    elevation: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
+  },
+  botaoFechar: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2,
+    elevation: 11,
   },
   botaoTexto: {
     fontSize: typography.size.xs,

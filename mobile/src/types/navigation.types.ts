@@ -27,6 +27,7 @@ export type HomeStackParamList = {
   PsicologoDetail: { psicologoId: number };
   ScheduleSession: { psicologoId: number };
   Payment: { sessaoId: number; psicologoNome: string; valor: number };
+  Notificacoes: undefined;
 };
 
 // Parâmetros para a stack de Recursos (Saúde Mental, Jogos, etc)
@@ -54,6 +55,7 @@ export type ProfileStackParamList = {
   NewSessionPsicologo: undefined;
   Subscription: undefined;
   Appearance: undefined;
+  AssinaturaPayment: { planoNome: string; planoPreco: string };
   // Portal do Psicólogo
   DashboardPsicologo: undefined;
   AgendaPsicologo: undefined;

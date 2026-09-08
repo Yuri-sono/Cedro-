@@ -7,6 +7,7 @@ import { PsicologoListScreen } from '../screens/home/PsicologoListScreen';
 import { PsicologoDetailScreen } from '../screens/home/PsicologoDetailScreen';
 import { ScheduleSessionScreen } from '../screens/home/ScheduleSessionScreen';
 import { PaymentScreen } from '../screens/home/PaymentScreen';
+import { NotificacoesScreen } from '../screens/home/NotificacoesScreen';
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
@@ -49,6 +50,11 @@ export const HomeStack = () => {
         name="Payment"
         component={PaymentScreen}
         options={{ title: 'Pagamento' }}
+      />
+      <Stack.Screen
+        name="Notificacoes"
+        component={NotificacoesScreen}
+        options={{ title: 'Notificações' }}
       />
     </Stack.Navigator>
   );

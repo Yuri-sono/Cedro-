@@ -1,7 +1,8 @@
-﻿import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Linking, Image } from 'react-native';
+﻿import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Linking, Image, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import * as Notifications from 'expo-notifications';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList, MainTabParamList } from '../../types/navigation.types';
@@ -65,9 +66,38 @@ export const HomeScreen = () => {
   const { estatisticas, proximasConsultas, isLoading: loadingDashboard } = usePsychologistDashboard();
 
   const destaquePsicologos = psicologos.slice(0, 6);
-  const proximaSessao = sessoes.find((s) => s.statusSessao.toLowerCase() === 'agendada');
+  // "Próxima sessão" só considera sessões agendadas com data no futuro
+  // (sessões expiradas com status 'agendada' não devem aparecer no card).
+  const agora = Date.now();
+  const proximaSessao = sessoes.find(
+    (s) =>
+      s.statusSessao.toLowerCase() === 'agendada' &&
+      new Date(s.dataSessao).getTime() > agora,
+  );
   // Badge do sino: indica avisos pendentes (próxima sessão / pacientes confirmados)
   const temNotificacao = isPsicologo ? proximasConsultas.length > 0 : !!proximaSessao;
+
+  // Contagem de notificações não lidas para o badge numérico do sino:
+  // iOS (e web) expõem badge do sistema; no Android contamos as apresentadas localmente.
+  const [qtdNotificacoes, setQtdNotificacoes] = useState(0);
+  useEffect(() => {
+    const carregarContagem = async () => {
+      try {
+        if (Platform.OS === 'android') {
+          const apresentadas = await Notifications.getPresentedNotificationsAsync();
+          setQtdNotificacoes(apresentadas.length);
+        } else {
+          setQtdNotificacoes(await Notifications.getBadgeCountAsync());
+        }
+      } catch {
+        setQtdNotificacoes(0);
+      }
+    };
+    void carregarContagem();
+    const sub = Notifications.addNotificationReceivedListener(() => carregarContagem());
+    return () => sub.remove();
+  }, []);
+
   const openProfileTab = (screen: 'PsychologistSettings' | 'MySessions') => {
     const parentNavigation = navigation.getParent() as NavigationProp<MainTabParamList> | undefined;
     parentNavigation?.navigate('ProfileStack', { screen });
@@ -91,9 +121,22 @@ export const HomeScreen = () => {
               <Text style={styles.brandSubText}>Apoio psicológico</Text>
             </View>
           </View>
-          <TouchableOpacity style={styles.bellButton} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={styles.bellButton}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate('Notificacoes')}
+            accessibilityLabel="Notificações"
+          >
             <Ionicons name="notifications" size={17} color={colors.primary} />
-            {temNotificacao && <View style={styles.bellDot} />}
+            {qtdNotificacoes > 0 ? (
+              <View style={styles.bellBadge}>
+                <Text style={styles.bellBadgeText}>
+                  {qtdNotificacoes > 9 ? '9+' : qtdNotificacoes}
+                </Text>
+              </View>
+            ) : (
+              temNotificacao && <View style={styles.bellDot} />
+            )}
           </TouchableOpacity>
         </View>
 
@@ -343,6 +386,26 @@ const createStyles = (colors: ThemeColors) =>
     backgroundColor: colors.accent,
     borderWidth: 1.5,
     borderColor: colors.white,
+  },
+  bellBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: colors.danger,
+    borderWidth: 1.5,
+    borderColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  bellBadgeText: {
+    color: colors.white,
+    fontSize: 9,
+    fontWeight: typography.weight.bold,
+    lineHeight: 12,
   },
   heroCard: {
     borderRadius: borderRadius['2xl'],

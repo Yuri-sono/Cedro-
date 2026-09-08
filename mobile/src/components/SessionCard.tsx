@@ -66,8 +66,12 @@ export const SessionCard = ({
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'agendada': return colors.info;
+      case 'confirmada': return colors.info;
       case 'realizada': return colors.success;
       case 'cancelada': return colors.error;
+      // Sessão "agendada" cuja data já passou (marcada visualmente no frontend,
+      // ver SessionsScreen) — exibida como "Expirada" em cinza.
+      case 'expirada': return colors.textSecondary;
       default: return colors.textSecondary;
     }
   };

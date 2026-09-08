@@ -17,6 +17,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Avatar } from '../../components/Avatar';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
+import { EnderecoInput } from '../../components/EnderecoInput';
 import { usePerfil } from '../../hooks/usePerfil';
 import { useAuthStore } from '../../store/authStore';
 import { colors, spacing, typography, borderRadius , useTheme, ThemeColors } from '../../theme';
@@ -25,6 +26,10 @@ import { ProfileStackParamList } from '../../types/navigation.types';
 
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'EditProfile'>;
 const MAX_PROFILE_PHOTO_DATA_URI_LENGTH = 1_500_000;
+
+// @react-native-community/datetimepicker não suporta web — na web usamos
+// <input type="date"> nativo do HTML. Este alias permite JSX tipado.
+const InputDataWeb = 'input' as unknown as React.ComponentType<Record<string, unknown>>;
 
 function parseDateFromApi(dateStr?: string | null): Date | null {
   if (!dateStr) return null;
@@ -248,24 +253,62 @@ export const EditProfileScreen = () => {
           maxLength={15}
         />
 
-        <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateButton}>
-          <Text style={dataNascimento ? styles.dateText : styles.datePlaceholder}>
-            {dataNascimento ? dataNascimento.toLocaleDateString('pt-BR') : 'Selecionar data'}
-          </Text>
-          <Ionicons name="calendar-outline" size={18} color={colors.textSecondary} />
-        </TouchableOpacity>
-        {showDatePicker && (
+        {/* Seletor de data unificado por plataforma:
+            - Web: <input type="date"> sempre visível, sem estado de exibição
+            - Android: botão oculto enquanto o picker nativo está aberto
+            - iOS: botão + spinner persistente até a confirmação */}
+        {Platform.OS === 'web' ? (
+          <>
+            <Text style={styles.dateLabel}>Data de nascimento</Text>
+            <InputDataWeb
+              type="date"
+              max={new Date().toISOString().split('T')[0]}
+              value={dataNascimento ? formatDateForApi(dataNascimento) : ''}
+              onChange={(e: any) => {
+                if (e.target.value) setDataNascimento(new Date(e.target.value + 'T12:00:00'));
+              }}
+              style={styles.webDateInput}
+            />
+          </>
+        ) : showDatePicker && Platform.OS === 'android' ? (
+          // Android: picker modal — renderiza apenas o picker (botão oculto)
           <DateTimePicker
             value={dataNascimento ?? new Date(2000, 0, 1)}
             mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            display="default"
             maximumDate={new Date()}
             locale="pt-BR"
             onChange={(event, selected) => {
-              setShowDatePicker(Platform.OS === 'ios');
+              setShowDatePicker(false);
               if (selected) setDataNascimento(selected);
             }}
           />
+        ) : (
+          <>
+            <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateButton}>
+              <Text style={dataNascimento ? styles.dateText : styles.datePlaceholder}>
+                {dataNascimento
+                  ? dataNascimento.toLocaleDateString('pt-BR')
+                  : 'Selecionar data de nascimento'}
+              </Text>
+              <Ionicons name="calendar-outline" size={18} color={colors.textSecondary} />
+            </TouchableOpacity>
+            {showDatePicker && (
+              <DateTimePicker
+                value={dataNascimento ?? new Date(2000, 0, 1)}
+                mode="date"
+                display="spinner"
+                maximumDate={new Date()}
+                locale="pt-BR"
+                onChange={(event, selected) => {
+                  // No iOS o picker permanece visível até a confirmação;
+                  // no Android ele fecha após a seleção.
+                  setShowDatePicker(Platform.OS === 'ios');
+                  if (selected) setDataNascimento(selected);
+                }}
+              />
+            )}
+          </>
         )}
 
         <Text style={styles.dateLabel}>Gênero</Text>
@@ -283,11 +326,11 @@ export const EditProfileScreen = () => {
           ))}
         </View>
 
-        <Input
+        <EnderecoInput
           label="Endereço"
           value={endereco}
           onChangeText={setEndereco}
-          placeholder="Cidade, Estado"
+          placeholder="Cidade, Estado ou CEP"
         />
 
         <Input
@@ -425,6 +468,17 @@ const createStyles = (colors: ThemeColors) =>
     fontWeight: typography.weight.semibold,
     color: colors.textPrimary,
     marginBottom: spacing.xs,
+  },
+  webDateInput: {
+    fontSize: typography.size.md,
+    padding: 12,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    color: colors.textPrimary,
+    width: '100%',
+    marginBottom: spacing.base,
   },
   generoRow: {
     flexDirection: 'row',

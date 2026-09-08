@@ -291,7 +291,12 @@ public class PsicologoController {
         LocalDateTime fimMes = inicioMes.plusMonths(1);
 
         long consultasHoje = sessaoRepository.findByPsicologoIdAndDataSessaoBetween(psicologoId, hoje, fimHoje).size();
-        long consultasSemana = sessaoRepository.findByPsicologoIdAndDataSessaoBetween(psicologoId, inicioSemana, fimHoje).size();
+        // Sessões da semana: excluir canceladas (agendada, confirmada ou realizada contam)
+        long consultasSemana = sessaoRepository
+                .findByPsicologoIdAndDataSessaoBetween(psicologoId, inicioSemana, fimHoje)
+                .stream()
+                .filter(s -> !"cancelada".equals(s.getStatusSessao()))
+                .count();
         long pacientesAtivos = sessaoRepository.countPacientesAtivosByPsicologoId(psicologoId);
         java.math.BigDecimal faturamentoMes = sessaoRepository.sumValorByPsicologoIdAndPeriodo(psicologoId, inicioMes, fimMes);
 
@@ -306,9 +311,23 @@ public class PsicologoController {
     @GetMapping("/consultas/proximas")
     public ResponseEntity<?> getProximasConsultas(@RequestHeader("Authorization") String authHeader) {
         Integer psicologoId = jwtUtil.extractUserId(authHeader.replace("Bearer ", ""));
-        List<Sessao> proximas = sessaoRepository
-                .findByPsicologoIdAndDataSessaoAfterOrderByDataSessaoAsc(psicologoId, LocalDateTime.now());
-        List<Map<String, Object>> resultado = proximas.stream().limit(10).map(s -> {
+        // Retorna TODAS as consultas (futuras e passadas, todos os status — incluindo
+        // canceladas/expiradas). Futuras primeiro (mais próxima → mais distante),
+        // depois passadas (mais recente → mais antiga). Limite total de 20.
+        List<Sessao> todas = sessaoRepository.findByPsicologoId(psicologoId);
+        LocalDateTime agora = LocalDateTime.now();
+        List<Sessao> futuras = todas.stream()
+                .filter(s -> s.getDataSessao() != null && s.getDataSessao().isAfter(agora))
+                .sorted(Comparator.comparing(Sessao::getDataSessao))
+                .collect(Collectors.toList());
+        List<Sessao> passadas = todas.stream()
+                .filter(s -> s.getDataSessao() != null && !s.getDataSessao().isAfter(agora))
+                .sorted(Comparator.comparing(Sessao::getDataSessao, Comparator.reverseOrder()))
+                .collect(Collectors.toList());
+        List<Sessao> ordenadas = new ArrayList<>();
+        ordenadas.addAll(futuras);
+        ordenadas.addAll(passadas);
+        List<Map<String, Object>> resultado = ordenadas.stream().limit(20).map(s -> {
             Map<String, Object> item = new HashMap<>();
             item.put("id", s.getId());
             item.put("pacienteId", s.getPacienteId());

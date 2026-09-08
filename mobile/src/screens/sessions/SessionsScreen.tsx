@@ -16,14 +16,24 @@ import { useAuthStore } from '../../store/authStore';
 import { SessionCard } from '../../components/SessionCard';
 import { colors, spacing, typography , useTheme, ThemeColors } from '../../theme';
 import { ProfileStackParamList } from '../../types/navigation.types';
-import { TipoUsuario } from '../../types/api.types';
-
-type Sessao = {
-  id: number;
-  statusSessao: string;
-};
+import { TipoUsuario, Sessao } from '../../types/api.types';
 
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'MySessions'>;
+
+// TODO (backend — decisão de produto pendente): a OPÇÃO B seria um @Scheduled job
+// no SessaoService que roda a cada hora e persiste status = 'expirada' para
+// sessões com dataSessao < now() e statusSessao = 'agendada'. Enquanto isso não
+// for implementado, o frontend marca visualmente essas sessões como "Expirada"
+// (OPÇÃO A, não destrutiva — nenhum dado é alterado no backend).
+const statusEfetivo = (sessao: Sessao): string => {
+  if (
+    sessao.statusSessao === 'agendada' &&
+    new Date(sessao.dataSessao).getTime() < Date.now()
+  ) {
+    return 'expirada';
+  }
+  return sessao.statusSessao;
+};
 
 export const SessionsScreen = () => {
   const { colors } = useTheme();
@@ -69,22 +79,29 @@ export const SessionsScreen = () => {
         data={sessoes}
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.listContent}
-        renderItem={({ item }) => (
-          <SessionCard
-            sessao={item}
-            isPaciente={!isPsicologo}
-            onMarcarRealizada={
-              isPsicologo && item.statusSessao === 'agendada'
-                ? () => confirmarAtualizarStatus(item, 'realizada')
-                : undefined
-            }
-            onCancelar={
-              isPsicologo && (item.statusSessao === 'agendada' || item.statusSessao === 'confirmada')
-                ? () => confirmarAtualizarStatus(item, 'cancelada')
-                : undefined
-            }
-          />
-        )}
+        renderItem={({ item }) => {
+          // Marca visualmente sessões "agendada" cuja data já passou como "Expirada"
+          // (OPÇÃO A). Com o status efetivo, os botões de ação não aparecem para
+          // sessões expiradas, pois o SessionCard só mostra ações para 'agendada'.
+          const sessao = { ...item, statusSessao: statusEfetivo(item) };
+          return (
+            <SessionCard
+              sessao={sessao}
+              isPaciente={!isPsicologo}
+              onMarcarRealizada={
+                isPsicologo && sessao.statusSessao === 'agendada'
+                  ? () => confirmarAtualizarStatus(sessao, 'realizada')
+                  : undefined
+              }
+              onCancelar={
+                isPsicologo &&
+                (sessao.statusSessao === 'agendada' || sessao.statusSessao === 'confirmada')
+                  ? () => confirmarAtualizarStatus(sessao, 'cancelada')
+                  : undefined
+              }
+            />
+          );
+        }}
         onRefresh={refetch}
         refreshing={isLoading}
         ListEmptyComponent={

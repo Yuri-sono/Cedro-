@@ -460,11 +460,22 @@ export const RegisterScreen = () => {
               style={styles.botaoVoltar}
             />
             <View style={styles.botaoContinuarWrap}>
-              <Button
-                title="Continuar"
-                onPress={avancarEtapa}
-                disabled={!etapa2Pronta}
-              />
+              {isPsicologo ? (
+                <Button
+                  title="Continuar"
+                  onPress={avancarEtapa}
+                  disabled={!etapa2Pronta}
+                />
+              ) : (
+                // Paciente: a etapa 2 é a última — submete direto em vez de
+                // avançar para uma etapa 3 inexistente (que deixava a tela em branco).
+                <Button
+                  title="Criar conta"
+                  onPress={handleRegister}
+                  isLoading={isLoading}
+                  disabled={!etapa2Pronta}
+                />
+              )}
             </View>
           </View>
         </View>

@@ -16,6 +16,7 @@ import com.cedro.repository.SessaoRepository;
 import com.cedro.repository.UsuarioRepository;
 import com.cedro.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,12 @@ import java.util.stream.Collectors;
 
 @Service
 public class AuthService {
+
+    // Client ID OAuth "Web application" usado para emitir os id_tokens que este
+    // backend valida. Opcional: quando configurado (GOOGLE_WEB_CLIENT_ID), o
+    // audience (aud) do id_token é verificado em googleLoginWithToken().
+    @Value("${google.oauth.web-client-id:}")
+    private String googleWebClientId;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -249,8 +256,32 @@ public class AuthService {
             }
 
             long exp = claims.has("exp") ? claims.get("exp").asLong() : 0;
-            if (exp * 1000 < System.currentTimeMillis()) {
+            // Tolerância de 60s para diferença de relógio entre dispositivo/servidor,
+            // que causava 400 "Token do Google expirado" para tokens recém-emitidos.
+            if (exp * 1000 < System.currentTimeMillis() - 60_000) {
                 throw new RuntimeException("Token do Google expirado");
+            }
+
+            // Validação do audience (aud) quando o client ID web está configurado.
+            // O id_token deve ter sido emitido para o mesmo client ID registrado aqui.
+            if (googleWebClientId != null && !googleWebClientId.isBlank()) {
+                com.fasterxml.jackson.databind.JsonNode audNode = claims.get("aud");
+                boolean audValido = false;
+                if (audNode != null) {
+                    if (audNode.isArray()) {
+                        for (com.fasterxml.jackson.databind.JsonNode aud : audNode) {
+                            if (googleWebClientId.equals(aud.asText())) {
+                                audValido = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        audValido = googleWebClientId.equals(audNode.asText());
+                    }
+                }
+                if (!audValido) {
+                    throw new RuntimeException("Token do Google com audience invalido");
+                }
             }
 
             String email = claims.has("email") ? claims.get("email").asText() : null;

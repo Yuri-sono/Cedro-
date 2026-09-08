@@ -11,7 +11,15 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/notificacoes")
 public class NotificacaoController {
-    
+
+    // TODO (backend — decisão de produto): os lembretes de consulta (60/30/15/10/5
+    // minutos antes da sessão) JÁ são enviados pelo @Scheduled verificarLembretes()
+    // em NotificacaoService. O endpoint abaixo é opcional, para disparo manual/
+    // externo do envio de lembretes (ex.: cron externo):
+    //   POST /api/notificacoes/enviar-lembretes
+    //   → chamaria notificacaoService.verificarLembretes() sob demanda.
+    // Implementar somente se o produto confirmar a necessidade de disparo manual.
+
     @Autowired
     private JwtUtil jwtUtil;
     

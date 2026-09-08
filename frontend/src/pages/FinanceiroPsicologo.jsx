@@ -7,7 +7,7 @@ import api from '../services/api.js';
 const FinanceiroPsicologo = () => {
   const { user } = useAuth();
   const [periodo, setPeriodo] = useState('mes');
-  const [dados, setDados] = useState(null);
+  const [dados, setDados] = useState({ faturamentoMes: 0, consultasRealizadas: 0, ticketMedio: 0, transacoes: [] });
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState('');
   const [atualizando, setAtualizando] = useState(false);
@@ -17,9 +17,21 @@ const FinanceiroPsicologo = () => {
     setErro('');
     try {
       const res = await api.get(`/api/psicologos/financeiro?periodo=${periodo}`);
-      setDados(res.data);
+      setDados({
+        faturamentoMes: Number(res.data?.faturamentoMes) || 0,
+        consultasRealizadas: Number(res.data?.consultasRealizadas) || 0,
+        ticketMedio: Number(res.data?.ticketMedio) || 0,
+        transacoes: Array.isArray(res.data?.transacoes) ? res.data.transacoes : []
+      });
     } catch (error) {
-      setErro('Não foi possível carregar os dados financeiros.');
+      console.error('Erro ao carregar dados financeiros:', error);
+      const detalhe = error?.response?.data?.error || error?.response?.data?.message;
+      setErro(
+        detalhe
+          ? `Não foi possível carregar os dados financeiros: ${detalhe}`
+          : 'Não foi possível carregar os dados financeiros.'
+      );
+      setDados({ faturamentoMes: 0, consultasRealizadas: 0, ticketMedio: 0, transacoes: [] });
     } finally {
       setLoading(false);
     }
@@ -77,7 +89,7 @@ const FinanceiroPsicologo = () => {
               <div className="text-center py-5">
                 <div className="spinner-border text-primary"></div>
               </div>
-            ) : dados && (
+            ) : (
               <>
                 <div className="row g-4 mb-4">
                   <div className="col-md-4">
@@ -141,7 +153,7 @@ const FinanceiroPsicologo = () => {
                     ) : (
                       <div className="table-responsive">
                         <table className="table table-hover mb-0">
-                          <thead className="bg-light">
+                          <thead className="bg-light" style={{ color: 'var(--text-primary, #212529)', backgroundColor: 'var(--bg-secondary, #f8f9fa)' }}>
                             <tr>
                               <th>Paciente</th>
                               <th>Data</th>

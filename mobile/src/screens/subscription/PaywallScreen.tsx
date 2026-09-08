@@ -2,13 +2,28 @@
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
-import { useSubscription } from '../../hooks/useSubscription';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useSubscription, PlanOption } from '../../hooks/useSubscription';
+import { ProfileStackParamList } from '../../types/navigation.types';
 import { Button } from '../../components/Button';
 import { colors, spacing, typography, borderRadius } from '../../theme';
 
 export const PaywallScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
   const { isPremium, limiteInfo, planos, isLoading, isLoadingOfertas, assinar } = useSubscription();
+
+  // Planos mock: em vez do toast "Pagamento em breve", abre o fluxo de
+  // pagamento simulado da assinatura (cartão + PIX), igual ao PaymentScreen.
+  const handleAssinar = (plano: PlanOption) => {
+    if (plano.mock) {
+      navigation.navigate('AssinaturaPayment', {
+        planoNome: plano.nome,
+        planoPreco: plano.preco,
+      });
+      return;
+    }
+    void assinar(plano);
+  };
 
   // Semântica real do backend: chamadasRealizadas = sessões agendadas no mês corrente
   // (limiteMensal = 4 para gratuitos). A fração ambígua "0/4" foi substituída por
@@ -89,7 +104,7 @@ export const PaywallScreen = () => {
               </View>
               <TouchableOpacity
                 style={[styles.btnAssinar, !plano.featured && styles.btnAssinarOutline]}
-                onPress={() => assinar(plano)}
+                onPress={() => handleAssinar(plano)}
                 disabled={isLoading}
                 activeOpacity={0.8}
               >

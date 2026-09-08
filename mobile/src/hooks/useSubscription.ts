@@ -83,14 +83,10 @@ export const useSubscription = () => {
   }, [user, checarLimitesBackEnd, carregarOfertas]);
 
   const assinar = async (plano: PlanOption) => {
-    // Plano mock: a integração de pagamento ainda não está ativa no backend.
-    if (plano.mock) {
-      showToast.info(
-        'Pagamento em breve',
-        'A integração de pagamento ainda não está ativa. Estes são os valores oficiais dos planos.',
-      );
-      return;
-    }
+    // Plano mock: o fluxo de pagamento simulado é tratado pela PaywallScreen,
+    // que navega para a AssinaturaPaymentScreen. Este hook só conduz planos
+    // reais (RevenueCat — Apple/Google).
+    if (plano.mock) return;
 
     try {
       setIsLoading(true);

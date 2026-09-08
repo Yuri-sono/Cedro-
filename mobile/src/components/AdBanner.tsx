@@ -127,8 +127,9 @@ export const AdBanner = () => {
         activeOpacity={0.8}
         onPress={() => {
           fechar();
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (navigationRef as any).navigate('Main', { screen: 'ProfileStack', params: { screen: 'Subscription' } });
+          // navigationRef é um RefObject<NavigationContainerRef>: o método
+          // navigate() está em .current (com guard para ref ainda não montada).
+          navigationRef.current?.navigate('Main', { screen: 'ProfileStack', params: { screen: 'Subscription' } });
         }}
       >
         <View style={[styles.icone, { backgroundColor: `${ad.color}1A` }]}>

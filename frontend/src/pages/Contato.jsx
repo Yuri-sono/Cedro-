@@ -1,7 +1,36 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../services/api.js';
 
 const Contato = () => {
+  const [enviando, setEnviando] = useState(false);
+  const [formContato, setFormContato] = useState({
+    nome: '',
+    email: '',
+    telefone: '',
+    assunto: '',
+    mensagem: ''
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormContato((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setEnviando(true);
+    try {
+      await api.post('/api/contato', formContato);
+      alert('Mensagem enviada com sucesso! Entraremos em contato em breve.');
+      setFormContato({ nome: '', email: '', telefone: '', assunto: '', mensagem: '' });
+    } catch {
+      alert('Erro ao enviar mensagem. Tente novamente.');
+    } finally {
+      setEnviando(false);
+    }
+  };
+
   return (
     <section className="contato-section py-5">
       <div className="container">
@@ -61,29 +90,29 @@ const Contato = () => {
                   Envie uma Mensagem
                 </h3>
                 
-                <form onSubmit={(e) => {
-                  e.preventDefault();
-                  alert('Mensagem enviada com sucesso! Entraremos em contato em breve.');
-                  e.target.reset();
-                }}>
+                <form onSubmit={handleSubmit}>
                   <div className="mb-3">
                     <label htmlFor="nome" className="form-label">Nome Completo</label>
-                    <input type="text" className="form-control" id="nome" required />
+                    <input type="text" className="form-control" id="nome" name="nome"
+                      value={formContato.nome} onChange={handleChange} required />
                   </div>
-                  
+
                   <div className="mb-3">
                     <label htmlFor="email" className="form-label">Email</label>
-                    <input type="email" className="form-control" id="email" required />
+                    <input type="email" className="form-control" id="email" name="email"
+                      value={formContato.email} onChange={handleChange} required />
                   </div>
-                  
+
                   <div className="mb-3">
                     <label htmlFor="telefone" className="form-label">Telefone</label>
-                    <input type="tel" className="form-control" id="telefone" />
+                    <input type="tel" className="form-control" id="telefone" name="telefone"
+                      value={formContato.telefone} onChange={handleChange} />
                   </div>
-                  
+
                   <div className="mb-3">
                     <label htmlFor="assunto" className="form-label">Assunto</label>
-                    <select className="form-select" id="assunto" required>
+                    <select className="form-select" id="assunto" name="assunto"
+                      value={formContato.assunto} onChange={handleChange} required>
                       <option value="">Selecione um assunto</option>
                       <option value="agendamento">Agendamento de Consulta</option>
                       <option value="informacoes">Informações sobre Serviços</option>
@@ -91,15 +120,25 @@ const Contato = () => {
                       <option value="outros">Outros</option>
                     </select>
                   </div>
-                  
+
                   <div className="mb-3">
                     <label htmlFor="mensagem" className="form-label">Mensagem</label>
-                    <textarea className="form-control" id="mensagem" rows="4" required></textarea>
+                    <textarea className="form-control" id="mensagem" name="mensagem" rows="4"
+                      value={formContato.mensagem} onChange={handleChange} required></textarea>
                   </div>
-                  
-                  <button type="submit" className="btn btn-success w-100">
-                    <i className="bi bi-send me-2"></i>
-                    Enviar Mensagem
+
+                  <button type="submit" className="btn btn-success w-100" disabled={enviando}>
+                    {enviando ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2"></span>
+                        Enviando...
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-send me-2"></i>
+                        Enviar Mensagem
+                      </>
+                    )}
                   </button>
                 </form>
               </div>

@@ -34,6 +34,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/google",
                         "/api/auth/recuperar-senha", "/api/auth/redefinir-senha").permitAll()
                 .requestMatchers("/api/assinatura/webhook").permitAll()
+                .requestMatchers("/api/contato").permitAll()
                 .requestMatchers("/ws-chat").permitAll()
                 .requestMatchers("/api/psicologos").permitAll()
                 .requestMatchers("/api/psicologos/{id}").permitAll()

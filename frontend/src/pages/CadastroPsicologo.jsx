@@ -152,9 +152,11 @@ const CadastroPsicologo = () => {
       };
       
       const res = await api.post('/api/auth/register', payload);
-      // Faz login automático para redirecionar para configurar horários
+      // Faz login manual — passa email/senha via location.state para pré-preencher o form
       alert('Cadastro realizado! Agora configure seus horários de atendimento.');
-      navigate('/login-psicologo?cadastro=1');
+      navigate('/login-psicologo?cadastro=1', {
+        state: { email: formData.email, senha: formData.senha }
+      });
     } catch (error) {
       setError(error.response?.data?.error || 'Erro ao cadastrar');
     } finally {

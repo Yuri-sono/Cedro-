@@ -1,13 +1,41 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import api from '../services/api.js';
 import PersonalizacaoMenu from './PersonalizacaoMenu.jsx';
 
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
+  const [naoLidas, setNaoLidas] = useState(0);
+
+  // Badge de notificações não lidas (soma das conversas com mensagens não lidas)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let ativo = true;
+    const carregar = () => {
+      api.get('/api/mensagens/conversas')
+        .then((res) => {
+          if (!ativo) return;
+          const total = (res.data || []).reduce(
+            (soma, c) => soma + (Number(c.naoLidas) || 0),
+            0
+          );
+          setNaoLidas(total);
+        })
+        .catch(() => {
+          if (ativo) setNaoLidas(0);
+        });
+    };
+    carregar();
+    const timer = setInterval(carregar, 60000);
+    return () => {
+      ativo = false;
+      clearInterval(timer);
+    };
+  }, [isAuthenticated, location.pathname]);
+
   const closeMenu = () => {
     const btnClose = document.querySelector('#offcanvasMenu .btn-close');
     if (btnClose) btnClose.click();
@@ -49,6 +77,26 @@ const Navbar = () => {
               <span className="header-greeting d-none d-md-block me-4 fw-medium text-white">
                 Olá, {user?.nome || 'Usuário'}
               </span>
+            )}
+            {/* Ícone de notificações (igual ao mobile) — visível em desktop quando autenticado */}
+            {isAuthenticated && (
+              <div className="d-none d-lg-block me-3">
+                <button
+                  className="btn btn-link nav-link text-white p-0 position-relative"
+                  onClick={() => navigate('/notificacoes')}
+                  title="Notificações"
+                >
+                  <i className="bi bi-bell-fill fs-5"></i>
+                  {naoLidas > 0 && (
+                    <span
+                      className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                      style={{ fontSize: '0.6rem' }}
+                    >
+                      {naoLidas > 9 ? '9+' : naoLidas}
+                    </span>
+                  )}
+                </button>
+              </div>
             )}
             {/* Itens de conta — visíveis apenas em desktop (>= 992px) */}
             {isAuthenticated ? (
@@ -144,6 +192,12 @@ const Navbar = () => {
 
           {isAuthenticated ? (
             <ul className="list-unstyled">
+              <li className="mb-2"><Link className="d-block p-2" to="/notificacoes" onClick={closeMenu}>
+                <i className="bi bi-bell me-2"></i>Notificações
+                {naoLidas > 0 && (
+                  <span className="badge bg-danger ms-2">{naoLidas > 9 ? '9+' : naoLidas}</span>
+                )}
+              </Link></li>
               <li className="mb-2"><Link className="d-block p-2" to="/perfil" onClick={closeMenu}>
                 <i className="bi bi-person-circle me-2"></i>Meu Perfil
               </Link></li>

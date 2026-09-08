@@ -106,7 +106,7 @@ const EstatisticasPsicologo = () => {
                   </div>
 
                   <div className="card border-0 shadow-sm">
-                    <div className="card-header bg-white border-0 py-3">
+                    <div className="card-header bg-white border-0 py-3" style={{ backgroundColor: 'var(--bg-secondary, #fff)', color: 'var(--text-primary, #212529)' }}>
                       <h5 className="mb-0 text-primary fw-bold">
                         <i className="bi bi-lightning-charge me-2"></i>Ações Rápidas
                       </h5>

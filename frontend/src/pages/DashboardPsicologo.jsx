@@ -6,6 +6,13 @@ import SidebarPsicologo from '../components/SidebarPsicologo.jsx';
 import api from '../services/api.js';
 import { useSessionReminders } from '../hooks/useSessionReminders';
 
+const STATUS_LABEL = {
+  agendada: 'Agendada',
+  confirmada: 'Confirmada',
+  realizada: 'Realizada',
+  cancelada: 'Cancelada'
+};
+
 const DashboardPsicologo = () => {
   useSessionReminders();
   const { user } = useAuth();
@@ -147,8 +154,23 @@ const DashboardPsicologo = () => {
 
             {/* Onboarding: configurar horários de atendimento */}
             {(() => {
-              const semDias = !user.diasAtendimento || user.diasAtendimento.length === 0;
-              const semHorarios = !user.horariosAtendimento || user.horariosAtendimento.length === 0;
+              // Robusto: aceita array, string JSON ("[...]"/"[]") ou string vazia
+              const listaPreenchida = (valor) => {
+                if (Array.isArray(valor)) return valor.length > 0;
+                if (typeof valor === 'string') {
+                  const v = valor.trim();
+                  if (!v || v === '[]') return false;
+                  try {
+                    const parsed = JSON.parse(v);
+                    return Array.isArray(parsed) ? parsed.length > 0 : true;
+                  } catch {
+                    return true;
+                  }
+                }
+                return Boolean(valor);
+              };
+              const semDias = !listaPreenchida(user.diasAtendimento);
+              const semHorarios = !listaPreenchida(user.horariosAtendimento);
               if (!semDias && !semHorarios) return null;
               return (
                 <div className="alert alert-success d-flex align-items-center gap-3 flex-wrap mb-4" role="alert">
@@ -183,7 +205,7 @@ const DashboardPsicologo = () => {
                           </div>
                         </div>
                         <div className="flex-grow-1 ms-3">
-                          <h3 className="h4 fw-bold mb-0 text-dark">{stats.consultasHoje}</h3>
+                          <h3 className="h4 fw-bold mb-0" style={{ color: 'var(--text-primary, #212529)' }}>{stats.consultasHoje}</h3>
                           <p className="text-muted mb-0 small">Consultas Hoje</p>
                         </div>
                       </div>
@@ -203,7 +225,7 @@ const DashboardPsicologo = () => {
                           </div>
                         </div>
                         <div className="flex-grow-1 ms-3">
-                          <h3 className="h4 fw-bold mb-0 text-dark">{stats.consultasSemana}</h3>
+                          <h3 className="h4 fw-bold mb-0" style={{ color: 'var(--text-primary, #212529)' }}>{stats.consultasSemana}</h3>
                           <p className="text-muted mb-0 small">Esta Semana</p>
                         </div>
                       </div>
@@ -223,7 +245,7 @@ const DashboardPsicologo = () => {
                           </div>
                         </div>
                         <div className="flex-grow-1 ms-3">
-                          <h3 className="h4 fw-bold mb-0 text-dark">{stats.pacientesAtivos}</h3>
+                          <h3 className="h4 fw-bold mb-0" style={{ color: 'var(--text-primary, #212529)' }}>{stats.pacientesAtivos}</h3>
                           <p className="text-muted mb-0 small">Pacientes Ativos</p>
                         </div>
                       </div>
@@ -243,7 +265,7 @@ const DashboardPsicologo = () => {
                           </div>
                         </div>
                         <div className="flex-grow-1 ms-3">
-                          <h3 className="h4 fw-bold mb-0 text-dark">R$ {stats.faturamentoMes.toLocaleString('pt-BR')}</h3>
+                          <h3 className="h4 fw-bold mb-0" style={{ color: 'var(--text-primary, #212529)' }}>R$ {Number(stats.faturamentoMes || 0).toLocaleString('pt-BR')}</h3>
                           <p className="text-muted mb-0 small">Faturamento Mês</p>
                         </div>
                       </div>
@@ -299,7 +321,12 @@ const DashboardPsicologo = () => {
                                     <i className="bi bi-person text-primary"></i>
                                   </div>
                                   <div>
-                                    <h6 className="mb-1 fw-bold">{consulta.pacienteNome}</h6>
+                                    <h6 className="mb-1 fw-bold">
+                                      {consulta.pacienteNome}
+                                      <span className={`badge bg-${consulta.status === 'cancelada' ? 'danger' : consulta.status === 'confirmada' ? 'warning' : consulta.status === 'realizada' ? 'success' : 'primary'} ms-2 align-middle`}>
+                                        {STATUS_LABEL[consulta.status] || consulta.status}
+                                      </span>
+                                    </h6>
                                     <small className="text-muted d-block">
                                       <i className="bi bi-clock me-1"></i>{consulta.horario} - {consulta.tipo}
                                     </small>

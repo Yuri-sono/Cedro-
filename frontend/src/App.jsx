@@ -60,6 +60,7 @@ const AdBanner = lazy(() => import('./components/AdBanner.jsx'));
 const JogosRelaxamento = lazy(() => import('./pages/JogosRelaxamento.jsx'));
 const CursorGlow = lazy(() => import('./components/CursorGlow.jsx'));
 const SaudeMental = lazy(() => import('./pages/SaudeMental.jsx'));
+const Notificacoes = lazy(() => import('./pages/Notificacoes.jsx'));
 const RedefinirSenha = lazy(() => import('./pages/RedefinirSenha.jsx'));
 
 /**
@@ -228,6 +229,11 @@ function AppContent() {
             <Route path="/relaxar" element={<JogosRelaxamento />} />
             <Route path="/saude-mental" element={<SaudeMental />} />
             <Route path="/redefinir-senha" element={<RedefinirSenha />} />
+            <Route path="/notificacoes" element={
+              <ProtectedRoute>
+                <Notificacoes />
+              </ProtectedRoute>
+            } />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AnimatedRoute>

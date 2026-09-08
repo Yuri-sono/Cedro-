@@ -502,9 +502,9 @@
   font-size: 0.95rem;
   line-height: 1.5;
   resize: none;
-  height: 24px;
-  max-height: 24px;
-  overflow: hidden;
+  min-height: 24px;
+  max-height: 120px; /* permite até ~5 linhas */
+  overflow-y: auto;
   outline: none;
   color: #333;
 }
