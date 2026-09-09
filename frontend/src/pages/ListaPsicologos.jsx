@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import psicologoService from '../services/psicologoService';
+import { ESPECIALIDADES, especialidadeCorresponde } from '../utils/especialidades.js';
 
 const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
@@ -10,7 +11,7 @@ function ListaPsicologos() {
   const [loadingMsg, setLoadingMsg] = useState('Carregando psicólogos...');
   const [error, setError] = useState('');
   const [busca, setBusca] = useState('');
-  const [especialidade, setEspecialidade] = useState('todas');
+  const [especialidade, setEspecialidade] = useState('');
   const [ordem, setOrdem] = useState('relevancia');
   const navigate = useNavigate();
 
@@ -40,22 +41,18 @@ function ListaPsicologos() {
     }
   };
 
-  // Lista de especialidades únicas para o filtro
-  const especialidades = useMemo(() => {
-    const set = new Set();
-    psicologos.forEach(p => {
-      const spec = p.tipoPsicologo || p.especialidade;
-      if (spec && spec.trim()) set.add(spec.trim());
-    });
-    return ['todas', ...Array.from(set).sort()];
-  }, [psicologos]);
+  // Lista fixa de especialidades para o filtro (mesma lista usada nos cadastros)
+  const especialidades = ESPECIALIDADES;
 
   // Lista filtrada + ordenada
   const resultado = useMemo(() => {
     const termo = busca.trim().toLowerCase();
     let lista = psicologos.filter(p => {
-      const matchSpec = especialidade === 'todas' ||
-        (p.tipoPsicologo || p.especialidade || '').toLowerCase() === especialidade.toLowerCase();
+      // Match exato com o valor salvo; fallback includes case-insensitive
+      // para cadastros antigos com texto livre (compatibilidade).
+      const matchSpec = !especialidade ||
+        especialidadeCorresponde(p.tipoPsicologo, especialidade) ||
+        especialidadeCorresponde(p.especialidade, especialidade);
       const matchBusca = !termo ||
         `${p.nome || ''} ${p.especialidade || ''} ${p.tipoPsicologo || ''} ${p.bio || ''}`.toLowerCase().includes(termo);
       return matchSpec && matchBusca;
@@ -168,8 +165,8 @@ function ListaPsicologos() {
                 value={especialidade}
                 onChange={e => setEspecialidade(e.target.value)}
               >
-                <option value="todas">Todas as especialidades</option>
-                {especialidades.filter(s => s !== 'todas').map(spec => (
+                <option value="">Todas as especialidades</option>
+                {especialidades.map(spec => (
                   <option key={spec} value={spec}>{spec}</option>
                 ))}
               </select>
@@ -320,12 +317,12 @@ function ListaPsicologos() {
             </div>
             <h3 className="fw-bold">Nenhum psicólogo encontrado</h3>
             <p className="text-muted">
-              {busca || especialidade !== 'todas'
+              {busca || especialidade
                 ? 'Ajuste a busca ou os filtros para ver mais resultados.'
                 : 'Tente novamente mais tarde.'}
             </p>
-            {(busca || especialidade !== 'todas') && (
-              <button className="btn btn-outline-secondary" onClick={() => { setBusca(''); setEspecialidade('todas'); }}>
+            {(busca || especialidade) && (
+              <button className="btn btn-outline-secondary" onClick={() => { setBusca(''); setEspecialidade(''); }}>
                 <i className="bi bi-x-circle me-2"></i>Limpar filtros
               </button>
             )}

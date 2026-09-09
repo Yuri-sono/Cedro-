@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api.js';
+import { ESPECIALIDADES } from '../utils/especialidades.js';
 
 const CadastroPsicologo = () => {
   const [formData, setFormData] = useState({
@@ -379,16 +380,19 @@ const CadastroPsicologo = () => {
                   <div className="row">
                     <div className="col-md-6 mb-3">
                       <label htmlFor="especialidade" className="form-label">Especialidade *</label>
-                      <input
-                        type="text"
+                      <select
                         className="form-control"
                         id="especialidade"
                         name="especialidade"
-                        placeholder="Ex: Ansiedade, Depressão"
                         value={formData.especialidade}
                         onChange={handleChange}
                         required
-                      />
+                      >
+                        <option value="">Selecione a especialidade</option>
+                        {ESPECIALIDADES.map((esp) => (
+                          <option key={esp} value={esp}>{esp}</option>
+                        ))}
+                      </select>
                     </div>
                     <div className="col-md-6 mb-3">
                       <label htmlFor="preco_sessao" className="form-label">Valor da Sessão (R$) *</label>

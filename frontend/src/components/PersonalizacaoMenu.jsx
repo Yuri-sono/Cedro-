@@ -8,6 +8,10 @@ const PersonalizacaoMenu = ({ variant = '' }) => {
   const [isDark, setIsDark] = useState(false);
   const [colorMode, setColorMode] = useState('padrao');
   const [dyslexiaFont, setDyslexiaFont] = useState(false);
+  // Variante "navbar-desktop": botão + painel flutuante (position: fixed),
+  // para NÃO expandir a navbar e empurrar os cards do dashboard.
+  const [aberto, setAberto] = useState(false);
+  const ehFlutuante = variant === 'navbar-desktop';
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -30,6 +34,17 @@ const PersonalizacaoMenu = ({ variant = '' }) => {
       document.documentElement.setAttribute('data-font', 'dislexia');
     }
   }, []);
+
+  // Painel flutuante: fecha com a tecla Escape.
+  // Importante: NÃO aplicar overflow: hidden no body/pai — isso cortaria a navbar.
+  useEffect(() => {
+    if (!aberto) return;
+    const onKey = (e) => {
+      if (e.key === 'Escape') setAberto(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [aberto]);
 
   const handleThemeChange = (theme) => {
     if (theme === 'dark') {
@@ -66,18 +81,11 @@ const PersonalizacaoMenu = ({ variant = '' }) => {
     }
   };
 
-  return (
-    <div className="accordion mt-3 mb-2" id={`accordionPersonalizacao${uid}`}>
-      <div className="accordion-item bg-transparent border-0">
-        <h2 className="accordion-header" id={`headingPersonalizacao${uid}`}>
-          <button className="accordion-button collapsed bg-transparent shadow-none p-2 text-body fw-medium" type="button" data-bs-toggle="collapse" data-bs-target={`#collapsePersonalizacao${uid}`} aria-expanded="false" aria-controls={`collapsePersonalizacao${uid}`} style={{ paddingLeft: '0.5rem', paddingRight: '0.5rem', fontSize: '1rem' }}>
-            <i className="bi bi-palette me-2"></i>Personalização
-          </button>
-        </h2>
-        <div id={`collapsePersonalizacao${uid}`} className="accordion-collapse collapse" aria-labelledby={`headingPersonalizacao${uid}`} data-bs-parent={`#accordionPersonalizacao${uid}`}>
-          <div className="accordion-body px-2 py-3 border-top mt-2">
-            
-            <div className="mb-4">
+  // Conteúdo compartilhado entre o painel flutuante (navbar-desktop)
+  // e o accordion (offcanvas / navbar do paciente).
+  const conteudo = (
+    <>
+      <div className="mb-4">
               <h6 className="fw-bold mb-3 text-body" style={{ fontSize: '0.9rem' }}>Temas padrão</h6>
               <div className="form-check mb-3 custom-radio-theme">
                 <input className="form-check-input" type="radio" name={`temaPadrao${uid}`} id={`temaClaro${uid}`} checked={!isDark} onChange={() => handleThemeChange('light')} />
@@ -184,6 +192,60 @@ const PersonalizacaoMenu = ({ variant = '' }) => {
               </div>
             </div>
 
+    </>
+  );
+
+  // Painel flutuante (navbar-desktop): overlay position: fixed que não
+  // interfere no fluxo do documento — navbar e cards permanecem no lugar.
+  if (ehFlutuante) {
+    return (
+      <>
+        <button
+          type="button"
+          className="btn btn-link nav-link text-white d-flex align-items-center p-2"
+          onClick={() => setAberto((v) => !v)}
+          aria-expanded={aberto}
+          aria-haspopup="dialog"
+        >
+          <i className="bi bi-palette me-2"></i>Personalização
+        </button>
+
+        {aberto && (
+          <>
+            <div className="personalizacao-backdrop" onClick={() => setAberto(false)} />
+            <div className="personalizacao-panel" role="dialog" aria-label="Personalização">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h6 className="fw-bold mb-0">
+                  <i className="bi bi-palette me-2"></i>Personalização
+                </h6>
+                <button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Fechar"
+                  onClick={() => setAberto(false)}
+                ></button>
+              </div>
+              {conteudo}
+            </div>
+          </>
+        )}
+      </>
+    );
+  }
+
+  // Demais variantes (offcanvas do paciente e do psicólogo): accordion inline,
+  // que vive dentro do corpo do offcanvas sem afetar o layout da página.
+  return (
+    <div className="accordion mt-3 mb-2" id={`accordionPersonalizacao${uid}`}>
+      <div className="accordion-item bg-transparent border-0">
+        <h2 className="accordion-header" id={`headingPersonalizacao${uid}`}>
+          <button className="accordion-button collapsed bg-transparent shadow-none p-2 text-body fw-medium" type="button" data-bs-toggle="collapse" data-bs-target={`#collapsePersonalizacao${uid}`} aria-expanded="false" aria-controls={`collapsePersonalizacao${uid}`} style={{ paddingLeft: '0.5rem', paddingRight: '0.5rem', fontSize: '1rem' }}>
+            <i className="bi bi-palette me-2"></i>Personalização
+          </button>
+        </h2>
+        <div id={`collapsePersonalizacao${uid}`} className="accordion-collapse collapse" aria-labelledby={`headingPersonalizacao${uid}`} data-bs-parent={`#accordionPersonalizacao${uid}`}>
+          <div className="accordion-body px-2 py-3 border-top mt-2">
+            {conteudo}
           </div>
         </div>
       </div>

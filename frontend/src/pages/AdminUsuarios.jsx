@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api.js';
 import psicologoService from '../services/psicologoService';
 import pacienteService from '../services/pacienteService';
+import { ESPECIALIDADES } from '../utils/especialidades.js';
 
 function AdminUsuarios() {
   const [usuarios, setUsuarios] = useState([]);
@@ -287,7 +288,15 @@ function AdminUsuarios() {
                     <input type="text" className="form-control" placeholder="Telefone" value={formData.telefone} onChange={(e) => setFormData({...formData, telefone: e.target.value})} />
                   </div>
                   <div className="col-md-6 mb-3">
-                    <input type="text" className="form-control" placeholder="Especialidade" value={formData.especialidade} onChange={(e) => setFormData({...formData, especialidade: e.target.value})} />
+                    <select className="form-control" value={formData.especialidade} onChange={(e) => setFormData({...formData, especialidade: e.target.value})} aria-label="Especialidade">
+                      <option value="">Selecione a especialidade</option>
+                      {formData.especialidade && !ESPECIALIDADES.includes(formData.especialidade) && (
+                        <option value={formData.especialidade}>{formData.especialidade} (atual)</option>
+                      )}
+                      {ESPECIALIDADES.map((esp) => (
+                        <option key={esp} value={esp}>{esp}</option>
+                      ))}
+                    </select>
                   </div>
                   <div className="col-md-6 mb-3">
                     <input type="number" className="form-control" placeholder="Preço" value={formData.precoSessao} onChange={(e) => setFormData({...formData, precoSessao: e.target.value})} step="0.01" />

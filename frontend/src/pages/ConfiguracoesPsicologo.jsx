@@ -11,6 +11,7 @@ import {
   normalizeTimeSlots,
   normalizeWeekdays,
 } from '../utils/psicologoAgenda.js';
+import { ESPECIALIDADES } from '../utils/especialidades.js';
 
 const ConfiguracoesPsicologo = () => {
   const [psicologo, setPsicologo] = useState(null);
@@ -96,6 +97,14 @@ const ConfiguracoesPsicologo = () => {
   const handleChange = (e) => {
     setConfig({ ...config, [e.target.name]: e.target.value });
   };
+
+  // Compatibilidade: psicólogos cadastrados antes da lista fixa podem ter
+  // texto livre salvo (ex: "TCC"). Mantemos o valor atual como opção extra
+  // do select para não perder o dado salvo até que o usuário escolha um valor da lista.
+  const opcoesEspecialidade = (valorAtual) =>
+    valorAtual && !ESPECIALIDADES.includes(valorAtual)
+      ? [...ESPECIALIDADES, valorAtual]
+      : ESPECIALIDADES;
 
   const toggleDay = (day) => {
     setDiasAtendimento((current) =>
@@ -252,14 +261,18 @@ const ConfiguracoesPsicologo = () => {
                   </div>
                   <div className="col-md-6 mb-3">
                     <label className="form-label">Especialidade</label>
-                    <input
-                      type="text"
+                    <select
                       className="form-control"
                       name="especialidade"
                       value={config.especialidade}
                       onChange={handleChange}
                       disabled={!editando}
-                    />
+                    >
+                      <option value="">Selecione a especialidade</option>
+                      {opcoesEspecialidade(config.especialidade).map((esp) => (
+                        <option key={esp} value={esp}>{esp}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -280,15 +293,21 @@ const ConfiguracoesPsicologo = () => {
                 <div className="row">
                   <div className="col-md-6 mb-3">
                     <label className="form-label">Tipo de Psicólogo</label>
-                    <input
-                      type="text"
+                    <select
                       className="form-control"
                       name="tipoPsicologo"
                       value={config.tipoPsicologo}
                       onChange={handleChange}
                       disabled={!editando}
-                      placeholder="Ex: TCC, infantil, casal"
-                    />
+                    >
+                      <option value="">Selecione o tipo</option>
+                      {opcoesEspecialidade(config.tipoPsicologo).map((esp) => (
+                        <option key={esp} value={esp}>{esp}</option>
+                      ))}
+                    </select>
+                    <small className="text-muted d-block mt-1">
+                      Abordagem principal de atendimento (mesma lista de especialidades).
+                    </small>
                   </div>
                   <div className="col-md-6 mb-3">
                     <label className="form-label">CRP</label>
