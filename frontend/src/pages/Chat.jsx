@@ -276,9 +276,9 @@ function Chat() {
   const formatSessaoDateTime = (dateStr) => {
     if (!dateStr) return '—';
     const date = new Date(dateStr);
-    const fecha = date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+    const data = date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
     const hora = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    return `${fecha} às ${hora}`;
+    return `${data} às ${hora}`;
   };
 
   const shouldShowDateSeparator = (index) => {
@@ -438,8 +438,8 @@ function Chat() {
                   type="button"
                   className="chat-back-btn"
                   onClick={() => setShowInfo(false)}
-                  title="Cerrar"
-                  aria-label="Cerrar"
+                  title="Fechar"
+                  aria-label="Fechar"
                 >
                   <i className="bi bi-arrow-left"></i>
                 </button>
@@ -450,15 +450,15 @@ function Chat() {
                 {/* Perfil do profissional */}
                 <div className="chat-info-section">
                   <h6 className="chat-info-title">
-                    <i className="bi bi-person-badge me-2"></i>Profesional
+                    <i className="bi bi-person-badge me-2"></i>Profissional
                   </h6>
                   <div className="chat-info-list">
                     <div className="chat-info-item">
-                      <span className="chat-info-label">Nombre</span>
+                      <span className="chat-info-label">Nome</span>
                       <span className="chat-info-value">{nomeDestinatario}</span>
                     </div>
                     <div className="chat-info-item">
-                      <span className="chat-info-label">Especialidad</span>
+                      <span className="chat-info-label">Especialidade</span>
                       <span className="chat-info-value">{destinatario?.especialidade || '—'}</span>
                     </div>
                     {destinatario?.precoSessao && (
@@ -473,18 +473,18 @@ function Chat() {
                 {/* Próxima sessão agendada */}
                 <div className="chat-info-section">
                   <h6 className="chat-info-title">
-                    <i className="bi bi-calendar-event me-2"></i>Próxima sesión agendada
+                    <i className="bi bi-calendar-event me-2"></i>Próxima sessão agendada
                   </h6>
                   <div className="chat-info-list">
                     {proximaSessao ? (
                       <>
                         <div className="chat-info-item">
-                          <span className="chat-info-label">Fecha y hora</span>
+                          <span className="chat-info-label">Data e hora</span>
                           <span className="chat-info-value">{formatSessaoDateTime(proximaSessao.dataSessao)}</span>
                         </div>
                         {proximaSessao.duracao && (
                           <div className="chat-info-item">
-                            <span className="chat-info-label">Duración</span>
+                            <span className="chat-info-label">Duração</span>
                             <span className="chat-info-value">{proximaSessao.duracao} min</span>
                           </div>
                         )}
@@ -498,7 +498,7 @@ function Chat() {
                     ) : (
                       <div className="chat-info-empty">
                         <i className="bi bi-calendar-x d-block fs-4 mb-1"></i>
-                        Sin sesiones agendadas com este profissional por el momento.
+                        Sem sessões agendadas com este profissional por agora.
                       </div>
                     )}
                   </div>
@@ -508,7 +508,7 @@ function Chat() {
                 {destinatario?.bio && (
                   <div className="chat-info-section">
                     <h6 className="chat-info-title">
-                      <i className="bi bi-chat-quote me-2"></i>Acerca de
+                      <i className="bi bi-chat-quote me-2"></i>Sobre
                     </h6>
                     <p className="chat-info-bio">{destinatario.bio}</p>
                   </div>

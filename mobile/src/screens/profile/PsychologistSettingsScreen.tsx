@@ -218,7 +218,7 @@ export const PsychologistSettingsScreen = () => {
           label="Descricao profissional"
           value={bio}
           onChangeText={setBio}
-          placeholder="Experiencia, abordagem e publico atendido"
+          placeholder="Experiencia, abordagem e público atendido"
           multiline
           numberOfLines={4}
           style={styles.textArea}
