@@ -24,6 +24,8 @@ function Chat() {
   const inputRef = useRef(null);
   const socketRef = useRef(null);
   const reconnectTimerRef = useRef(null);
+  const [showInfo, setShowInfo] = useState(false);
+  const [proximaSessao, setProximaSessao] = useState(null);
 
   const destinatarioId = Number(userId);
 
@@ -130,6 +132,25 @@ function Chat() {
     carregarMensagens();
     carregarDestinatario();
   }, [carregarDestinatario, carregarMensagens]);
+
+  // Carga a próxima sessão agendada com este destinatário (para o drawer de informações)
+  useEffect(() => {
+    if (!destinatarioId) return;
+    api
+      .get('/api/sessoes/minhas')
+      .then((res) => {
+        const agora = new Date();
+        const proximas = (res.data || [])
+          .filter((s) =>
+            Number(s.psicologoId) === destinatarioId &&
+            s.statusSessao !== 'cancelada' &&
+            new Date(s.dataSessao) > agora
+          )
+          .sort((a, b) => new Date(a.dataSessao) - new Date(b.dataSessao));
+        setProximaSessao(proximas[0] || null);
+      })
+      .catch(() => setProximaSessao(null));
+  }, [destinatarioId]);
 
   useEffect(() => {
     if (mensagens.length > 0) {
@@ -252,6 +273,14 @@ function Chat() {
     return new Date(dateStr).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   };
 
+  const formatSessaoDateTime = (dateStr) => {
+    if (!dateStr) return '—';
+    const date = new Date(dateStr);
+    const fecha = date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+    const hora = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    return `${fecha} às ${hora}`;
+  };
+
   const shouldShowDateSeparator = (index) => {
     if (index === 0) return true;
     const currentDate = new Date(mensagens[index].dataCriacao).toDateString();
@@ -276,6 +305,7 @@ function Chat() {
   }
 
   return (
+    <>
     <div className="chat-page-wrapper">
       <div className="chat-main-container">
         <div className="chat-premium-header">
@@ -304,7 +334,12 @@ function Chat() {
             </div>
 
             <div className="d-flex gap-2">
-              <button className="chat-action-btn" title="Informações">
+              <button
+                className="chat-action-btn"
+                title="Informações"
+                aria-label="Ver informações do atendimento"
+                onClick={() => setShowInfo(true)}
+              >
                 <i className="bi bi-info-circle"></i>
               </button>
             </div>
@@ -387,6 +422,110 @@ function Chat() {
         </div>
       </div>
     </div>
+    <div
+      className={`chat-info-backdrop ${showInfo ? 'open' : ''}`}
+      onClick={showInfo ? () => setShowInfo(false) : undefined}
+      aria-hidden={!showInfo}
+    ></div>
+    <div
+      className={`chat-info-drawer ${showInfo ? 'open' : ''}`}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Detalhes do atendimento"
+    >
+              <div className="chat-info-header">
+                <button
+                  type="button"
+                  className="chat-back-btn"
+                  onClick={() => setShowInfo(false)}
+                  title="Cerrar"
+                  aria-label="Cerrar"
+                >
+                  <i className="bi bi-arrow-left"></i>
+                </button>
+                <h5 className="mb-0 fw-bold text-white flex-grow-1 ms-2">Detalhes do atendimento</h5>
+              </div>
+
+              <div className="chat-info-body">
+                {/* Perfil do profissional */}
+                <div className="chat-info-section">
+                  <h6 className="chat-info-title">
+                    <i className="bi bi-person-badge me-2"></i>Profesional
+                  </h6>
+                  <div className="chat-info-list">
+                    <div className="chat-info-item">
+                      <span className="chat-info-label">Nombre</span>
+                      <span className="chat-info-value">{nomeDestinatario}</span>
+                    </div>
+                    <div className="chat-info-item">
+                      <span className="chat-info-label">Especialidad</span>
+                      <span className="chat-info-value">{destinatario?.especialidade || '—'}</span>
+                    </div>
+                    {destinatario?.precoSessao && (
+                      <div className="chat-info-item">
+                        <span className="chat-info-label">Valor da sessão</span>
+                        <span className="chat-info-value">R$ {parseFloat(destinatario.precoSessao).toFixed(2).replace('.', ',')}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Próxima sessão agendada */}
+                <div className="chat-info-section">
+                  <h6 className="chat-info-title">
+                    <i className="bi bi-calendar-event me-2"></i>Próxima sesión agendada
+                  </h6>
+                  <div className="chat-info-list">
+                    {proximaSessao ? (
+                      <>
+                        <div className="chat-info-item">
+                          <span className="chat-info-label">Fecha y hora</span>
+                          <span className="chat-info-value">{formatSessaoDateTime(proximaSessao.dataSessao)}</span>
+                        </div>
+                        {proximaSessao.duracao && (
+                          <div className="chat-info-item">
+                            <span className="chat-info-label">Duración</span>
+                            <span className="chat-info-value">{proximaSessao.duracao} min</span>
+                          </div>
+                        )}
+                        <div className="chat-info-item">
+                          <span className="chat-info-label">Estado</span>
+                          <span className="chat-info-value">
+                            {proximaSessao.statusSessao === 'agendada' ? 'Agendada' : (proximaSessao.statusSessao || '—')}
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="chat-info-empty">
+                        <i className="bi bi-calendar-x d-block fs-4 mb-1"></i>
+                        Sin sesiones agendadas com este profissional por el momento.
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Bio resumida */}
+                {destinatario?.bio && (
+                  <div className="chat-info-section">
+                    <h6 className="chat-info-title">
+                      <i className="bi bi-chat-quote me-2"></i>Acerca de
+                    </h6>
+                    <p className="chat-info-bio">{destinatario.bio}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="chat-info-footer">
+                <button
+                  type="button"
+                  className="btn btn-primary w-100 rounded-pill"
+                  onClick={() => setShowInfo(false)}
+                >
+                  Entendido
+                </button>
+              </div>
+            </div>
+    </>
   );
 }
 

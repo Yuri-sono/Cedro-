@@ -124,9 +124,28 @@ const PagamentoModal = ({ show, onClose, plano, onPaymentSuccess }) => {
   if (!show) return null;
 
   return (
-    <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
-      <div className="modal-dialog modal-lg modal-dialog-centered">
-        <div className="modal-content" style={{ borderRadius: '20px', overflow: 'hidden' }}>
+    <div
+      className="modal show d-block"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 1055,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflowY: 'auto',
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        padding: '1rem'
+      }}
+      onMouseDown={(e) => {
+        // Fecha ao clicar no backdrop (fora do card)
+        if (e.target === e.currentTarget && !loading) {
+          onClose();
+        }
+      }}
+    >
+      <div className="modal-dialog modal-lg modal-dialog-centered m-0" style={{ maxWidth: '100%' }}>
+        <div className="modal-content" style={{ borderRadius: '20px', overflow: 'hidden', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
           
           {/* Header */}
           <div className="modal-header border-0 pb-0" style={{ 
@@ -160,9 +179,7 @@ const PagamentoModal = ({ show, onClose, plano, onPaymentSuccess }) => {
             </div>
           </div>
 
-          <div className="modal-body p-4">
-            
-            {/* Etapa: Sucesso */}
+          <div className="modal-body p-4" style={{ flex: '1 1 auto', overflowY: 'auto' }}>
             {etapa === 'sucesso' ? (
               <div className="text-center py-5 animate-on-scroll show">
                 <div className="mb-4" style={{

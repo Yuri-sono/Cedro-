@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import api from '../services/api.js';
-import Navbar from '../components/Navbar.jsx';
 
 const Notificacoes = () => {
   const { user } = useAuth();
@@ -37,7 +36,6 @@ const Notificacoes = () => {
 
   return (
     <div>
-      <Navbar />
       <div className="container py-4" style={{ maxWidth: 700 }}>
         <h2 className="fw-bold mb-4" style={{ color: 'var(--text-primary, #212529)' }}>
           <i className="bi bi-bell me-2"></i>Notificações
